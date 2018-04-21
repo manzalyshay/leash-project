@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+android:layout_height="match_parent">
+
+    //Wind speed + Direction
+
+    <com.github.mikephil.charting.charts.CombinedChart
+        android:id="@+id/wind_chart"
+        android:layout_width="175dp"
+        android:layout_height="203dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignTop="@+id/temp_chart"
+        android:layout_marginStart="13dp" />
+
+    //Waves
+
+    //Tempeartue + feels like temp (combined with wind)
+
+    <com.github.mikephil.charting.charts.CombinedChart
+        android:id="@+id/temp_chart"
+        android:layout_width="175dp"
+        android:layout_height="203dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginEnd="11dp"
+        android:layout_marginTop="36dp" />
+
+    <com.github.mikephil.charting.charts.LineChart
+        android:id="@+id/wave_chart"
+        android:layout_width="263dp"
+        android:layout_height="265dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="54dp" />
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/forecastdaypick"
+        android:layout_width="261dp"
+        android:layout_height="35dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:clipToPadding="false"
+        android:paddingLeft="183dp"
+        android:paddingRight="183dp" />
+
+</RelativeLayout>

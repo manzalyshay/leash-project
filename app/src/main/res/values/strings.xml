@@ -1,0 +1,47 @@
+<resources>
+    <string name="app_name">Leash</string>
+    // Menu Items
+    <string name="cameras_menu_item">Cameras</string>
+    <string name="forecast_menu_item">Forecast</string>
+    <string name="forum_menu_item">Forum</string>
+    <string name="gear_menu_item">Gear</string>
+
+    <string name="action_fullscreen">Full Screen</string>
+    <string name="action_settings">Settings</string>
+    <string name="action_play_next">Play Next</string>
+    <string name="backdrop_title">ISRAEL</string>
+    <string name="backdrop_subtitle"></string>
+
+    // Cams
+    <string name="HiltonA">http://server1.reali-tech.com:1935/live/inter20.stream/playlist.m3u8</string>
+    <string name="HiltonB">http://server1.reali-tech.com:1935/live/inter10.stream/playlist.m3u8</string>
+    <string name="Caesarea">http://ipcamlive.com/player/player.php?alias=freegullsouth</string>
+    <string name="Marina_url">https://balticlivecam.com/cameras/israel/tel-aviv/tel-aviv/?embed</string>
+    <string name="Marina2_url">blob:https://balticlivecam.com/e5c97701-b16f-422a-b5b1-1c792b48ee09</string>
+
+
+    <string name="hiltonA_cam_title">Hilton Beach 1</string>
+    <string name="hiltonB_cam_title">Hilton Beach 2</string>
+    <string name="marina_cam_title">Marina</string>
+    <string name="ceasearea_camtitle">Caesarea</string>
+
+    <string name="telaviv_location">Tel-aviv</string>
+    <string name="shfeld_location">Shfela</string>
+
+
+    // StreamKind
+    <string name="web_stream_kind">web</string>
+    <string name="player_stream_kind">player</string>
+
+    <string-array name="Forecast_Locations">
+        <item>Tel-Aviv</item>
+        <item>California</item>
+    </string-array>
+
+    <string-array name="Forecast_urls" >
+        // Dolfinarium
+        <item>http://magicseaweed.com/api/71c5bbcf15146c798cd7a4410613d4cf/forecast/?spot_id=3658&amp;fields=units=eu,localTimestamp,swell.absMinBreakingHeight,swell.absMaxBreakingHeight,wind.speed,wind.direction,wind.chill,condition.temperature</item>
+       // California
+        <item>http://magicseaweed.com/api/71c5bbcf15146c798cd7a4410613d4cf/forecast/?spot_id=2611&amp;fields=units=eu,localTimestamp,swell.absMinBreakingHeight,swell.absMaxBreakingHeight,wind.speed,wind.direction,wind.chill,condition.temperature</item>
+    </string-array>
+</resources>
