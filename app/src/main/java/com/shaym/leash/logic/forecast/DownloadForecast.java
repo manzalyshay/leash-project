@@ -1,5 +1,6 @@
 package com.shaym.leash.logic.forecast;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v4.content.LocalBroadcastManager;
@@ -38,9 +39,12 @@ public class DownloadForecast extends AsyncTask<Integer, Void, ArrayList<Forecas
     private int mWindDirection;
     private int mTempChill;
     private int mTemp;
+    private Context mContext;
 
+    public DownloadForecast (Context ctx){
+        mContext = ctx;
 
-
+    }
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
@@ -133,7 +137,7 @@ public class DownloadForecast extends AsyncTask<Integer, Void, ArrayList<Forecas
             LocalBroadcastManager.getInstance(MainApplication.getInstace().getApplicationContext()).sendBroadcast(intent);
         }
         else {
-            Toast.makeText(MainApplication.getInstace().getApplicationContext(), "No Internet Connection", Toast.LENGTH_LONG);
+            Toast.makeText(mContext, "No Internet Connection", Toast.LENGTH_LONG);
         }
     }
 }

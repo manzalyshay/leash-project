@@ -30,10 +30,11 @@ public class ForecastActivity extends AppCompatActivity {
     public static final String CALIFORNIA_TAG = "CALIFORNIA";
     private static final int ACTIVITY_NUM = 1;
     private BottomNavigationViewHelper mBottomNavHelper;
-    private RecyclerView mRecyclerView;
+    private RecyclerView mCountryPick;
     private PickerAdapter adapter;
     private List<String> mForecastLocations;
     private List<String> mForecastUrls;
+    public ForecastActivity instance;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,11 +42,12 @@ public class ForecastActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_forecast);
         mBottomNavHelper = new BottomNavigationViewHelper(this, ACTIVITY_NUM);
-        mRecyclerView = (RecyclerView) findViewById(R.id.forecastpick);
+        mCountryPick = (RecyclerView) findViewById(R.id.forecastpick);
         mForecastLocations = Arrays.asList(getResources().getStringArray(R.array.Forecast_Locations));
         mForecastUrls = Arrays.asList(getResources().getStringArray(R.array.Forecast_urls));
         setUpPicker();
-        new DownloadForecast().execute(0, 4, null);
+        instance = this;
+        new DownloadForecast(instance).execute(0, 4, null);
 
     }
 
@@ -60,21 +62,21 @@ public class ForecastActivity extends AppCompatActivity {
         pickerLayoutManager.setScaleDownBy(0.99f);
         pickerLayoutManager.setScaleDownDistance(0.8f);
 
-        adapter = new PickerAdapter(this, mForecastLocations, mRecyclerView);
+        adapter = new PickerAdapter(this, mForecastLocations, mCountryPick);
         SnapHelper snapHelper = new LinearSnapHelper();
-        snapHelper.attachToRecyclerView(mRecyclerView);
-        mRecyclerView.setLayoutManager(pickerLayoutManager);
-        mRecyclerView.setAdapter(adapter);
+        snapHelper.attachToRecyclerView(mCountryPick);
+        mCountryPick.setLayoutManager(pickerLayoutManager);
+        mCountryPick.setAdapter(adapter);
 
         pickerLayoutManager.setOnScrollStopListener(new PickerLayoutManager.onScrollStopListener() {
             @Override
             public void selectedView(View view) {
                 switch (((TextView) view).getText().toString().toUpperCase()){
                     case (TELAVIV_TAG):
-                        new DownloadForecast().execute(0, 4, null);
+                        new DownloadForecast(instance).execute(0, 4, null);
                         break;
                     case (CALIFORNIA_TAG):
-                        new DownloadForecast().execute(1, 4, null);
+                        new DownloadForecast(instance).execute(1, 4, null);
                         break;
 
                 }

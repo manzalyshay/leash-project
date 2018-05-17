@@ -91,13 +91,11 @@
                 });
 
 
-
-
-
             }
              else  {
                 ((WebViewHolder) holder).getTitle().setText(cam.getBeachName());
                 ((WebViewHolder) holder).getLocation().setText(cam.getLocation());
+                ((WebViewHolder) holder).getWebView().loadUrl(cam.getUrl());
                 ((WebViewHolder) holder).getWebView().setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
@@ -105,7 +103,7 @@
                         ((Activity) mContext).runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                ((WebViewHolder) holder).getWebView().loadUrl(cam.getUrl());
+//                                ((WebViewHolder) holder).getWebView().loadUrl(cam.getUrl());
                             }
                         });
                     }

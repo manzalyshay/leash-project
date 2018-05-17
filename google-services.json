@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "992490290367",
+    "firebase_url": "https://leash-cd948.firebaseio.com",
+    "project_id": "leash-cd948",
+    "storage_bucket": "leash-cd948.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:992490290367:android:26dbeb11c20a3227",
+        "android_client_info": {
+          "package_name": "com.shaym.leash"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "992490290367-hln16u3rfmp1k3m35bmvhfj5pp4idlip.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD29Ba9rXvWWxZbVARwv8qDXsb0uHWeKrQ"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

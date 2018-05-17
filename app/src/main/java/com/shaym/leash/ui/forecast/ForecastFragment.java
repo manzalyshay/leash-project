@@ -1,5 +1,6 @@
 package com.shaym.leash.ui.forecast;
 
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -8,17 +9,21 @@ import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.widget.LinearSnapHelper;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SnapHelper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.github.mikephil.charting.charts.CombinedChart;
 import com.github.mikephil.charting.charts.LineChart;
@@ -39,6 +44,8 @@ import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.github.mikephil.charting.utils.Utils;
 import com.shaym.leash.MainApplication;
 import com.shaym.leash.R;
+import com.shaym.leash.logic.forecast.DownloadForecast;
+import com.shaym.leash.logic.forecast.localdb.GetForecast;
 import com.shaym.leash.logic.forecast.localdb.dbhandlers.ForecastDB;
 import com.shaym.leash.logic.forecast.ForecastObject;
 
@@ -47,36 +54,69 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import travel.ithaka.android.horizontalpickerlib.PickerLayoutManager;
+
 public class ForecastFragment extends Fragment {
     private CombinedChart mTempChart;
     private CombinedChart mWindChart;
     private LineChart mWavesChart;
-    private ArrayList<String> xVal = new ArrayList<>();
+    private ArrayList<String> waveXVal = new ArrayList<>();
+    private ArrayList<String> tempXVal = new ArrayList<>();
+    private ArrayList<String> windXVal = new ArrayList<>();
     private XAxis mWindXaxis;
     private XAxis mTempXaxis;
     private ForecastDB forecastDB;
     private RecyclerView mDayPicker;
+    public ForecastFragment instance;
+    private List<ForecastObject> mData;
+    private PickerAdapter adapter;
 
+    public ForecastFragment (){
+        instance = this;
+    }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_forecast, container, false);
-        // Register to receive messages.
-        // We are registering an observer (mMessageReceiver) to receive Intents
-        // with actions named "custom-event-name".
+
+        // Register a receiver to get this fragment notified every time new Forecast objects were downloaded
         LocalBroadcastManager.getInstance(this.getContext()).registerReceiver(mMessageReceiver,
                 new IntentFilter("forecast"));
 
+        new GetForecasts(instance).execute();
+
         chartsSetup(v);
-        setDayPicker();
+        mDayPicker = (RecyclerView) v.findViewById(R.id.forecastdaypick);
 
         return v;
 
     }
 
     private void setDayPicker() {
-    }
+
+        final List<String> days = getDays();
+        PickerLayoutManager pickerLayoutManager = new PickerLayoutManager(instance.getContext(), PickerLayoutManager.HORIZONTAL, false);
+
+        adapter = new PickerAdapter(instance.getContext(), days, mDayPicker);
+        SnapHelper snapHelper = new LinearSnapHelper();
+        mDayPicker.setOnFlingListener(null);
+        snapHelper.attachToRecyclerView(mDayPicker);
+        mDayPicker.setLayoutManager(pickerLayoutManager);
+        mDayPicker.setAdapter(adapter);
+
+        pickerLayoutManager.setOnScrollStopListener(new PickerLayoutManager.onScrollStopListener() {
+            @Override
+            public void selectedView(View view) {
+                ArrayList<ForecastObject> list = getForecastsByDay (((TextView) view).getText().toString().toUpperCase());
+                setWavesData(list);
+                setTempData(list);
+                setWindData(list);
+
+                }
+            });
+        }
+
 
     private void chartsSetup(View v) {
         mWavesChart = (LineChart) v.findViewById(R.id.wave_chart);
@@ -117,7 +157,7 @@ public class ForecastFragment extends Fragment {
         xAxis.setValueFormatter(new IAxisValueFormatter() {
             @Override
             public String getFormattedValue(float value, AxisBase axis) {
-                return xVal.get((int) value); // xVal is a string array
+                return waveXVal.get((int) value); // xVal is a string array
             }
 
         });
@@ -171,17 +211,16 @@ public class ForecastFragment extends Fragment {
         leftAxis.setAxisMinimum(0f); // this replaces setStartAtZero(true)
 
         mWindXaxis = mWindChart.getXAxis();
-        mWindXaxis.setPosition(XAxis.XAxisPosition.BOTH_SIDED);
+        mWindXaxis.setPosition(XAxis.XAxisPosition.TOP);
         mWindXaxis.setAxisMinimum(0f);
         mWindXaxis.setGranularity(1f);
-//        mWindXaxis.setValueFormatter(new IAxisValueFormatter() {
-//            @Override
-//            public String getFormattedValue(float value, AxisBase axis) {
-////                return mMonths[(int) value % mMonths.length];
-//            }
-//        });
+        mWindXaxis.setValueFormatter(new IAxisValueFormatter() {
+            @Override
+            public String getFormattedValue(float value, AxisBase axis) {
+                return windXVal.get((int) value); // xVal is a string array
+            }
 
-
+        });
 
         mTempChart = (CombinedChart) v.findViewById(R.id.temp_chart);
         mTempChart.getDescription().setEnabled(false);
@@ -210,15 +249,16 @@ public class ForecastFragment extends Fragment {
         leftAxis2.setAxisMinimum(0f); // this replaces setStartAtZero(true)
 
         mTempXaxis = mTempChart.getXAxis();
-        mTempXaxis.setPosition(XAxis.XAxisPosition.BOTH_SIDED);
+        mTempXaxis.setPosition(XAxis.XAxisPosition.TOP);
         mTempXaxis.setAxisMinimum(0f);
         mTempXaxis.setGranularity(1f);
-//        mWindXaxis.setValueFormatter(new IAxisValueFormatter() {
-//            @Override
-//            public String getFormattedValue(float value, AxisBase axis) {
-////                return mMonths[(int) value % mMonths.length];
-//            }
-//        });
+        mTempXaxis.setValueFormatter(new IAxisValueFormatter() {
+            @Override
+            public String getFormattedValue(float value, AxisBase axis) {
+                return tempXVal.get((int) value); // xVal is a string array
+            }
+
+        });
 
     }
 
@@ -227,7 +267,7 @@ public class ForecastFragment extends Fragment {
         ArrayList<Entry> values = new ArrayList<Entry>();
 
         for (int i = 0; i < 8; i++) {
-            xVal.add(formatTimeStamp(Forecasts.get(i).getLocalTimeStamp()));
+            waveXVal.add(formatHour(Forecasts.get(i).getLocalTimeStamp()));
             values.add(new Entry(i, Forecasts.get(i).getAbsMaxBreakingHeight(), getResources().getDrawable(R.drawable.star)));
         }
 
@@ -315,8 +355,10 @@ public class ForecastFragment extends Fragment {
 
         ArrayList<Entry> entries = new ArrayList<Entry>();
 
-         for (int i = 0; i < 8; i++)
-            entries.add(new Entry(i , Forecasts.get(i).getWindDirection()));
+         for (int i = 0; i < Forecasts.size(); i++) {
+             windXVal.add(formatHour(Forecasts.get(i).getLocalTimeStamp()));
+             entries.add(new Entry(i, Forecasts.get(i).getWindDirection()));
+         }
 
          LineDataSet set = new LineDataSet(entries, "Wind Direction - °Degrees");
          set.setColor(Color.rgb(240, 238, 70));
@@ -364,8 +406,11 @@ public class ForecastFragment extends Fragment {
 
         ArrayList<Entry> entries = new ArrayList<Entry>();
 
-        for (int i = 0; i < 8; i++)
+        for (int i = 0; i < Forecasts.size(); i++){
+            tempXVal.add(formatHour(Forecasts.get(i).getLocalTimeStamp()));
             entries.add(new Entry(i , Forecasts.get(i).getTempChill()));
+
+        }
 
         LineDataSet set = new LineDataSet(entries, "Feels Like - °Degrees");
         set.setColor(Color.rgb(240, 238, 70));
@@ -417,19 +462,20 @@ public class ForecastFragment extends Fragment {
             // Get extra data included in the Intent
             ArrayList<ForecastObject> Forecasts = ((ArrayList<ForecastObject>) intent.getSerializableExtra("result"));
             Log.d("receiver", "Got message: ");
-            setWavesData(Forecasts);
-            setTempData(Forecasts);
-            setWindData(Forecasts);
 
-            List<ForecastObject> Forecasts2 = ForecastDB.getInstance(MainApplication.getInstace().getApplicationContext()).daoAccess().getForecasts();
-            for (int i=0; i<Forecasts2.size(); i++)
-                Log.d("testing", Forecasts2.get(i).toString());
+            new GetForecasts(instance).execute();
+
         }
     };
 
-    private void updateCharts(ArrayList<ForecastObject> Forecasts) {
+    public void updateData(List<ForecastObject> result){
+        if (result != null) {
+            mData = result;
+            setDayPicker();
 
+        }
     }
+
 
     @Override
     public void onDestroy() {
@@ -446,6 +492,72 @@ public class ForecastFragment extends Fragment {
         String formattedDate = sdf.format(date);
         return formattedDate;
 
+    }
+
+    private String formatHour(long timestamp){
+        Date date = new java.util.Date(timestamp*1000L);
+// the format of your date
+        SimpleDateFormat sdf = new java.text.SimpleDateFormat("HH:mm");
+// give a timezone reference for formatting (see comment at the bottom)
+        String formattedDate = sdf.format(date);
+        return formattedDate;
+
+    }
+
+
+    private String formatDay(long timestamp){
+        Date date = new java.util.Date(timestamp*1000L);
+// the format of your date
+        SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd-MM");
+// give a timezone reference for formatting (see comment at the bottom)
+        String formattedDate = sdf.format(date);
+        return formattedDate;
+
+    }
+
+    public List<String> getDays() {
+        List<String> days = new ArrayList<>();
+        for (int i = 0; i < mData.size(); i++) {
+            String day = formatDay(mData.get(i).getLocalTimeStamp());
+            if (!(days.contains(day))) {
+                days.add(day);
+            }
+        }
+        return days;
+    }
+
+    private ArrayList<ForecastObject> getForecastsByDay(String day){
+         ArrayList<ForecastObject> list = new ArrayList<>();
+         for (int i=0; i<mData.size(); i++){
+             if (formatDay(mData.get(i).getLocalTimeStamp()).equals(day))
+                 list.add(mData.get(i));
+         }
+         return list;
+    }
+
+    private static class GetForecasts extends AsyncTask<Void, Void, List<ForecastObject>> {
+
+        private Fragment parent;
+
+        // only retain a weak reference to the activity
+        GetForecasts(Fragment activity) {
+            parent = activity;
+        }
+
+        @Override
+        protected List<ForecastObject> doInBackground(Void... params) {
+
+            // do some long running task...
+
+            return ForecastDB.getInstance(MainApplication.getInstace().getApplicationContext()).daoAccess().getForecasts();
+        }
+
+        @Override
+        protected void onPostExecute(List<ForecastObject> result) {
+
+            ((ForecastFragment)parent).updateData(result);
+                    return;
+        }
     }
 }
 
