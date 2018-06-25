@@ -90,7 +90,6 @@ public class ForecastFragment extends Fragment {
         mDayPicker = (RecyclerView) v.findViewById(R.id.forecastdaypick);
 
         return v;
-
     }
 
     private void setDayPicker() {
@@ -266,7 +265,7 @@ public class ForecastFragment extends Fragment {
 
         ArrayList<Entry> values = new ArrayList<Entry>();
 
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < Forecasts.size(); i++) {
             waveXVal.add(formatHour(Forecasts.get(i).getLocalTimeStamp()));
             values.add(new Entry(i, Forecasts.get(i).getAbsMaxBreakingHeight(), getResources().getDrawable(R.drawable.star)));
         }
@@ -381,7 +380,7 @@ public class ForecastFragment extends Fragment {
 
         ArrayList<BarEntry> entries1 = new ArrayList<BarEntry>();
 
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < Forecasts.size(); i++) {
             entries1.add(new BarEntry(i, Forecasts.get(i).getWindSpeed()));
             }
 
@@ -433,7 +432,7 @@ public class ForecastFragment extends Fragment {
 
         ArrayList<BarEntry> entries1 = new ArrayList<BarEntry>();
 
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < Forecasts.size(); i++) {
             entries1.add(new BarEntry(i, Forecasts.get(i).getTemp()));
         }
 
