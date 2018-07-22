@@ -1,6 +1,5 @@
-package com.shaym.leash.ui.forecast;
+package com.shaym.leash.ui.forecast.fragments;
 
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -44,10 +43,10 @@ import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.github.mikephil.charting.utils.Utils;
 import com.shaym.leash.MainApplication;
 import com.shaym.leash.R;
-import com.shaym.leash.logic.forecast.DownloadForecast;
-import com.shaym.leash.logic.forecast.localdb.GetForecast;
 import com.shaym.leash.logic.forecast.localdb.dbhandlers.ForecastDB;
 import com.shaym.leash.logic.forecast.ForecastObject;
+import com.shaym.leash.ui.forecast.MyMarkerView;
+import com.shaym.leash.ui.forecast.PickerAdapter;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;

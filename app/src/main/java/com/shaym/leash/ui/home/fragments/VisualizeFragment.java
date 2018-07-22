@@ -1,4 +1,4 @@
-package com.shaym.leash.ui.home;
+package com.shaym.leash.ui.home.fragments;
 
 import android.os.Bundle;
 import android.support.annotation.NonNull;

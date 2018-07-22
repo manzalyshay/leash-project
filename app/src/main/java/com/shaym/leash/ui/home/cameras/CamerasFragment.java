@@ -76,31 +76,6 @@ public class CamerasFragment extends Fragment {
         mCamerasList.add(d);
 
 
-//
-//        a = new Camera("Mezizim", "Telaviv", covers[2]);
-//        mCamerasList.add(a);
-//
-//        a = new Camera("Hazorfim", "Ashdod", covers[3]);
-//        mCamerasList.add(a);
-//
-//        a = new Camera("Hakshatot", "Ashdod", covers[4]);
-//        mCamerasList.add(a);
-//
-//        a = new Camera("BatGalim", "Haifa", covers[5]);
-//        mCamerasList.add(a);
-//
-//        a = new Camera("Hagolshim", "Batyam", covers[6]);
-//        mCamerasList.add(a);
-//
-//        a = new Camera("Sugar Ray", "Telaviv", covers[7]);
-//        mCamerasList.add(a);
-//
-//        a = new Camera("Sugar Ray", "Telaviv", covers[8]);
-//        mCamerasList.add(a);
-//
-//        a = new Camera("Sugar Ray", "Telaviv", covers[9]);
-//        mCamerasList.add(a);
-
         mAdapter.notifyDataSetChanged();
     }
 

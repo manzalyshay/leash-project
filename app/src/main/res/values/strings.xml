@@ -44,4 +44,16 @@
        // California
         <item>http://magicseaweed.com/api/71c5bbcf15146c798cd7a4410613d4cf/forecast/?spot_id=2611&amp;fields=units=eu,localTimestamp,swell.absMinBreakingHeight,swell.absMaxBreakingHeight,wind.speed,wind.direction,wind.chill,condition.temperature</item>
     </string-array>
+
+    //Facebook
+    <string name="facebook_app_id">1637949759563628</string>
+    <string name="fb_login_protocol_scheme">fb1637949759563628</string>
+    <string name="title_location_permission">Location Permisson</string>
+    <string name="text_location_permission">Please allow location</string>
+    <string name="ok">OK</string>
+    <string name="NewPostLabel">New Post</string>
+    <string name="PostTitleLabel">Title</string>
+    <string name="PostBodyLabel">Body</string>
+    <string name="SubmitPostLabel">Post</string>
+    <string name="CancelPostLabel">Cancel</string>
 </resources>

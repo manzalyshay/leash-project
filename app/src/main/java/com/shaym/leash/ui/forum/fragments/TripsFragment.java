@@ -1,22 +1,19 @@
-package com.shaym.leash.ui.forum;
+package com.shaym.leash.ui.forum.fragments;
 
-import android.app.Fragment;
-import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.Query;
 
-import com.shaym.leash.R;
+import static com.shaym.leash.logic.CONSTANT.TRIPS_POSTS;
 
-public class TripsFragment extends android.support.v4.app.Fragment {
+public class TripsFragment extends ForumFragment {
+    public static final String TAG = "TripsFragment";
 
-    @Nullable
+    public TripsFragment() {}
+
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.fragment_forum, container, false);
-
-        return v;
+    public Query getQuery(DatabaseReference databaseReference) {
+        // All my posts
+        return databaseReference.child(TRIPS_POSTS);
     }
 }
+

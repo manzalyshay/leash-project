@@ -1,4 +1,4 @@
-package com.shaym.leash.ui.forum;
+package com.shaym.leash.logic.forum;
 
 import com.google.firebase.database.Exclude;
 import com.google.firebase.database.IgnoreExtraProperties;
@@ -14,6 +14,7 @@ public class Post {
     public String author;
     public String title;
     public String body;
+    public String forum;
     public int starCount = 0;
     public Map<String, Boolean> stars = new HashMap<>();
 
@@ -21,8 +22,9 @@ public class Post {
         // Default constructor required for calls to DataSnapshot.getValue(Post.class)
     }
 
-    public Post(String uid, String author, String title, String body) {
+    public Post(String uid, String forum, String author, String title, String body) {
         this.uid = uid;
+        this.forum = forum;
         this.author = author;
         this.title = title;
         this.body = body;
@@ -33,6 +35,7 @@ public class Post {
     public Map<String, Object> toMap() {
         HashMap<String, Object> result = new HashMap<>();
         result.put("uid", uid);
+        result.put("forum", forum);
         result.put("author", author);
         result.put("title", title);
         result.put("body", body);

@@ -1,4 +1,4 @@
-package com.shaym.leash.ui.forum;
+package com.shaym.leash.ui.forum.fragments;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -9,6 +9,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -26,12 +27,16 @@ import com.google.firebase.database.ValueEventListener;
 import com.shaym.leash.logic.forum.Comment;
 import com.shaym.leash.logic.forum.Post;
 import com.shaym.leash.logic.user.Profile;
+import com.shaym.leash.ui.forum.ForumActivity;
 
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static com.shaym.leash.R.*;
+import static com.shaym.leash.logic.CONSTANT.POST_COMMENTS;
+import static com.shaym.leash.logic.CONSTANT.USERS_TABLE;
+import static com.shaym.leash.logic.CONSTANT.USER_POSTS;
 
 public class PostFragment extends Fragment implements View.OnClickListener {
 
@@ -39,7 +44,6 @@ public class PostFragment extends Fragment implements View.OnClickListener {
 
     public static final String EXTRA_POST_KEY = "post_key";
     public static final String EXTRA_FORUM_KEY = "forum_key";
-
 
     private DatabaseReference mPostReference;
     private DatabaseReference mCommentsReference;
@@ -58,26 +62,33 @@ public class PostFragment extends Fragment implements View.OnClickListener {
     public PostFragment () {
     }
 
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(layout.fragment_post, container, false);
         Bundle args = getArguments();
 
+        v.setOnTouchListener(new View.OnTouchListener() {
+            public boolean onTouch(View v, MotionEvent event) {
+                return true;
+            }
+        });
+
+
         // Get post,forum key from intent
         mPostKey = args.getString(EXTRA_POST_KEY);
         mPostForum = args.getString(EXTRA_FORUM_KEY);
 
         if (mPostKey == null || mPostForum == null) {
-            throw new IllegalArgumentException("Must pass EXTRA_POST_KEY");
+            throw new IllegalArgumentException("Must pass EXTRA_POST_KEY,FORUMKEY");
         }
 
         // Initialize Database
         mPostReference = FirebaseDatabase.getInstance().getReference()
                 .child(mPostForum).child(mPostKey);
+        Log.d(TAG, "onCreateView: " + mPostReference);
         mCommentsReference = FirebaseDatabase.getInstance().getReference()
-                .child("post-comments").child(mPostKey);
+                .child(POST_COMMENTS).child(mPostKey);
 
         // Initialize Views
         mAuthorView = v.findViewById(id.post_author);
@@ -157,23 +168,35 @@ public class PostFragment extends Fragment implements View.OnClickListener {
 
     private void postComment() {
         final String uid = getUid();
-        FirebaseDatabase.getInstance().getReference().child("users").child(uid)
+        FirebaseDatabase.getInstance().getReference().child(USERS_TABLE).child(uid)
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         // Get user information
+
                         Profile user = dataSnapshot.getValue(Profile.class);
-                        String authorName = user.getDisplayname();
 
-                        // Create new comment object
-                        String commentText = mCommentField.getText().toString();
-                        Comment comment = new Comment(uid, authorName, commentText);
 
-                        // Push the comment, it will appear in the list
-                        mCommentsReference.push().setValue(comment);
+                        // [START_EXCLUDE]
+                        if (user == null) {
+                            // User is null, error out
+                            Log.e(TAG, "User " + uid + " is unexpectedly null");
+                            Toast.makeText(getActivity(),
+                                    "Error: could not fetch user.",
+                                    Toast.LENGTH_SHORT).show();
+                        } else {
+                            String authorName = user.getDisplayname();
 
-                        // Clear the field
-                        mCommentField.setText(null);
+                            // Create new comment object
+                            String commentText = mCommentField.getText().toString();
+                            Comment comment = new Comment(uid, authorName, commentText);
+
+                            // Push the comment, it will appear in the list
+                            mCommentsReference.push().setValue(comment);
+
+                            // Clear the field
+                            mCommentField.setText(null);
+                        }
                     }
 
                     @Override

@@ -1,4 +1,4 @@
-package com.shaym.leash.ui.forum;
+package com.shaym.leash.logic.forum;
 
 import com.google.firebase.database.IgnoreExtraProperties;
 

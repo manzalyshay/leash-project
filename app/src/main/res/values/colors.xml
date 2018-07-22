@@ -12,4 +12,7 @@
 
     <color name="viewBg">#f1f5f8</color>
     <color name="album_title">#4c4c4c</color>
+    <color name="transparent">#00FFFFFF</color>
+    <color name="gradStop">#19AA8B</color>
+    <color name="gradStart">#23A7D8</color>
 </resources>

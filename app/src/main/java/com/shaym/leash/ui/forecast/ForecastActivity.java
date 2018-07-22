@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import com.shaym.leash.R;
 import com.shaym.leash.logic.forecast.DownloadForecast;
+import com.shaym.leash.ui.forecast.fragments.ForecastFragment;
 import com.shaym.leash.ui.home.SectionPagerAdapter;
 import com.shaym.leash.ui.utils.BottomNavigationViewHelper;
 
@@ -54,7 +55,7 @@ public class ForecastActivity extends AppCompatActivity {
     private void setUpPicker() {
         SectionPagerAdapter sectionPagerAdapter = new SectionPagerAdapter(getSupportFragmentManager());
         sectionPagerAdapter.AddFragment(new ForecastFragment());
-        ViewPager vp = (ViewPager) findViewById(R.id.container);
+        ViewPager vp = (ViewPager) findViewById(R.id.container_home);
 
         vp.setAdapter(sectionPagerAdapter);
         PickerLayoutManager pickerLayoutManager = new PickerLayoutManager(this, PickerLayoutManager.HORIZONTAL, false);
