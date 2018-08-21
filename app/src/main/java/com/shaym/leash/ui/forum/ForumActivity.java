@@ -219,7 +219,8 @@ public class ForumActivity extends AppCompatActivity {
 
         //in my example i use TYPE_CLASS_NUMBER for input only numbers
         title.setInputType(InputType.TYPE_CLASS_TEXT);
-        body.setInputType(InputType.TYPE_CLASS_TEXT);
+        body.setInputType(InputType.TYPE_TEXT_FLAG_MULTI_LINE);
+        body.setMinLines(5);
 
         LinearLayout lay = new LinearLayout(ForumActivity.this);
         lay.setOrientation(LinearLayout.VERTICAL);

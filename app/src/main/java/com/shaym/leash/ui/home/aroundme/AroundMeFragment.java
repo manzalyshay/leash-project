@@ -1,11 +1,13 @@
 package com.shaym.leash.ui.home.aroundme;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.net.Uri;
@@ -15,10 +17,15 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.text.InputType;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.PopupWindow;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -28,7 +35,6 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
@@ -36,6 +42,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -46,16 +53,27 @@ import com.google.firebase.storage.StorageReference;
 import com.shaym.leash.MainApplication;
 import com.shaym.leash.R;
 import com.shaym.leash.logic.aroundme.CircleTransform;
+import com.shaym.leash.logic.forum.Post;
 import com.shaym.leash.logic.user.Profile;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
-import static com.google.android.gms.maps.GoogleMap.*;
-import static com.shaym.leash.logic.CONSTANT.AVATAR_URL;
+import at.markushi.ui.CircleButton;
+
+import static com.google.android.gms.maps.GoogleMap.OnMarkerClickListener;
+import static com.google.android.gms.maps.GoogleMap.OnMyLocationButtonClickListener;
+import static com.google.android.gms.maps.GoogleMap.OnMyLocationClickListener;
+import static com.shaym.leash.logic.CONSTANT.DIRECT_INCOMING_MESSAGES;
+import static com.shaym.leash.logic.CONSTANT.DIRECT_OUTGOING_MESSAGES;
 import static com.shaym.leash.logic.CONSTANT.USERS_TABLE;
+import static com.shaym.leash.logic.CONSTANT.USER_INBOX_POSTS_AMOUNT;
+import static com.shaym.leash.logic.CONSTANT.USER_OUTBOX_POSTS_AMOUNT;
+
 
 /**
  * Created by shaym on 2/17/18.
@@ -63,7 +81,7 @@ import static com.shaym.leash.logic.CONSTANT.USERS_TABLE;
 
 
 public class AroundMeFragment extends Fragment implements OnMapReadyCallback, OnMyLocationButtonClickListener,
-        OnMyLocationClickListener {
+        OnMyLocationClickListener, OnMarkerClickListener {
     GoogleMap mGoogleMap;
     public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
     private FusedLocationProviderClient mFusedLocationClient;
@@ -73,7 +91,10 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
     StorageReference storageReference;
     FirebaseStorage storage;
     private Set<PoiTarget> poiTargets = new HashSet<PoiTarget>();
-
+    private ValueEventListener mUsersEventListener;
+    private ValueEventListener mUsersChatListener;
+    private Profile mClickedUser;
+    private DatabaseReference mDatabase;
 
     @Nullable
     @Override
@@ -81,6 +102,8 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
         View v = inflater.inflate(R.layout.fragment_aroundme, container, false);
         storage = FirebaseStorage.getInstance();
         storageReference = storage.getReference();
+        mDatabase = FirebaseDatabase.getInstance().getReference();
+
         // Gets the MapView from the XML layout and creates it
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.googleMap);
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this.getActivity());
@@ -101,7 +124,9 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
         if (mGoogleMap != null) {
             mGoogleMap.clear();
 
-            ValueEventListener eventListener = new ValueEventListener() {
+            mGoogleMap.setOnMarkerClickListener(this);
+
+            mUsersEventListener = new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     for (DataSnapshot ds : dataSnapshot.getChildren()) {
@@ -110,11 +135,12 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
                         Marker m;
                         LatLng latLng = new LatLng(user.getcurrentlat(), user.getcurrentlng());
 
-                        ds.getRef().child(AVATAR_URL).setValue("");
                         m = mGoogleMap.addMarker(new MarkerOptions()
                                 .position(latLng)
                                 .title(user.getDisplayname()));
                         final PoiTarget pt = new PoiTarget(m);
+
+
                         poiTargets.add(pt);
                         if (!user.getAvatarURL().isEmpty()) {
                             storageReference.child(user.getAvatarURL()).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
@@ -132,6 +158,8 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
 
                         }
         }
+
+        usersRef.removeEventListener(mUsersEventListener);
                     }
 
                 @Override
@@ -140,19 +168,12 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
                 }
             };
 
-            usersRef.addListenerForSingleValueEvent(eventListener);
+            usersRef.addListenerForSingleValueEvent(mUsersEventListener);
         }
     }
 
 
-    private BitmapDescriptor getMarkerIconFromDrawable(Drawable drawable) {
-        Canvas canvas = new Canvas();
-        Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
-        canvas.setBitmap(bitmap);
-        drawable.setBounds(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
-        drawable.draw(canvas);
-        return BitmapDescriptorFactory.fromBitmap(bitmap);
-    }
+
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -300,6 +321,78 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
         }
     }
 
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+
+        mUsersChatListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                    mClickedUser = ds.getValue(Profile.class);
+                    showPopup(getActivity(), mClickedUser.getUid() );
+                }
+
+                usersRef.removeEventListener(mUsersChatListener);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        };
+
+        usersRef.addValueEventListener(mUsersChatListener);
+        return false;
+    }
+
+
+    // The method that displays the popup.
+    private void showPopup(final Activity context, final String sendtouid) {
+        int popupWidth = 200;
+        int popupHeight = 150;
+
+        // Inflate the popup_layout.xml
+        LinearLayout viewGroup = (LinearLayout) context.findViewById(R.id.popup_map_marker);
+        LayoutInflater layoutInflater = (LayoutInflater) context
+                .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View layout = layoutInflater.inflate(R.layout.popup_map_marker, viewGroup);
+        CircleButton messageBtn = layout.findViewById(R.id.msgbtn);
+        // Creating the PopupWindow
+        final PopupWindow popup = new PopupWindow(context);
+        popup.setContentView(layout);
+        popup.setWidth(popupWidth);
+        popup.setHeight(popupHeight);
+        popup.setFocusable(true);
+
+
+        // Clear the default translucent background
+        popup.setBackgroundDrawable(new BitmapDrawable());
+
+        // Displaying the popup at the specified location, + offsets.
+        popup.showAtLocation(layout, Gravity.NO_GRAVITY, getActivity().getWindowManager().getDefaultDisplay().getWidth()/2 , getActivity().getWindowManager().getDefaultDisplay().getHeight()/2);
+
+        CircleButton msgbtn =  layout.findViewById(R.id.msgbtn);
+        msgbtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showPostDialog(sendtouid);
+                popup.dismiss();
+            }
+        });
+
+        // Getting a reference to Close button, and close the popup when clicked.
+        CircleButton close =  layout.findViewById(R.id.closebtn);
+
+        close.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                popup.dismiss();
+            }
+        });
+    }
+
 
     class PoiTarget implements Target {
         private Marker m;
@@ -323,5 +416,118 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
 
         }
     }
+
+
+    private void showPostDialog(final String sendtouid) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        //you should edit this to fit your needs
+        builder.setTitle(R.string.DMLabel);
+
+        final EditText title = new EditText(getContext());
+        title.setHint(R.string.DMSubject);//optional
+        final EditText body = new EditText(getContext());
+        body.setHint(R.string.DMContent);//optional
+
+        //in my example i use TYPE_CLASS_NUMBER for input only numbers
+        title.setInputType(InputType.TYPE_CLASS_TEXT);
+        body.setInputType(InputType.TYPE_TEXT_FLAG_MULTI_LINE);
+
+        LinearLayout lay = new LinearLayout(getContext());
+        lay.setOrientation(LinearLayout.VERTICAL);
+        lay.addView(title);
+        lay.addView(body);
+        builder.setView(lay);
+
+        // Set up the buttons
+        builder.setPositiveButton(R.string.SubmitPostLabel, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+            }
+        });
+
+
+        builder.setNegativeButton(R.string.CancelPostLabel, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                dialog.cancel();
+            }
+        });
+        final AlertDialog dialog = builder.create();
+        dialog.show();
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //get the two inputs
+                if (title.getText().length() == 0 || body.getText().length() == 0) {
+                    Toast.makeText(getContext(), "All fields are required.", Toast.LENGTH_SHORT).show();
+                    return;
+                } else {
+                    final String userId = getUid();
+                    mDatabase.child(USERS_TABLE).child(userId).addListenerForSingleValueEvent(
+                            new ValueEventListener() {
+                                @Override
+                                public void onDataChange(DataSnapshot dataSnapshot) {
+                                    // Get user value
+                                    Profile user = dataSnapshot.getValue(Profile.class);
+                                    // [START_EXCLUDE]
+                                    if (user == null) {
+                                        // User is null, error out
+                                        Log.e(TAG, "User " + userId + " is unexpectedly null");
+                                        Toast.makeText(getContext(),
+                                                "Error: could not fetch user.",
+                                                Toast.LENGTH_SHORT).show();
+                                    } else {
+                                        // Write new post
+                                        writeNewPost(userId, user.getDisplayname(), title.getText().toString(), body.getText().toString(), sendtouid);
+                                        dialog.dismiss();
+                                    }
+
+                                    // Finish this Activity, back to the stream
+//                                        setEditingEnabled(true);
+                                    // [END_EXCLUDE]
+
+                                }
+
+                                @Override
+                                public void onCancelled(DatabaseError databaseError) {
+                                    Log.w(TAG, "getUser:onCancelled", databaseError.toException());
+                                    // [START_EXCLUDE]
+//                                        setEditingEnabled(true);
+                                    // [END_EXCLUDE]
+                                }
+                            });
+                    // [END single_value_read]
+                }
+
+            }
+        });
+
+
+    }
+
+    private void writeNewPost(String userId, String displayname, String title, String body, String sendtouid) {
+        // Create new post at /user-posts/$userid/$postid and at
+        // /posts/$postid simultaneously
+        String outgoingkey = mDatabase.child(DIRECT_OUTGOING_MESSAGES).child(userId).push().getKey();
+
+        Post post = new Post(userId, sendtouid, displayname, title, body);
+        Map<String, Object> postValues = post.toMap();
+
+        Map<String, Object> childUpdates = new HashMap<>();
+
+        // Incoming messages : Inbox -> ReceiverID -> SenderID -> Posts
+        childUpdates.put("/" + DIRECT_INCOMING_MESSAGES + "/" + sendtouid  + "/" + outgoingkey, postValues);
+        // outgoing messages : OutGoingbox -> userId -> sendtouid
+        childUpdates.put("/" + DIRECT_OUTGOING_MESSAGES + "/" + userId + "/" + outgoingkey, postValues);
+
+
+        mDatabase.updateChildren(childUpdates);
+    }
+
+    private String getUid() {
+        return FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+    }
+
+
+
 }
 

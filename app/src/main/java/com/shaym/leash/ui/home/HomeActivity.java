@@ -135,8 +135,8 @@ public class HomeActivity extends AppCompatActivity
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (!dataSnapshot.exists()) {
                     Log.d(TAG, "onDataChange: User does not exist in DB");
-                    Profile userProfile = new Profile(mCurrentUser.getEmail(),mCurrentUser.getEmail().substring(0, mCurrentUser.getEmail().indexOf("@")), 0.0, 0.0,
-                            0, 0, 0, "");
+                    Profile userProfile = new Profile(mCurrentUser.getEmail(),mCurrentUser.getUid(), mCurrentUser.getEmail().substring(0, mCurrentUser.getEmail().indexOf("@")), 0.0, 0.0,
+                            0, 0, 0, 0,  "");
                     rootRef.child(USERS_TABLE).child(mCurrentUser.getUid()).setValue(userProfile);
 
                 }

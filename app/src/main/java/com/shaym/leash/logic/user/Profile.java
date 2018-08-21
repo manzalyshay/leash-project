@@ -1,10 +1,6 @@
 package com.shaym.leash.logic.user;
 
-import android.net.Uri;
-
 import com.google.firebase.database.IgnoreExtraProperties;
-
-import java.net.URI;
 
 @IgnoreExtraProperties
 public class Profile {
@@ -14,21 +10,26 @@ public class Profile {
     private String avatarurl;
     private double currentlat;
     private double currentlng;
-    private int postsamount;
+    private int forumpostsamount;
     private int gearpostsamount;
-    private int messagesamount;
+    private int inboxmsgsmount;
+    private int outboxmsgsmount;
+
+    private String uid;
 
     public  Profile(){
     }
 
-    public Profile(String email, String displayname, double currentlat, double currentlng, int postsamount, int gearpostsamount, int messagesamount, String avatarurl) {
+    public Profile(String email, String uid, String displayname, double currentlat, double currentlng, int forumpostsamount, int gearpostsamount, int inboxmsgsmount, int outboxmsgsmount, String avatarurl) {
         this.email = email;
+        this.uid = uid;
         this.displayname = displayname;
         this.currentlat = currentlat;
         this.currentlng = currentlng;
-        this.postsamount = postsamount;
+        this.forumpostsamount = forumpostsamount;
         this.gearpostsamount = gearpostsamount;
-        this.messagesamount = messagesamount;
+        this.inboxmsgsmount = inboxmsgsmount;
+        this.outboxmsgsmount = outboxmsgsmount;
         this.avatarurl = avatarurl;
     }
 
@@ -44,18 +45,12 @@ public class Profile {
         this.avatarurl = avatarurl;
     }
 
-    @Override
-    public String toString() {
-        return "Profile{" +
-                "displayname='" + displayname + '\'' +
-                ", email='" + email + '\'' +
-                ", avatarurl='" + avatarurl + '\'' +
-                ", currentlat=" + currentlat +
-                ", currentlng=" + currentlng +
-                ", postsamount=" + postsamount +
-                ", gearpostsamount=" + gearpostsamount +
-                ", messagesamount=" + messagesamount +
-                '}';
+    public String getUid() {
+        return uid;
+    }
+
+    public void setUid(String uid) {
+        this.uid = uid;
     }
 
     public String getDisplayname() {
@@ -89,27 +84,51 @@ public class Profile {
         this.currentlng = currentlng;
     }
 
-    public void setpostsamount(int postsamount) {
-        this.postsamount = postsamount;
+    public void setforumpostsamount(int postsamount) {
+        this.forumpostsamount = postsamount;
     }
 
-    public int getpostsamount() {
-        return postsamount;
+    public int getForumpostsamount() {
+        return forumpostsamount;
     }
 
-    public int getGearpostsamount() {
+    public int getgearpostsamount() {
         return gearpostsamount;
     }
 
-    public int getMessagesamount() {
-        return messagesamount;
+    public int getInboxmsgsmount() {
+        return inboxmsgsmount;
     }
 
     public void setGearpostsamount(int gearpostsamount) {
         this.gearpostsamount = gearpostsamount;
     }
 
-    public void setMessagesamount(int messagesamount) {
-        this.messagesamount = messagesamount;
+    public void setInboxmsgsmount(int messagesamount) {
+        this.inboxmsgsmount = messagesamount;
+    }
+
+    public int getOutboxmsgsmount() {
+        return outboxmsgsmount;
+    }
+
+    public void setOutboxmsgsmount(int outboxmsgsmount) {
+        this.outboxmsgsmount = outboxmsgsmount;
+    }
+
+    @Override
+    public String toString() {
+        return "Profile{" +
+                "displayname='" + displayname + '\'' +
+                ", email='" + email + '\'' +
+                ", avatarurl='" + avatarurl + '\'' +
+                ", currentlat=" + currentlat +
+                ", currentlng=" + currentlng +
+                ", forumpostsamount=" + forumpostsamount +
+                ", gearpostsamount=" + gearpostsamount +
+                ", inboxmsgsmount=" + inboxmsgsmount +
+                ", outboxmsgsmount=" + outboxmsgsmount +
+                ", uid='" + uid + '\'' +
+                '}';
     }
 }

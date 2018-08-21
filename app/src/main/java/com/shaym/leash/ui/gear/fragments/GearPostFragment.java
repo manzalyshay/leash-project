@@ -16,6 +16,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -58,7 +59,7 @@ public class GearPostFragment extends Fragment implements View.OnClickListener {
     private String mGearPostKey;
     private String mGearType;
     private CommentAdapter mAdapter;
-
+    private ProgressBar mProgressbar;
     private TextView mGearTitle;
     private TextView mGearPrice;
     private TextView mPostSeller;
@@ -105,6 +106,7 @@ public class GearPostFragment extends Fragment implements View.OnClickListener {
         mGearTitle = v.findViewById(id.post_gear_title);
         mGearPrice = v.findViewById(id.post_gear_price);
         mPostPhoto = v.findViewById(id.post_gear_photo);
+        mProgressbar = v.findViewById(id.post_gear_photo_progressbar);
         mPostSeller = v.findViewById(id.post_seller);
         mSellerPhoneNumber = v.findViewById(id.seller_phone_number);
         mCommentField = v.findViewById(id.field_comment_text);
@@ -377,7 +379,8 @@ public class GearPostFragment extends Fragment implements View.OnClickListener {
                     Picasso.get().load(uri).resize(400,400).networkPolicy(NetworkPolicy.OFFLINE).centerCrop().into(mPostPhoto, new Callback() {
                         @Override
                         public void onSuccess() {
-
+                            mProgressbar.setVisibility(View.INVISIBLE);
+                            mPostPhoto.setVisibility(View.VISIBLE);
                         }
 
                         @Override
@@ -389,7 +392,8 @@ public class GearPostFragment extends Fragment implements View.OnClickListener {
                                     .into(mPostPhoto, new Callback() {
                                         @Override
                                         public void onSuccess() {
-
+                                            mProgressbar.setVisibility(View.INVISIBLE);
+                                            mPostPhoto.setVisibility(View.VISIBLE);
                                         }
 
                                         @Override

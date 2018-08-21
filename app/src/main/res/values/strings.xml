@@ -56,4 +56,7 @@
     <string name="PostBodyLabel">Body</string>
     <string name="SubmitPostLabel">Post</string>
     <string name="CancelPostLabel">Cancel</string>
+    <string name="DMLabel">Send a Message</string>
+    <string name="DMSubject">Subject</string>
+    <string name="DMContent">Content</string>
 </resources>

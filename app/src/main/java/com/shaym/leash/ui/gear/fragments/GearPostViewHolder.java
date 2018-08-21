@@ -5,12 +5,14 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.shaym.leash.R;
+import com.shaym.leash.logic.aroundme.CircleTransform;
 import com.shaym.leash.logic.forum.Post;
 import com.shaym.leash.logic.gear.GearPost;
 import com.squareup.picasso.Callback;
@@ -27,6 +29,8 @@ public class GearPostViewHolder extends RecyclerView.ViewHolder {
     FirebaseStorage storage;
     StorageReference storageReference;
     public ImageView starView;
+    public ProgressBar progressBar;
+
     public ImageView deleteView;
     public TextView numStarsView;
 
@@ -39,6 +43,7 @@ public class GearPostViewHolder extends RecyclerView.ViewHolder {
         authorView = itemView.findViewById(R.id.post_seller);
         phoneNumView = itemView.findViewById(R.id.seller_phone_number);
         gearPic = itemView.findViewById(R.id.post_gear_photo);
+        progressBar = itemView.findViewById(R.id.post_gear_photo_progressbar);
 
         starView = itemView.findViewById(R.id.star);
         deleteView = itemView.findViewById(R.id.delete);
@@ -65,7 +70,8 @@ public class GearPostViewHolder extends RecyclerView.ViewHolder {
                 Picasso.get().load(uri).resize(200,200).networkPolicy(NetworkPolicy.OFFLINE).centerCrop().into(gearPic, new Callback() {
                     @Override
                     public void onSuccess() {
-
+                        progressBar.setVisibility(View.INVISIBLE);
+                        gearPic.setVisibility(View.VISIBLE);
                     }
 
                     @Override
@@ -78,7 +84,8 @@ public class GearPostViewHolder extends RecyclerView.ViewHolder {
                                 .into(gearPic, new Callback() {
                                     @Override
                                     public void onSuccess() {
-
+                                        progressBar.setVisibility(View.INVISIBLE);
+                                        gearPic.setVisibility(View.VISIBLE);
                                     }
 
                                     @Override
@@ -92,9 +99,21 @@ public class GearPostViewHolder extends RecyclerView.ViewHolder {
             }
         });
     }
-        else {
-        Picasso.get().load(R.drawable.ic_launcher).resize(200,200).centerCrop().into(gearPic);
+     else {
+         Picasso.get().load(R.drawable.ic_launcher).resize(200,200).centerCrop().into(gearPic, new Callback() {
+             @Override
+             public void onSuccess() {
+                 progressBar.setVisibility(View.INVISIBLE);
+                 gearPic.setVisibility(View.VISIBLE);
+             }
+
+             @Override
+             public void onError(Exception e) {
+
+             }
+         });
+
+     }
 
     }
     }
-}

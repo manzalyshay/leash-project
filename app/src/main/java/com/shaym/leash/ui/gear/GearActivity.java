@@ -2,15 +2,20 @@ package com.shaym.leash.ui.gear;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
+import android.support.media.ExifInterface;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
@@ -48,10 +53,12 @@ import com.squareup.picasso.Picasso;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import static android.provider.MediaStore.Images.Media.getBitmap;
 import static com.shaym.leash.logic.CONSTANT.ALL_GEAR_POSTS;
 import static com.shaym.leash.logic.CONSTANT.GEAR_POSTS_PICS;
 import static com.shaym.leash.logic.CONSTANT.NEW_GEAR_POSTS;
@@ -235,8 +242,10 @@ public class GearActivity extends AppCompatActivity {
             public void onClick(View view) {
 
                 Log.d(TAG, "onMenuItemClick: ");
-                Intent i = new Intent(Intent.ACTION_PICK,android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI);
-                startActivityForResult(i,PICK_IMAGE_REQUEST);
+                Intent intent = new Intent();
+                intent.setType("image/*");
+                intent.setAction(Intent.ACTION_GET_CONTENT);
+                startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
             }
         });
         mGearPic = new ImageView(GearActivity.this);
@@ -295,11 +304,10 @@ public class GearActivity extends AppCompatActivity {
                                     } else {
                                         // Write new post
                                         if (mGearPicRef != null) {
-                                            writeNewGearPost(userId, geartype, user.getDisplayname(), title.getText().toString(), Integer.parseInt(price.getText().toString()),phonenumber.getText().toString(), geartype, mGearPicRef);
+                                            writeNewGearPost(userId, geartype, user.getDisplayname(), title.getText().toString(), Integer.parseInt(price.getText().toString()), phonenumber.getText().toString(), geartype, mGearPicRef);
                                             mGearPicRef = null;
-                                        }
-                                        else {
-                                            writeNewGearPost(userId, geartype, user.getDisplayname(), title.getText().toString(), Integer.parseInt(price.getText().toString()),phonenumber.getText().toString(), geartype, "");
+                                        } else {
+                                            writeNewGearPost(userId, geartype, user.getDisplayname(), title.getText().toString(), Integer.parseInt(price.getText().toString()), phonenumber.getText().toString(), geartype, "");
 
                                         }
                                         dialog.dismiss();
@@ -340,19 +348,19 @@ public class GearActivity extends AppCompatActivity {
             }
         }
     }
+
     private void uploadImage() {
 
-        if(filePath != null)
-        {
+        if (filePath != null) {
             final ProgressDialog progressDialog = new ProgressDialog(GearActivity.this);
             progressDialog.setTitle("Uploading...");
             progressDialog.show();
             String picref = UUID.randomUUID().toString();
-            mGearPicRef = GEAR_POSTS_PICS +"/"+getUid()+"/"+ picref;
+            mGearPicRef = GEAR_POSTS_PICS + "/" + getUid() + "/" + picref;
             final StorageReference ref = storageReference.child(mGearPicRef);
             Bitmap bmp = null;
             try {
-                bmp = MediaStore.Images.Media.getBitmap(getContentResolver(), filePath);
+                bmp = getBitmap(getContentResolver(), filePath);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -373,15 +381,15 @@ public class GearActivity extends AppCompatActivity {
                         @Override
                         public void onFailure(@NonNull Exception e) {
                             progressDialog.dismiss();
-                            Toast.makeText(GearActivity.this ,"Failed "+e.getMessage(), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(GearActivity.this, "Failed " + e.getMessage(), Toast.LENGTH_SHORT).show();
                         }
                     })
                     .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
                         @Override
                         public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
-                            double progress = (100.0*taskSnapshot.getBytesTransferred()/taskSnapshot
+                            double progress = (100.0 * taskSnapshot.getBytesTransferred() / taskSnapshot
                                     .getTotalByteCount());
-                            progressDialog.setMessage("Uploaded "+(int)progress+"%");
+                            progressDialog.setMessage("Uploaded " + (int) progress + "%");
                         }
                     });
 
@@ -390,12 +398,15 @@ public class GearActivity extends AppCompatActivity {
     }
 
     private void attachPicToDialog() {
-        if (mGearPic != null){
+        if (mGearPic != null) {
             mGearPic.setVisibility(View.VISIBLE);
-            Picasso.get().load(filePath).resize(400,400).into(mGearPic);
+            Picasso.get().load(filePath).resize(400, 400).into(mGearPic);
         }
 
     }
+
+
+
 
 }
 

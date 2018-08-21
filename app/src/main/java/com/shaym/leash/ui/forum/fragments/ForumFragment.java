@@ -3,7 +3,6 @@ package com.shaym.leash.ui.forum.fragments;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.LinearLayoutManager;
@@ -27,6 +26,8 @@ import com.shaym.leash.R;
 import com.shaym.leash.logic.forum.Post;
 import com.shaym.leash.ui.forum.ForumActivity;
 import com.shaym.leash.ui.forum.PostViewHolder;
+import com.shaym.leash.ui.home.profile.UserInboxFragment;
+import com.shaym.leash.ui.home.profile.UserOutboxFragment;
 import com.shaym.leash.ui.home.profile.UserPostsFragment;
 
 import static com.shaym.leash.logic.CONSTANT.ALL_POSTS;
@@ -35,8 +36,12 @@ import static com.shaym.leash.logic.CONSTANT.SPOTS_POSTS;
 import static com.shaym.leash.logic.CONSTANT.TRIPS_POSTS;
 import static com.shaym.leash.logic.CONSTANT.USER_POSTS;
 import static com.shaym.leash.ui.forum.ForumActivity.mFab;
+import static com.shaym.leash.ui.forum.fragments.PostFragment.EXTRA_DM_KEY;
 import static com.shaym.leash.ui.forum.fragments.PostFragment.EXTRA_FORUM_KEY;
+
 import static com.shaym.leash.ui.forum.fragments.PostFragment.EXTRA_POST_KEY;
+import static com.shaym.leash.ui.forum.fragments.PostFragment.STRING_IDM;
+import static com.shaym.leash.ui.forum.fragments.PostFragment.STRING_ODM;
 
 public abstract class ForumFragment extends Fragment {
     private static final String TAG = "ForumFragment";
@@ -50,6 +55,8 @@ public abstract class ForumFragment extends Fragment {
     private LinearLayoutManager mManager;
     private int frameid;
     private boolean fabExists;
+    private boolean mIDM;
+    private boolean mODM;
 
     @Nullable
     @Override
@@ -62,7 +69,23 @@ public abstract class ForumFragment extends Fragment {
         View v = null;
         int listid = 0;
 
-        if (ForumFragment.this instanceof UserPostsFragment){
+        if (ForumFragment.this instanceof UserOutboxFragment){
+            layoutname = R.layout.fragment_user_outbox;
+            frameid = R.id.root_frame_useroutbox;
+            listid = R.id.user_outbox_list;
+            fabExists = false;
+            mODM = true;
+        }
+
+        else if (ForumFragment.this instanceof UserInboxFragment){
+            layoutname = R.layout.fragment_user_inbox;
+            frameid = R.id.root_frame_userinbox;
+            listid = R.id.user_inbox_list;
+            fabExists = false;
+            mIDM = true;
+        }
+
+        else if (ForumFragment.this instanceof UserPostsFragment){
             layoutname = R.layout.fragment_user_posts;
             frameid = R.id.root_frame_userposts;
             listid = R.id.user_posts_list;
@@ -99,6 +122,8 @@ public abstract class ForumFragment extends Fragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        final boolean idm = mIDM;
+        final boolean odm = mODM;
 
         // Set up Layout Manager, reverse layout
         mManager = new LinearLayoutManager(getActivity());
@@ -155,6 +180,15 @@ public abstract class ForumFragment extends Fragment {
                         Bundle args = new Bundle();
                         args.putString(EXTRA_POST_KEY, postKey);
                         args.putString(EXTRA_FORUM_KEY, currentag);
+                        if (idm) {
+                            args.putString(EXTRA_DM_KEY, STRING_IDM);
+                        }
+                        else if (odm){
+                            args.putString(EXTRA_DM_KEY, STRING_ODM);
+                        }
+                        else{
+                            args.putString(EXTRA_DM_KEY, "");
+                        }
 
                         f.setArguments(args);
                         FragmentTransaction transaction = getFragmentManager().beginTransaction();
