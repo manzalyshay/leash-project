@@ -2,108 +2,104 @@ package com.shaym.leash.ui.home.profile;
 
 
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.PopupMenu;
+import android.text.method.PasswordTransformationMethod;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.OnProgressListener;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 import com.shaym.leash.R;
+import com.shaym.leash.logic.aroundme.CircleTransform;
 import com.shaym.leash.logic.user.Profile;
+import com.shaym.leash.logic.utils.FireBaseUsersHelper;
+import com.shaym.leash.ui.authentication.LoginActivity;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Objects;
 import java.util.UUID;
 
 import static android.app.Activity.RESULT_OK;
 import static android.provider.MediaStore.Images.Media.getBitmap;
-import static com.shaym.leash.logic.CONSTANT.DIRECT_INCOMING_MESSAGES;
-import static com.shaym.leash.logic.CONSTANT.DIRECT_OUTGOING_MESSAGES;
-import static com.shaym.leash.logic.CONSTANT.PROFILE_PICS;
-import static com.shaym.leash.logic.CONSTANT.USERS_TABLE;
-import static com.shaym.leash.logic.CONSTANT.USER_GEAR_POSTS;
-import static com.shaym.leash.logic.CONSTANT.USER_GEAR_POSTS_AMOUNT;
-import static com.shaym.leash.logic.CONSTANT.USER_INBOX_POSTS_AMOUNT;
-import static com.shaym.leash.logic.CONSTANT.USER_OUTBOX_POSTS_AMOUNT;
-import static com.shaym.leash.logic.CONSTANT.USER_POSTS;
-import static com.shaym.leash.logic.CONSTANT.USER_POSTS_AMOUNT;
-import static java.lang.Math.multiplyExact;
-import static java.lang.Math.toIntExact;
+import static com.shaym.leash.logic.utils.CONSTANT.PROFILE_PICS;
+import static com.shaym.leash.logic.utils.CONSTANT.USERS_TABLE;
+import static com.shaym.leash.logic.utils.CONSTANT.USER_GEAR_POSTS;
+import static com.shaym.leash.logic.utils.CONSTANT.USER_POSTS;
+import static com.shaym.leash.logic.utils.FireBaseUsersHelper.BROADCAST_USER;
 
 /**
  * Created by shaym on 2/17/18.
  */
 
-public class ProfileFragment extends Fragment implements View.OnClickListener, PopupMenu.OnMenuItemClickListener {
+
+public class ProfileFragment extends Fragment implements View.OnClickListener, PopupMenu.OnMenuItemClickListener, CompoundButton.OnCheckedChangeListener {
 
     private static final String TAG = "ProfileFragment";
     //UI Objects
     private ImageView mProfileImage;
+
+    private EditText mPhoneNumView;
+    private EditText mEmailView;
+    private EditText mPassVerf;
+
     private TextView mDisplayName;
     private TextView mUserForumPostsAmount;
     private TextView mUserGearPostsAmount;
     private TextView mInboxMsgsAmount;
-    private TextView mOutboxMsgsAmount;
+
+    private CheckBox isPhoneNumHidden;
+    private CheckBox isEmailHidden;
+
+    private ProgressBar mProfilePicProgressBar;
+    private ProgressBar mChangeMailProgressBar;
 
     private UserPostsFragment mUsersPostsFragment;
     private UserGearPostsFragment mUsersGearPostsFragment;
     private UserInboxFragment mUserInboxFragment;
-    private UserOutboxFragment mUserOutboxFragment;
+
+    private final static int UPLOAD_IMAGE_ID = 01;
+    private final static int DELETE_IMAGE_ID = 02;
 
     private String mProfilePicRef;
-
     private Uri filePath;
     private final int PICK_IMAGE_REQUEST = 71;
 
-    //Firebase
-    FirebaseStorage storage;
-    StorageReference storageReference;
-    private DatabaseReference mDatabase;
-    private ValueEventListener mValueEventListener;
-    private DatabaseReference mUserNameRef;
-    private DatabaseReference mUserForumPostsRef;
-    private ValueEventListener mUserPostsEventListener;
-    private DatabaseReference mUserGearPostsref;
-    private ValueEventListener mUserGearPostsEventListener;
-
-    private DatabaseReference mUserInboxref;
-    private DatabaseReference mUserOutboxref;
-    private ValueEventListener mUserInboxEventListener;
-    private ValueEventListener mUserOutboxEventListener;
-
     public ProfileFragment instance;
     private Profile mUser;
-    public ProgressBar mProfilePicProgressBar;
-
+    private AlertDialog mChangeMailDialog;
 
     public ProfileFragment(){
         instance = this;
@@ -113,44 +109,167 @@ public class ProfileFragment extends Fragment implements View.OnClickListener, P
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_profile, container, false);
-        mDatabase = FirebaseDatabase.getInstance().getReference();
+
+        initUI(v);
+        return v;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        LocalBroadcastManager.getInstance(Objects.requireNonNull(getContext())).registerReceiver(mUserReceiver,
+                new IntentFilter(BROADCAST_USER));
+        LoadUserData();
+
+
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        LocalBroadcastManager.getInstance(Objects.requireNonNull(getContext())).unregisterReceiver(mUserReceiver);
+
+    }
+
+    private void initUI(View v) {
+        //Fragments
         mUsersPostsFragment =  new UserPostsFragment();
         mUsersGearPostsFragment = new UserGearPostsFragment();
         mUserInboxFragment = new UserInboxFragment();
-        mUserOutboxFragment = new UserOutboxFragment();
 
         mProfileImage = v.findViewById(R.id.profilepic);
         mProfilePicProgressBar = v.findViewById(R.id.profilepic_progressbar);
+        mChangeMailProgressBar = v.findViewById(R.id.changemail_progressbar);
+
         mDisplayName = v.findViewById(R.id.displayname);
+        mPhoneNumView = v.findViewById(R.id.userphonenum);
+        mPhoneNumView.setEnabled(false);
+        mEmailView = v.findViewById(R.id.useremail);
+        mEmailView.setEnabled(false);
+
         mUserForumPostsAmount = v.findViewById(R.id.userpostsamont);
-        mUserForumPostsAmount.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+        LinearLayout mUserForumPostsLayout = v.findViewById(R.id.userpostslayout);
+        mUserForumPostsLayout.setOnClickListener(this);
+
+        mUserGearPostsAmount = v.findViewById(R.id.gearpostsamount);
+        LinearLayout mUserGearPostsLayout = v.findViewById(R.id.gearpostslayout);
+
+        mUserGearPostsLayout.setOnClickListener(this);
+
+        mInboxMsgsAmount = v.findViewById(R.id.incomingmessagesamount);
+        LinearLayout mInboxMsgsLayout = v.findViewById(R.id.incomingmessageslayout);
+
+        mInboxMsgsLayout.setOnClickListener(this);
+
+        mProfileImage.setOnClickListener(this);
+
+        ImageButton mEditEmailBtn = v.findViewById(R.id.email_edit_btn);
+        mEditEmailBtn.setOnClickListener(this);
+
+        ImageButton mEditPhoneNumBtn = v.findViewById(R.id.phone_edit_button);
+        mEditPhoneNumBtn.setOnClickListener(this);
+
+        isEmailHidden = v.findViewById(R.id.email_hidden_checkbox);
+        isEmailHidden.setOnCheckedChangeListener(this);
+
+        isPhoneNumHidden = v.findViewById(R.id.phone_hidden_checkbox);
+        isPhoneNumHidden.setOnCheckedChangeListener(this);
+
+        initchangeEmailDialog();
+
+
+    }
+
+    public void LoadUserData() {
+        if (mUser == null ||!mUser.getUid().equals(getUid())) {
+            FireBaseUsersHelper.getInstance().loadCurrentUserProfile();
+            FireBaseUsersHelper.getInstance().loadUserProfileData();
+
+        }
+        else {
+            updateUI();
+        }
+
+    }
+
+    private BroadcastReceiver mUserReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            // Get extra data included in the Intent
+            Log.d(TAG + "receiver", "Got message: ");
+            Bundle args = intent.getBundleExtra("DATA");
+
+            mUser = (Profile) args.getSerializable("USEROBJ");
+            updateUI();
+
+        }
+    };
+
+    private void updateUI() {
+        FireBaseUsersHelper.getInstance().LoadUserPic(mUser.getAvatarURL(), mProfileImage, mProfilePicProgressBar, 400);
+        mDisplayName.setText(mUser.getDisplayname());
+        mPhoneNumView.setText(mUser.getPhonenumber());
+        mEmailView.setText(mUser.getEmail());
+        isEmailHidden.setChecked(!mUser.isIsemailhidden());
+        isPhoneNumHidden.setChecked(!mUser.isIsphonehidden());
+
+        mUserForumPostsAmount.setText(String.valueOf(mUser.getForumpostsamount()));
+        mUserGearPostsAmount.setText(String.valueOf(mUser.getgearpostsamount()));
+
+        mInboxMsgsAmount.setText(String.valueOf(mUser.getConversationssmount()));
+        if (mUser.getUnreadmsgsamount() >0){
+            mInboxMsgsAmount.setTextColor(Color.RED);
+        }
+
+    }
+
+
+
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()){
+            case R.id.profilepic:
+            showProfilePicMenu(view);
+            break;
+
+            case R.id.userpostslayout:
                 if (mUser == null || mUser.getForumpostsamount() ==0) {
                     Toast.makeText(getActivity(), "No Posts For User", Toast.LENGTH_SHORT).show();
                 }
                 else {
+                    assert getFragmentManager() != null;
                     FragmentTransaction transaction = getFragmentManager().beginTransaction();
 
-// Replace whatever is in the fragment_container view with this fragment,
-// and add the transaction to the back stack if needed
+                // Replace whatever is in the fragment_container view with this fragment,
+                // and add the transaction to the back stack if needed
                     transaction.replace(R.id.root_frame_profile_fragment, mUsersPostsFragment, USER_POSTS);
 
                     transaction.addToBackStack(null);
 
                     transaction.commit();
                 }
-            }
-        });
+                break;
 
-        mUserGearPostsAmount = v.findViewById(R.id.gearpostsamount);
-        mUserGearPostsAmount.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+
+
+            case R.id.gearpostslayout:
                 if (mUser == null || mUser.getgearpostsamount() ==0) {
                     Toast.makeText(getActivity(), "No Gear Posts For User", Toast.LENGTH_SHORT).show();
                 }
                 else {
+                    assert getFragmentManager() != null;
                     FragmentTransaction transaction = getFragmentManager().beginTransaction();
 
 // Replace whatever is in the fragment_container view with this fragment,
@@ -161,246 +280,82 @@ public class ProfileFragment extends Fragment implements View.OnClickListener, P
 
                     transaction.commit();
                 }
-            }
-        });
-        mInboxMsgsAmount = v.findViewById(R.id.incomingmessagesamount);
-        mInboxMsgsAmount.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (mUser == null || mUser.getInboxmsgsmount() ==0) {
+                break;
+
+            case R.id.incomingmessageslayout:
+                if (mUser == null || mUser.getConversationssmount() ==0) {
                     Toast.makeText(getActivity(), "No Inbox Messages For User", Toast.LENGTH_SHORT).show();
                 }
                 else {
+                    assert getFragmentManager() != null;
                     FragmentTransaction transaction = getFragmentManager().beginTransaction();
 
 // Replace whatever is in the fragment_container view with this fragment,
 // and add the transaction to the back stack if needed
-                    transaction.replace(R.id.root_frame_profile_fragment, mUserInboxFragment, DIRECT_INCOMING_MESSAGES);
+                    transaction.replace(R.id.root_frame_profile_fragment, mUserInboxFragment, "");
 
                     transaction.addToBackStack(null);
 
                     transaction.commit();
                 }
-            }
-        });
-        mOutboxMsgsAmount = v.findViewById(R.id.outgoingmessagesamount);
-        mOutboxMsgsAmount.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (mUser == null || mUser.getOutboxmsgsmount() ==0) {
-                    Toast.makeText(getActivity(), "No Outbox Messages For User", Toast.LENGTH_SHORT).show();
+                break;
+
+            case R.id.email_edit_btn:
+                if (!mEmailView.isEnabled()) {
+                    mEmailView.setEnabled(true);
+                    mEmailView.requestFocus();
                 }
-                else {
-                    FragmentTransaction transaction = getFragmentManager().beginTransaction();
+                else{
+                    if(LoginActivity.isEmailValid(mEmailView.getText().toString().trim())) {
+                        mChangeMailDialog.show();
+                        //Overriding the handler immediately after show is probably a better approach than OnShowListener as described below
+                        mChangeMailDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+                            if (!mPassVerf.getText().toString().isEmpty())
+                            {
+                                changeMail(mEmailView.getText().toString().trim(), mPassVerf.getText().toString().trim());
+                                mChangeMailDialog.dismiss();
+                            }
+                            else
+                            {
+                                Toast.makeText(getContext(), R.string.enter_password_title, Toast.LENGTH_LONG).show();
 
-// Replace whatever is in the fragment_container view with this fragment,
-// and add the transaction to the back stack if needed
-                    transaction.replace(R.id.root_frame_profile_fragment, mUserOutboxFragment, DIRECT_OUTGOING_MESSAGES);
+                            }
+                        });
 
-                    transaction.addToBackStack(null);
-
-                    transaction.commit();
-                }
-            }
-        });
-
-        mProfileImage.setOnClickListener(this);
-        storage = FirebaseStorage.getInstance();
-        storageReference = storage.getReference();
-
-        LoadUserData();
-
-        return v;
-    }
-
-    public void LoadUserData() {
-        if (mUser == null) {
-            final String userId = getUid();
-
-            mUserNameRef = mDatabase.child(USERS_TABLE).child(userId);
-            mValueEventListener = new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    if (dataSnapshot.exists()) {
-                        Log.d(TAG, "onDataChange:  DB");
-                        mUser = dataSnapshot.getValue(Profile.class);
-                        Log.d(TAG, "onDataChange: "+ mUser.toString());
-                        LoadUI();
-                        }
-                        else {
-                        Log.d(TAG, "onDataChange: User does not exists in DB");
+                    }
+                    else {
+                        Toast.makeText(getContext(), R.string.enter_valid_email_message, Toast.LENGTH_SHORT).show();
                     }
                 }
+                break;
 
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-                    Log.d(TAG, "onCancelled: "+ databaseError);
+            case R.id.phone_edit_button:
+                if (!mPhoneNumView.isEnabled()) {
+                    mPhoneNumView.setEnabled(true);
+                    mPhoneNumView.requestFocus();
                 }
-            };
-            mUserNameRef.addListenerForSingleValueEvent(mValueEventListener);
-        }
-        else {
-            LoadUI();
-        }
-
-    }
-
-    private void LoadUI() {
-        LoadUserPic();
-        mDisplayName.setText(mUser.getDisplayname());
-        loadPostsAmount();
-        loadGearPostsAmount();
-        loadInboxAmount();
-        loadOutboxAmount();
-
-//        mUserNameRef.removeEventListener(mValueEventListener);
-
-    }
-
-    private void loadOutboxAmount() {
-        mUserOutboxref = mDatabase.child(DIRECT_OUTGOING_MESSAGES).child(getUid());
-        mUserOutboxEventListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                Log.d(TAG, "onDataChange: GearPosts");
-                long amount = dataSnapshot.getChildrenCount();
-                int val = (int)amount;
-                mUser.setOutboxmsgsmount(val);
-                mDatabase.child(USERS_TABLE).child(getUid()).child(USER_OUTBOX_POSTS_AMOUNT).setValue(amount);
-                mOutboxMsgsAmount.setText(Integer.toString(mUser.getOutboxmsgsmount()));
-            }
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        };
-
-        mUserOutboxref.addValueEventListener(mUserOutboxEventListener);
-    }
-
-    private void loadInboxAmount() {
-        mUserInboxref = mDatabase.child(DIRECT_INCOMING_MESSAGES).child(getUid());
-        mUserInboxEventListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                Log.d(TAG, "onDataChange: GearPosts");
-                long amount = dataSnapshot.getChildrenCount();
-                int val = (int)amount;
-                mUser.setInboxmsgsmount(val);
-                mDatabase.child(USERS_TABLE).child(getUid()).child(USER_INBOX_POSTS_AMOUNT).setValue(amount);
-                mInboxMsgsAmount.setText(Integer.toString(mUser.getInboxmsgsmount()));
-            }
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        };
-
-        mUserInboxref.addValueEventListener(mUserInboxEventListener);
-    }
-
-    private void loadGearPostsAmount() {
-        mUserGearPostsref = mDatabase.child(USER_GEAR_POSTS).child(getUid());
-        mUserGearPostsEventListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                Log.d(TAG, "onDataChange: GearPosts");
-                long amount = dataSnapshot.getChildrenCount();
-                int val = (int)amount;
-                mUser.setGearpostsamount(val);
-                mDatabase.child(USERS_TABLE).child(getUid()).child(USER_GEAR_POSTS_AMOUNT).setValue(amount);
-                mUserGearPostsAmount.setText(Integer.toString(mUser.getgearpostsamount()));
-            }
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        };
-
-        mUserGearPostsref.addValueEventListener(mUserGearPostsEventListener);
-    }
-
-    private void loadPostsAmount() {
-        mUserForumPostsRef = mDatabase.child(USER_POSTS).child(getUid());
-        mUserPostsEventListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                Log.d(TAG, "onDataChange: Posts");
-                long amount = dataSnapshot.getChildrenCount();
-                int val = (int)amount;
-                mUser.setforumpostsamount(val);
-                mDatabase.child(USERS_TABLE).child(getUid()).child(USER_POSTS_AMOUNT).setValue(amount);
-                mUserForumPostsAmount.setText(Integer.toString(mUser.getForumpostsamount()));
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        };
-
-        mUserForumPostsRef.addValueEventListener(mUserPostsEventListener);
-    }
-
-
-    private void LoadUserPic() {
-        Log.d(TAG, "LoadUserPic: ");
-        if (!mUser.getAvatarURL().isEmpty()) {
-
-            storageReference.child(mUser.getAvatarURL()).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                @Override
-                public void onSuccess(final Uri uri) {
-                    Picasso.get().load(uri).resize(400,400).networkPolicy(NetworkPolicy.OFFLINE).centerCrop().into(mProfileImage, new Callback() {
-                        @Override
-                        public void onSuccess() {
-                            mProfilePicProgressBar.setVisibility(View.INVISIBLE);
-                        }
-
-                        @Override
-                        public void onError(Exception e) {
-                            //Try again online if cache failed
-                            Picasso.get()
-                                    .load(uri)
-                                    .error(R.drawable.ic_launcher)
-                                    .into(mProfileImage, new Callback() {
-                                        @Override
-                                        public void onSuccess() {
-                                            mProfilePicProgressBar.setVisibility(View.INVISIBLE);
-
-                                        }
-
-                                        @Override
-                                        public void onError(Exception e) {
-                                            Log.v("Picasso","Could not fetch image" + e.toString());
-                                        }
-                                    });
-                        }
-                    });
-
+                else{
+                    if (mPhoneNumView.getText().toString().length() == 10) {
+                        mPhoneNumView.setEnabled(false);
+                        mUser.setPhonenumber(mPhoneNumView.getText().toString());
+                        FireBaseUsersHelper.getInstance().getDatabase().child(USERS_TABLE).child(getUid()).setValue(mUser);
+                    }
+                    else {
+                        Toast.makeText(getContext(), "Please Enter a Valid Phone Number", Toast.LENGTH_SHORT).show();
+                    }
                 }
-            });
-        }
-        else {
-            Picasso.get().load(R.drawable.ic_launcher).networkPolicy(NetworkPolicy.OFFLINE).resize(400,400).centerCrop().into(mProfileImage);
-            mProfilePicProgressBar.setVisibility(View.INVISIBLE);
-
-        }
-
-    }
-
-    @Override
-    public void onClick(View view) {
-        if (view == mProfileImage) {
-            showProfilePicMenu(view);
+                break;
         }
     }
+
 
     private void showProfilePicMenu(View view) {
 
-        PopupMenu popup = new PopupMenu(this.getContext(), view);
+        PopupMenu popup = new PopupMenu(Objects.requireNonNull(this.getContext()), view);
+        popup.getMenu().add(0, UPLOAD_IMAGE_ID, 0, R.string.change_profile_pic);
+        popup.getMenu().add(0, DELETE_IMAGE_ID, 1, R.string.delete_profile_pic);
         popup.setOnMenuItemClickListener(this);// to implement on click event on items of menu
-        MenuInflater inflater = popup.getMenuInflater();
-        inflater.inflate(R.menu.profile_picture_menu, popup.getMenu());
+
         popup.show();
     }
 
@@ -413,41 +368,33 @@ public class ProfileFragment extends Fragment implements View.OnClickListener, P
             progressDialog.show();
             String picref = UUID.randomUUID().toString();
             mProfilePicRef = PROFILE_PICS +"/"+ getUid() + picref;
-            final StorageReference ref = storageReference.child(mProfilePicRef);
+            final StorageReference ref = FireBaseUsersHelper.getInstance().getStorageReference().child(mProfilePicRef);
             Bitmap bmp = null;
             try {
-                bmp = getBitmap(getContext().getContentResolver(), filePath);
+                bmp = getBitmap(Objects.requireNonNull(getContext()).getContentResolver(), filePath);
             } catch (IOException e) {
                 e.printStackTrace();
             }
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            assert bmp != null;
             bmp.compress(Bitmap.CompressFormat.JPEG, 25, baos);
             byte[] data = baos.toByteArray();
             ref.putBytes(data)
-                    .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                        @Override
-                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                            progressDialog.dismiss();
-                            Toast.makeText(getActivity(), "Uploaded", Toast.LENGTH_SHORT).show();
+                    .addOnSuccessListener(taskSnapshot -> {
+                        progressDialog.dismiss();
+                        Toast.makeText(getActivity(), "Uploaded", Toast.LENGTH_SHORT).show();
 
-                            attachPictoProfile(mProfilePicRef);
-                            attachProfilePic();
-                 }
+                        FireBaseUsersHelper.getInstance().attachProfilePic(mProfilePicRef);
+                        attachProfilePic();
+             })
+                    .addOnFailureListener(e -> {
+                        progressDialog.dismiss();
+                        Toast.makeText(getActivity(), "Failed " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            progressDialog.dismiss();
-                            Toast.makeText(getActivity(), "Failed " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                        }
-                    })
-                    .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-                        @Override
-                        public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
-                            double progress = (100.0 * taskSnapshot.getBytesTransferred() / taskSnapshot
-                                    .getTotalByteCount());
-                            progressDialog.setMessage("Uploaded " + (int) progress + "%");
-                        }
+                    .addOnProgressListener(taskSnapshot -> {
+                        double progress = (100.0 * taskSnapshot.getBytesTransferred() / taskSnapshot
+                                .getTotalByteCount());
+                        progressDialog.setMessage("Uploaded " + (int) progress + "%");
                     });
 
 
@@ -472,35 +419,18 @@ public class ProfileFragment extends Fragment implements View.OnClickListener, P
     }
 
     private void attachProfilePic() {
-        Picasso.get().load(filePath).resize(400, 400).into(mProfileImage);
+        Picasso.get().load(filePath).resize(400, 400).transform(new CircleTransform()).into(mProfileImage);
     }
 
-    private void attachPictoProfile(final String userpicref) {
-        mUser.setAvatarURL(userpicref);
-        mDatabase.child(USERS_TABLE).child(getUid()).setValue(mUser)
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        Log.d(TAG, "onSuccess: User Profile pic updated");
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.d(TAG, "onFailure: User Profile  update failed");
-                    }
-                });
-
-    }
 
     public String getUid() {
-        return FirebaseAuth.getInstance().getCurrentUser().getUid();
+        return Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
     }
 
     @Override
     public boolean onMenuItemClick(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.uploadprofilepic:
+            case UPLOAD_IMAGE_ID:
                 Log.d(TAG, "onMenuItemClick: ");
                 Intent intent = new Intent();
                 intent.setType("image/*");
@@ -508,13 +438,91 @@ public class ProfileFragment extends Fragment implements View.OnClickListener, P
                 startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
                 break;
 
-            case R.id.deleteprofilepic:
+            case DELETE_IMAGE_ID:
 
                 break;
         }
         return true;
     }
 
+    private void changeMail(String newmail, String pass){
+        mChangeMailProgressBar.setVisibility(View.VISIBLE);
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
+        assert user != null;
+        AuthCredential credential = EmailAuthProvider
+                .getCredential(Objects.requireNonNull(user.getEmail()).trim(), pass); // Current Login Credentials \\
+        // Prompt the user to re-provide their sign-in credentials
+        user.reauthenticate(credential)
+                .addOnCompleteListener(task -> {
+                    Log.d(TAG, "User re-authenticated.");
+                    //Now change your email address \\
+                    //----------------Code for Changing Email Address----------\\
+                    FirebaseUser user1 = FirebaseAuth.getInstance().getCurrentUser();
+                    user1.updateEmail(newmail.trim())
+                            .addOnCompleteListener(task1 -> {
+                                if (task1.isSuccessful()) {
+                                    Log.d(TAG, "User email address updated.");
+                                    mUser.setEmail(mEmailView.getText().toString().trim());
+                                    FireBaseUsersHelper.getInstance().getDatabase().child(USERS_TABLE).child(getUid()).setValue(mUser);
+                                    mEmailView.setEnabled(false);
+                                }
+                                else {
+                                    Toast.makeText(getContext(), "Autentication failed.", Toast.LENGTH_SHORT).show();
+                                }
+
+                                mChangeMailProgressBar.setVisibility(View.INVISIBLE);
+
+                            });
+                    //----------------------------------------------------------\\
+                });
+
+
+    }
+
+    private void initchangeEmailDialog(){
+
+        mPassVerf = new EditText(getActivity());
+        mPassVerf.setTransformationMethod(PasswordTransformationMethod.getInstance());
+        AlertDialog.Builder alert = new AlertDialog.Builder(Objects.requireNonNull(getContext()));
+        alert.setMessage(R.string.password_verify_changemail);
+        alert.setTitle(R.string.enter_password_title);
+
+        alert.setView(mPassVerf);
+
+        alert.setPositiveButton(R.string.ok, (dialog, whichButton) -> {
+
+
+        });
+
+        alert.setNegativeButton(R.string.cancel, (dialog, whichButton) -> {
+            // what ever you want to do with No option.
+            mEmailView.setEnabled(false);
+        });
+
+        mChangeMailDialog = alert.create();
+
+
+    }
+
+
+    @Override
+    public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+
+        if (mUser != null) {
+            switch (compoundButton.getId()) {
+                case R.id.email_hidden_checkbox:
+                    mUser.setIsemailhidden(!b);
+                    break;
+                case R.id.phone_hidden_checkbox:
+                    mUser.setIsphonehidden(!b);
+                    break;
+            }
+
+            FireBaseUsersHelper.getInstance().getDatabase().child(USERS_TABLE).child(getUid()).setValue(mUser);
+        }
+    }
 
 }
+
+

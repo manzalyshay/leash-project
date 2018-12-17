@@ -1,6 +1,7 @@
 
 package com.shaym.leash.ui.forecast;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.widget.TextView;
 
@@ -17,6 +18,7 @@ import com.shaym.leash.R;
  *
  * @author Philipp Jahoda
  */
+@SuppressLint("ViewConstructor")
 public class MyMarkerView extends MarkerView {
 
     private TextView tvContent;
@@ -24,11 +26,12 @@ public class MyMarkerView extends MarkerView {
     public MyMarkerView(Context context, int layoutResource) {
         super(context, layoutResource);
 
-        tvContent = (TextView) findViewById(R.id.tvContent);
+        tvContent = findViewById(R.id.tvContent);
     }
 
     // callbacks everytime the MarkerView is redrawn, can be used to update the
     // content (user-interface)
+    @SuppressLint("SetTextI18n")
     @Override
     public void refreshContent(Entry e, Highlight highlight) {
 

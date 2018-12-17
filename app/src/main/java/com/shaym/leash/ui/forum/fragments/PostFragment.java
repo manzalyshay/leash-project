@@ -1,6 +1,18 @@
 package com.shaym.leash.ui.forum.fragments;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
+import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.content.Context;
+import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.Point;
+import android.graphics.Rect;
+import android.graphics.drawable.ColorDrawable;
+import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -8,19 +20,21 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
@@ -35,21 +49,21 @@ import com.shaym.leash.logic.aroundme.CircleTransform;
 import com.shaym.leash.logic.forum.Comment;
 import com.shaym.leash.logic.forum.Post;
 import com.shaym.leash.logic.user.Profile;
+import com.shaym.leash.logic.utils.FireBasePostsHelper;
+import com.shaym.leash.logic.utils.FireBaseUsersHelper;
 import com.shaym.leash.ui.forum.ForumActivity;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
-
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
-import static com.shaym.leash.logic.CONSTANT.DIRECT_INCOMING_MESSAGES;
-import static com.shaym.leash.logic.CONSTANT.DIRECT_OUTGOING_MESSAGES;
-import static com.shaym.leash.logic.CONSTANT.POST_COMMENTS;
-import static com.shaym.leash.logic.CONSTANT.USERS_TABLE;
-import static com.shaym.leash.logic.CONSTANT.USER_POSTS;
-import static tcking.github.com.giraffeplayer2.GiraffePlayer.TAG;
+
+import static com.shaym.leash.logic.utils.CONSTANT.POST_COMMENTS;
+import static com.shaym.leash.logic.utils.CONSTANT.USERS_TABLE;
+import static com.shaym.leash.ui.home.chat.ChatFragment.getUid;
 
 public class PostFragment extends Fragment implements View.OnClickListener {
 
@@ -57,73 +71,57 @@ public class PostFragment extends Fragment implements View.OnClickListener {
 
     public static final String EXTRA_POST_KEY = "post_key";
     public static final String EXTRA_FORUM_KEY = "forum_key";
-    public static final String EXTRA_DM_KEY = "dm_key";
-    public static final String STRING_IDM = "IDM";
-    public static final String STRING_ODM = "ODM";
 
     private DatabaseReference mPostReference;
     private DatabaseReference mCommentsReference;
     private ValueEventListener mPostListener;
-    private String mPostKey;
-    private String mPostForum;
     private CommentAdapter mAdapter;
-    private ProgressBar mProgressBar;
+
+    private ProgressBar mAuthorPicProgressBar;
     private ImageView mAuthorPic;
+    private ProgressBar mAttachProgressBar;
+    private ImageView mAttachedPic;
+
     private TextView mAuthorView;
     private TextView mTitleView;
     private TextView mBodyView;
     private EditText mCommentField;
-    private Button mCommentButton;
     private RecyclerView mCommentsRecycler;
+    private RelativeLayout mAttachLayout;
+
     private DatabaseReference mDatabase;
     FirebaseStorage storage;
     StorageReference storageReference;
-
-    private String mDMType;
-
+    private Dialog mEnlargedImageDialog;
 
     public PostFragment () {
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.fragment_post, container, false);
+        View mView = inflater.inflate(R.layout.fragment_post, container, false);
         Bundle args = getArguments();
 
-        v.setOnTouchListener(new View.OnTouchListener() {
-            public boolean onTouch(View v, MotionEvent event) {
-                return true;
-            }
-        });
+        mView.setOnTouchListener((v1, event) -> true);
 
         storage = FirebaseStorage.getInstance();
         storageReference = storage.getReference();
         mDatabase = FirebaseDatabase.getInstance().getReference();
         // Get post,forum key from intent
-        mPostKey = args.getString(EXTRA_POST_KEY);
-        mPostForum = args.getString(EXTRA_FORUM_KEY);
-        mDMType = args.getString(EXTRA_DM_KEY);
+        assert args != null;
+        String mPostKey = args.getString(EXTRA_POST_KEY);
+        String mPostForum = args.getString(EXTRA_FORUM_KEY);
 
         if (mPostKey == null || mPostForum == null) {
-            throw new IllegalArgumentException("Must pass EXTRA_POST_KEY,FORUMKEY");
+            throw new IllegalArgumentException("Must pass EXTRA_CHAT_KEY,FORUMKEY");
         }
 
-        switch (mDMType) {
-            case STRING_ODM:
-            mPostReference = FirebaseDatabase.getInstance().getReference()
-                    .child(DIRECT_OUTGOING_MESSAGES).child(getUid()).child(mPostKey);
-                    break;
 
-            case STRING_IDM:
-                mPostReference = FirebaseDatabase.getInstance().getReference()
-                    .child(DIRECT_INCOMING_MESSAGES).child(getUid()).child(mPostKey);
-                break;
-                default:
             mPostReference = FirebaseDatabase.getInstance().getReference()
                     .child(mPostForum).child(mPostKey);
-            break;
-        }
+
 
         // Initialize Database
 
@@ -132,18 +130,22 @@ public class PostFragment extends Fragment implements View.OnClickListener {
                 .child(POST_COMMENTS).child(mPostKey);
 
         // Initialize Views
-        mAuthorPic = v.findViewById(R.id.post_author_photo);
-        mProgressBar = v.findViewById(R.id.post_author_photo_progressbar);
-        mAuthorView = v.findViewById(R.id.post_author);
-        mTitleView = v.findViewById(R.id.post_title);
-        mBodyView = v.findViewById(R.id.post_body);
-        mCommentField = v.findViewById(R.id.field_comment_text);
-        mCommentButton = v.findViewById(R.id.button_post_comment);
-        mCommentsRecycler = v.findViewById(R.id.comments_list);
+        mAuthorPic = mView.findViewById(R.id.post_author_photo);
+        mAuthorPicProgressBar = mView.findViewById(R.id.post_author_photo_progressbar);
+        mAttachedPic = mView.findViewById(R.id.post_attached_image);
+
+        mAttachProgressBar = mView.findViewById(R.id.post_attached_progressbar);
+        mAuthorView = mView.findViewById(R.id.post_author);
+        mTitleView = mView.findViewById(R.id.post_title);
+        mBodyView = mView.findViewById(R.id.post_body);
+        mCommentField = mView.findViewById(R.id.field_comment_text);
+        Button mCommentButton = mView.findViewById(R.id.button_post_comment);
+        mCommentsRecycler = mView.findViewById(R.id.comments_list);
+        mAttachLayout = mView.findViewById(R.id.attach_layout);
 
         mCommentButton.setOnClickListener(this);
         mCommentsRecycler.setLayoutManager(new LinearLayoutManager(getActivity()));
-        return v;
+        return mView;
     }
 
     @Override
@@ -162,19 +164,23 @@ public class PostFragment extends Fragment implements View.OnClickListener {
                     Log.d(TAG, "onDataChange: Post Displayed");
                     mAuthorView.setText(post.author);
                     mTitleView.setText(post.title);
+                    attachPic(post.attachment, mAttachedPic, mAttachProgressBar);
+
                     mBodyView.setText(post.body);
                     mDatabase.child(USERS_TABLE).child(post.uid).addListenerForSingleValueEvent(
                             new ValueEventListener() {
                                 @Override
-                                public void onDataChange(DataSnapshot dataSnapshot) {
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                                     // Get user value
                                     Profile profile = dataSnapshot.getValue(Profile.class);
-                                    attachPic(profile.getAvatarURL());
+                                    assert profile != null;
+                                    FireBaseUsersHelper.getInstance().LoadUserPic(profile.getAvatarURL(), mAuthorPic, mAuthorPicProgressBar, 200);
+
 
                                 }
 
                                 @Override
-                                public void onCancelled(DatabaseError databaseError) {
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
                                     Log.w(TAG, "getUser:onCancelled", databaseError.toException());
                                 }
                             });
@@ -229,7 +235,7 @@ public class PostFragment extends Fragment implements View.OnClickListener {
         FirebaseDatabase.getInstance().getReference().child(USERS_TABLE).child(uid)
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                         // Get user information
 
                         Profile user = dataSnapshot.getValue(Profile.class);
@@ -258,23 +264,23 @@ public class PostFragment extends Fragment implements View.OnClickListener {
                     }
 
                     @Override
-                    public void onCancelled(DatabaseError databaseError) {
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
 
                     }
                 });
     }
 
     public String getUid() {
-        return FirebaseAuth.getInstance().getCurrentUser().getUid();
+        return Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
     }
 
 
     private static class CommentViewHolder extends RecyclerView.ViewHolder {
 
-        public TextView authorView;
-        public TextView bodyView;
+        TextView authorView;
+        TextView bodyView;
 
-        public CommentViewHolder(View itemView) {
+        CommentViewHolder(View itemView) {
             super(itemView);
 
             authorView = itemView.findViewById(R.id.comment_author);
@@ -291,7 +297,7 @@ public class PostFragment extends Fragment implements View.OnClickListener {
         private List<String> mCommentIds = new ArrayList<>();
         private List<Comment> mComments = new ArrayList<>();
 
-        public CommentAdapter(final Context context, DatabaseReference ref) {
+        CommentAdapter(final Context context, DatabaseReference ref) {
             mContext = context;
             mDatabaseReference = ref;
 
@@ -385,15 +391,16 @@ public class PostFragment extends Fragment implements View.OnClickListener {
             mChildEventListener = childEventListener;
         }
 
+        @NonNull
         @Override
-        public CommentViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        public CommentViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             LayoutInflater inflater = LayoutInflater.from(mContext);
             View view = inflater.inflate(R.layout.item_comment, parent, false);
             return new CommentViewHolder(view);
         }
 
         @Override
-        public void onBindViewHolder(CommentViewHolder holder, int position) {
+        public void onBindViewHolder(@NonNull CommentViewHolder holder, int position) {
             Comment comment = mComments.get(position);
             holder.authorView.setText(comment.author);
             holder.bodyView.setText(comment.text);
@@ -404,7 +411,7 @@ public class PostFragment extends Fragment implements View.OnClickListener {
             return mComments.size();
         }
 
-        public void cleanupListener() {
+        void cleanupListener() {
             if (mChildEventListener != null) {
                 mDatabaseReference.removeEventListener(mChildEventListener);
             }
@@ -412,56 +419,92 @@ public class PostFragment extends Fragment implements View.OnClickListener {
 
     }
 
-    public void attachPic(String url){
+    public void attachPic(String url, ImageView pic, ProgressBar progressBar){
         if (!url.isEmpty()) {
-            storageReference.child(url).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                @Override
-                public void onSuccess(final Uri uri) {
-                    Picasso.get().load(uri).resize(200,200).networkPolicy(NetworkPolicy.OFFLINE).centerCrop().transform(new CircleTransform()).into(mAuthorPic, new Callback() {
-                        @Override
-                        public void onSuccess() {
-                            mProgressBar.setVisibility(View.INVISIBLE);
-                            mAuthorPic.setVisibility(View.VISIBLE);
-                        }
+            mAttachLayout.setVisibility(View.VISIBLE);
+            progressBar.setVisibility(View.VISIBLE);
+                storageReference.child(url).getDownloadUrl().addOnSuccessListener(uri -> Picasso.get().load(uri).resize(400, 400).networkPolicy(NetworkPolicy.OFFLINE).centerCrop().into(pic, new Callback() {
+                    @Override
+                    public void onSuccess() {
+                        progressBar.setVisibility(View.INVISIBLE);
+                    }
 
-                        @Override
-                        public void onError(Exception e) {
-                            //Try again online if cache failed
-                            Picasso.get()
-                                    .load(uri)
-                                    .error(R.drawable.ic_launcher)
-                                    .transform(new CircleTransform()).into(mAuthorPic, new Callback() {
-                                        @Override
-                                        public void onSuccess() {
-                                            mProgressBar.setVisibility(View.INVISIBLE);
-                                            mAuthorPic.setVisibility(View.VISIBLE);
-                                        }
+                    @Override
+                    public void onError(Exception e) {
+                        Picasso.get().load(uri).resize(400, 400).centerCrop().into(pic, new Callback() {
+                            @Override
+                            public void onSuccess() {
 
-                                        @Override
-                                        public void onError(Exception e) {
-                                            Log.v("Picasso","Could not fetch image" + e.toString());
-                                        }
-                                    });
-                        }
-                    });
+                                progressBar.setVisibility(View.INVISIBLE);
+                            }
 
-                }
-            });
-        }
-        else {
-            Picasso.get().load(R.drawable.ic_launcher).resize(200,200).centerCrop().transform(new CircleTransform()).into(mAuthorPic, new Callback() {
-                @Override
-                public void onSuccess() {
-                    mProgressBar.setVisibility(View.INVISIBLE);
-                    mAuthorPic.setVisibility(View.VISIBLE);
-                }
+                            @Override
+                            public void onError(Exception e) {
+                                //Try again online if cache failed
+                                e.printStackTrace();
 
-                @Override
-                public void onError(Exception e) {
+                                progressBar.setVisibility(View.INVISIBLE);
 
-                }
-            });
+                            }
+                        });
 
-        }
+                    }
+
+                }));
+
+
+                pic.setOnClickListener(v -> {
+                    showEnlargedImageDialog(url);
+                });
+            }
+
     }
+
+    private void showEnlargedImageDialog(String url) {
+        // The method that displays the popup.
+        mEnlargedImageDialog = new Dialog(Objects.requireNonNull(getActivity()));
+        mEnlargedImageDialog.setContentView(R.layout.dialog_image_enlarge );
+        ImageView closedialogpic = mEnlargedImageDialog.findViewById(R.id.imagedialog_close);
+        ImageView imageView = mEnlargedImageDialog.findViewById(R.id.enlarged_image);
+        ProgressBar progressBar = mEnlargedImageDialog.findViewById(R.id.enlarged_image_progressbar);
+        closedialogpic.setOnClickListener(view -> mEnlargedImageDialog.dismiss());
+
+        progressBar.setVisibility(View.VISIBLE);
+        storageReference.child(url).getDownloadUrl().addOnSuccessListener(uri -> Picasso.get().load(uri).networkPolicy(NetworkPolicy.OFFLINE).into(imageView, new Callback() {
+            @Override
+            public void onSuccess() {
+                progressBar.setVisibility(View.INVISIBLE);
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Picasso.get().load(uri).into(imageView, new Callback() {
+                    @Override
+                    public void onSuccess() {
+
+                        progressBar.setVisibility(View.INVISIBLE);
+                    }
+
+                    @Override
+                    public void onError(Exception e) {
+                        //Try again online if cache failed
+                        e.printStackTrace();
+
+                        progressBar.setVisibility(View.INVISIBLE);
+
+                    }
+                });
+
+            }
+
+        }));
+
+        Objects.requireNonNull(mEnlargedImageDialog.getWindow()).setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        mEnlargedImageDialog.show();
+    }
+
+
+
+
+
 }

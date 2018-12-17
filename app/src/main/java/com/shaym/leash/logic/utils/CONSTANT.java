@@ -1,17 +1,11 @@
-package com.shaym.leash.logic;
+package com.shaym.leash.logic.utils;
 
 public class CONSTANT {
 
     //USERS
     final public static String USERS_TABLE = "users";
-    final public static String USER_LAT = "currentlat";
-    final public static String USER_LNG = "currentlng";
-    final public static String USER_POSTS_AMOUNT = "forumpostsamount";
-    final public static String USER_GEAR_POSTS_AMOUNT = "gearpostsamount";
-    final public static String USER_INBOX_POSTS_AMOUNT = "inboxpostsamount";
-    final public static String USER_OUTBOX_POSTS_AMOUNT = "outboxpostsamount";
-
-    final public static String AVATAR_URL = "avatarurl";
+    final static String USER_POSTS_AMOUNT = "forumpostsamount";
+    final static String USER_GEAR_POSTS_AMOUNT = "gearpostsamount";
 
     //FORUM
     final public static String USER_POSTS = "user-posts";
@@ -29,10 +23,11 @@ public class CONSTANT {
 
     final public static String PROFILE_PICS = "profile_pics";
     final public static String GEAR_POSTS_PICS = "gear_posts_pics";
+    final public static String FORUM_POSTS_PICS = "forum_posts_pics";
 
     //DIRECT MESSAGES
-    final public static String DIRECT_INCOMING_MESSAGES = "direct_incoming_messages";
-    final public static String DIRECT_OUTGOING_MESSAGES = "direct_outgoing_messages";
+
+    final public static String CHAT_CONVERSATIONS = "chat_conversations";
 
 
 }

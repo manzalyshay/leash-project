@@ -22,5 +22,10 @@
 -keepclassmembers class android.support.design.internal.BottomNavigationMenuView {
     boolean mShiftingMode;
 }
+
+-keepclassmembers class com.shaym.leash.logic.** {
+  *;
+}
+
 -keepattributes Signature
  -keepattributes *Annotation*

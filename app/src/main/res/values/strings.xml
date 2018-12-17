@@ -1,37 +1,54 @@
 <resources>
     <string name="app_name">Leash</string>
     // Menu Items
-    <string name="cameras_menu_item">Cameras</string>
+    <string name="home_menu_item">Home</string>
     <string name="forecast_menu_item">Forecast</string>
     <string name="forum_menu_item">Forum</string>
     <string name="gear_menu_item">Gear</string>
 
     <string name="action_fullscreen">Full Screen</string>
     <string name="action_settings">Settings</string>
-    <string name="action_play_next">Play Next</string>
-    <string name="backdrop_title">ISRAEL</string>
-    <string name="backdrop_subtitle"></string>
+    <string name="action_landscape">Landscape</string>
+    <string name="cameras_title_israel">ISRAEL</string>
+    <string name="cameras_title_california">CALIFORNIA</string>
 
     // Cams
-    <string name="HiltonA">http://server1.reali-tech.com:1935/live/inter20.stream/playlist.m3u8</string>
-    <string name="HiltonB">http://server1.reali-tech.com:1935/live/inter10.stream/playlist.m3u8</string>
-    <string name="Caesarea">http://ipcamlive.com/player/player.php?alias=freegullsouth</string>
-    <string name="Marina_url">https://balticlivecam.com/cameras/israel/tel-aviv/tel-aviv/?embed</string>
-    <string name="Marina2_url">blob:https://balticlivecam.com/e5c97701-b16f-422a-b5b1-1c792b48ee09</string>
+    // Israel
+    <string name="HiltonA" translatable="false">http://server1.reali-tech.com:1935/live/inter20.stream/playlist.m3u8</string>
+    <string name="HiltonB" translatable="false">http://server1.reali-tech.com:1935/live/inter10.stream/playlist.m3u8</string>
+    <string name="Gordon" translatable="false">http://server1.reali-tech.com:1935/live/dolphin.stream/playlist.m3u8</string>
+    <string name="MarinaHerzelia" translatable="false">http://62.219.45.26:140/mjpg/video.mjpg</string>
+
+
+    <string name="Caesarea" translatable="false">http://ipcamlive.com/player/player.php?alias=freegullsouth</string>
+    <string name="HiltonWindAlert" translatable="false">http://www.windalert.co.il/מצלמת-תל-אביב-הילטון</string>
+    <string name="Marina2_url" translatable="false">blob:https://balticlivecam.com/e5c97701-b16f-422a-b5b1-1c792b48ee09</string>
+    <string name="Eilat" translatable="false">http://www.ustream.tv/embed/14676855?html5ui</string>
+
+    //Califronia
+    <string name="Santa_Monica" translatable="false">https://www.youtube.com/embed/qAcY8OPEMhA</string>
+    <string name="Huntington_Beach" translatable="false">https://www.youtube.com/embed/SKaH4AeyT64</string>
+    <string name="Redondo_Beach" translatable="false">https://www.youtube.com/embed/IRwkjHipUSE</string>
+    <string name="Farallon_Islands" translatable="false">https://www.youtube.com/embed/g3evy5y0rDs</string>
+
 
 
     <string name="hiltonA_cam_title">Hilton Beach 1</string>
     <string name="hiltonB_cam_title">Hilton Beach 2</string>
     <string name="marina_cam_title">Marina</string>
     <string name="ceasearea_camtitle">Caesarea</string>
+    <string name="gordon">Gordon</string>
 
     <string name="telaviv_location">Tel-aviv</string>
+    <string name="eilat_location">Eilat</string>
+    <string name="herzelia_location">Herzelia</string>
+
     <string name="shfeld_location">Shfela</string>
 
 
     // StreamKind
-    <string name="web_stream_kind">web</string>
-    <string name="player_stream_kind">player</string>
+    <string name="web_stream_kind" translatable="false">web</string>
+    <string name="player_stream_kind" translatable="false">player</string>
 
     <string-array name="Forecast_Locations">
         <item>Tel-Aviv</item>
@@ -46,11 +63,15 @@
     </string-array>
 
     //Facebook
-    <string name="facebook_app_id">1637949759563628</string>
-    <string name="fb_login_protocol_scheme">fb1637949759563628</string>
+    <string name="facebook_app_id" translatable="false">1637949759563628</string>
+    <string name="fb_login_protocol_scheme" translatable="false">fb1637949759563628</string>
     <string name="title_location_permission">Location Permisson</string>
     <string name="text_location_permission">Please allow location</string>
     <string name="ok">OK</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="cancel">Cancel</string>
+
     <string name="NewPostLabel">New Post</string>
     <string name="PostTitleLabel">Title</string>
     <string name="PostBodyLabel">Body</string>
@@ -59,4 +80,75 @@
     <string name="DMLabel">Send a Message</string>
     <string name="DMSubject">Subject</string>
     <string name="DMContent">Content</string>
+    <string name="Open">Open</string>
+    <string name="Close">Close</string>
+    <string name="visualize_menu_title">Visualize</string>
+    <string name="profile_menu_title">Profile</string>
+    <string name="around_me_menu_title">Around Me</string>
+    <string name="cameras_menu_title">Cameras</string>
+    <string name="general_menu_title">General</string>
+    <string name="spots_menu_title">Spots</string>
+    <string name="trips_menu_title">Trips</string>
+    <string name="newgear_menu_title">New Gear</string>
+    <string name="usedgear_menu_title">Used Gear</string>
+    <string name="reset_pass_dialog_title">Reset Your Password</string>
+    <string name="reset_pass_dialog_message">Please enter your Email address in order to reset your password</string>
+    <string name="enter_valid_email_message">Please Enter A Valid Email</string>
+    <string name="pass_reset_email_sent_message">Password Reset Email Sent</string>
+    <string name="task_failed_message">Task Failed.</string>
+    <string name="password_6_chars_message">Password should be at least 6 characters</string>
+    <string name="fields_missing">One\More of the fields is missing.</string>
+    <string name="log_out_text">Log-Out</string>
+    <string name="public_indicator">Public?</string>
+    <string name="password_verify_changemail">Enter Your Password to change your Email</string>
+    <string name="enter_password_title">Enter your Password</string>
+    <string name="broadcast_cameras_changed" translatable="false">cameras-area-changed</string>
+    <string name="santa_monica_title">Santa Monica</string>
+    <string name="Huntington_Beach_title">Huntington Beach</string>
+    <string name="Redondo_Beach_title">Redondo Beach</string>
+    <string name="Farallon_Islands_title">Farallon Islands</string>
+    <string name="display_name">Display Name</string>
+    <string name="inbox_menu_item">Inbox</string>
+    <string name="mail_example" translatable="false">user@mail.com</string>
+    <string name="forecast_notavailable_date">Forecast is not available for this date</string>
+    <string name="waves_name_forecast">Waves</string>
+    <string name="wind_name_forecast">Wind</string>
+    <string name="tempeartue_name_forecast">Temperature</string>
+    <string name="login_label">Login</string>
+    <string name="email_label">Email</string>
+    <string name="password_label">Password</string>
+    <string name="login_now_label">Login Now</string>
+    <string name="signup_now_label">Signup Now</string>
+    <string name="forgot_password_label">Forgot Password?</string>
+    <string name="sign_up_label">Sign Up</string>
+    <string name="attach_image_label">Attach Image</string>
+    <string name="phone_number_label">Phone Number</string>
+    <string name="price_label">Price</string>
+    <string name="title_label">Title</string>
+    <string name="new_post_label">New Post</string>
+    <string name="uploading_label">Uploading...</string>
+    <string name="failed_label">Failed</string>
+    <string name="uploaded_label">Uploaded</string>
+    <string name="comment_example">This is the comment text..</string>
+    <string name="write_post_hint">Write your post...</string>
+    <string name="send_label">Send</string>
+    <string name="write_a_message_hint">Write a Message..</string>
+    <string name="change_profile_pic">Change Photo</string>
+    <string name="delete_profile_pic">Delete Photo</string>
+    <string name="default_notification_channel_id" translatable="false">fcm_default_channel</string>
+    <string name="data_loading">Data still loading..</string>
+    <string name="close_dialog">Close Dialog</string>
+    <string name="profile_picture">Profile Picture</string>
+    <string name="send_message">Send Message</string>
+    <string name="send_email">Send Email</string>
+    <string name="call_user">Call User</string>
+    <string name="publish_post">New Post</string>
+    <string name="post_subject">Subject</string>
+    <string name="post_content">Body</string>
+    <string name="attach_image">Attach Image</string>
+    <string name="submit">Submit</string>
+    <string name="select_picture">Select Picture</string>
+    <string name="write_a_comment">Write a comment...</string>
+
+
 </resources>

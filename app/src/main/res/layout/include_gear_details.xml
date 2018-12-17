@@ -7,20 +7,20 @@
     android:orientation="vertical">
 
     <RelativeLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+        android:layout_width="100dp"
+        android:layout_height="100dp">
     <ImageView
         android:id="@+id/post_gear_photo"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        android:scaleType="center"/>
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:src="@mipmap/ic_launcher"
+       />
     <ProgressBar
         android:id="@+id/post_gear_photo_progressbar"
         style="@android:style/Widget.Holo.Light.ProgressBar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"/>
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_centerVertical="true"/>
     </RelativeLayout>
 
     <TextView
@@ -28,8 +28,8 @@
         style="@style/Base.TextAppearance.AppCompat.Title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="10dp"
-        android:layout_gravity="left"
+        android:layout_marginStart="10dp"
+        android:layout_gravity="start"
         tools:text="Item name" />
     <TextView
         android:id="@+id/post_gear_price"
@@ -37,7 +37,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:layout_marginLeft="10dp"
+        android:layout_marginStart="10dp"
         tools:text="100$" />
 
 </LinearLayout>

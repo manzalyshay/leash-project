@@ -1,7 +1,7 @@
 package com.shaym.leash.ui.gear.fragments;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -10,7 +10,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -20,7 +19,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
@@ -30,7 +28,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.shaym.leash.R;
+import com.shaym.leash.logic.aroundme.CircleTransform;
 import com.shaym.leash.logic.forum.Comment;
 import com.shaym.leash.logic.gear.GearPost;
 import com.shaym.leash.logic.user.Profile;
@@ -40,11 +38,12 @@ import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static com.shaym.leash.R.id;
 import static com.shaym.leash.R.layout;
-import static com.shaym.leash.logic.CONSTANT.POST_COMMENTS;
-import static com.shaym.leash.logic.CONSTANT.USERS_TABLE;
+import static com.shaym.leash.logic.utils.CONSTANT.POST_COMMENTS;
+import static com.shaym.leash.logic.utils.CONSTANT.USERS_TABLE;
 
 public class GearPostFragment extends Fragment implements View.OnClickListener {
 
@@ -56,8 +55,6 @@ public class GearPostFragment extends Fragment implements View.OnClickListener {
     private DatabaseReference mGearPostReference;
     private DatabaseReference mCommentsReference;
     private ValueEventListener mPostListener;
-    private String mGearPostKey;
-    private String mGearType;
     private CommentAdapter mAdapter;
     private ProgressBar mProgressbar;
     private TextView mGearTitle;
@@ -66,13 +63,13 @@ public class GearPostFragment extends Fragment implements View.OnClickListener {
     private TextView mSellerPhoneNumber;
     private ImageView mPostPhoto;
     private EditText mCommentField;
-    private Button mCommentButton;
     private RecyclerView mCommentsRecycler;
     FirebaseStorage storage;
     StorageReference storageReference;
     public GearPostFragment() {
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -80,16 +77,13 @@ public class GearPostFragment extends Fragment implements View.OnClickListener {
         Bundle args = getArguments();
         storage = FirebaseStorage.getInstance();
         storageReference = storage.getReference();
-        v.setOnTouchListener(new View.OnTouchListener() {
-            public boolean onTouch(View v, MotionEvent event) {
-                return true;
-            }
-        });
+        v.setOnTouchListener((v1, event) -> true);
 
 
         // Get post,forum key from intent
-        mGearPostKey = args.getString(EXTRA_GEAR_POST_KEY);
-        mGearType = args.getString(EXTRA_GEAR_TYPE_KEY);
+        assert args != null;
+        String mGearPostKey = args.getString(EXTRA_GEAR_POST_KEY);
+        String mGearType = args.getString(EXTRA_GEAR_TYPE_KEY);
 
         if (mGearPostKey == null || mGearType == null) {
             throw new IllegalArgumentException("Must pass EXTRA_GEAR_POST_KEY,EXTRA_GEAR_TYPE_KEY");
@@ -110,7 +104,7 @@ public class GearPostFragment extends Fragment implements View.OnClickListener {
         mPostSeller = v.findViewById(id.post_seller);
         mSellerPhoneNumber = v.findViewById(id.seller_phone_number);
         mCommentField = v.findViewById(id.field_comment_text);
-        mCommentButton = v.findViewById(id.button_post_comment);
+        Button mCommentButton = v.findViewById(id.button_post_comment);
         mCommentsRecycler = v.findViewById(id.comments_list);
 
         mCommentButton.setOnClickListener(this);
@@ -125,6 +119,7 @@ public class GearPostFragment extends Fragment implements View.OnClickListener {
         // Add value event listener to the post
         // [START post_value_event_listener]
         ValueEventListener postListener = new ValueEventListener() {
+            @SuppressLint("SetTextI18n")
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 // Get Post object and use the values to update the UI
@@ -188,7 +183,7 @@ public class GearPostFragment extends Fragment implements View.OnClickListener {
         FirebaseDatabase.getInstance().getReference().child(USERS_TABLE).child(uid)
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                         // Get user information
 
                         Profile user = dataSnapshot.getValue(Profile.class);
@@ -217,23 +212,23 @@ public class GearPostFragment extends Fragment implements View.OnClickListener {
                     }
 
                     @Override
-                    public void onCancelled(DatabaseError databaseError) {
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
 
                     }
                 });
     }
 
     public String getUid() {
-        return FirebaseAuth.getInstance().getCurrentUser().getUid();
+        return Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
     }
 
 
     private static class CommentViewHolder extends RecyclerView.ViewHolder {
 
-        public TextView authorView;
-        public TextView bodyView;
+        TextView authorView;
+        TextView bodyView;
 
-        public CommentViewHolder(View itemView) {
+        CommentViewHolder(View itemView) {
             super(itemView);
 
             authorView = itemView.findViewById(id.comment_author);
@@ -250,7 +245,7 @@ public class GearPostFragment extends Fragment implements View.OnClickListener {
         private List<String> mCommentIds = new ArrayList<>();
         private List<Comment> mComments = new ArrayList<>();
 
-        public CommentAdapter(final Context context, DatabaseReference ref) {
+        CommentAdapter(final Context context, DatabaseReference ref) {
             mContext = context;
             mDatabaseReference = ref;
 
@@ -344,6 +339,7 @@ public class GearPostFragment extends Fragment implements View.OnClickListener {
             mChildEventListener = childEventListener;
         }
 
+        @NonNull
         @Override
         public CommentViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             LayoutInflater inflater = LayoutInflater.from(mContext);
@@ -352,7 +348,7 @@ public class GearPostFragment extends Fragment implements View.OnClickListener {
         }
 
         @Override
-        public void onBindViewHolder(CommentViewHolder holder, int position) {
+        public void onBindViewHolder(@NonNull CommentViewHolder holder, int position) {
             Comment comment = mComments.get(position);
             holder.authorView.setText(comment.author);
             holder.bodyView.setText(comment.text);
@@ -363,7 +359,7 @@ public class GearPostFragment extends Fragment implements View.OnClickListener {
             return mComments.size();
         }
 
-        public void cleanupListener() {
+        void cleanupListener() {
             if (mChildEventListener != null) {
                 mDatabaseReference.removeEventListener(mChildEventListener);
             }
@@ -373,42 +369,36 @@ public class GearPostFragment extends Fragment implements View.OnClickListener {
 
     public void attachPic(String url){
         if (!url.isEmpty()) {
-            storageReference.child(url).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                @Override
-                public void onSuccess(final Uri uri) {
-                    Picasso.get().load(uri).resize(400,400).networkPolicy(NetworkPolicy.OFFLINE).centerCrop().into(mPostPhoto, new Callback() {
-                        @Override
-                        public void onSuccess() {
-                            mProgressbar.setVisibility(View.INVISIBLE);
-                            mPostPhoto.setVisibility(View.VISIBLE);
-                        }
+                storageReference.child(url).getDownloadUrl().addOnSuccessListener(uri -> Picasso.get().load(uri).resize(400, 400).networkPolicy(NetworkPolicy.OFFLINE).centerCrop().transform(new CircleTransform()).into(mPostPhoto, new Callback() {
+                    @Override
+                    public void onSuccess() {
+                        mProgressbar.setVisibility(View.INVISIBLE);
+                    }
 
-                        @Override
-                        public void onError(Exception e) {
-                            //Try again online if cache failed
-                            Picasso.get()
-                                    .load(uri)
-                                    .error(R.drawable.ic_launcher)
-                                    .into(mPostPhoto, new Callback() {
-                                        @Override
-                                        public void onSuccess() {
-                                            mProgressbar.setVisibility(View.INVISIBLE);
-                                            mPostPhoto.setVisibility(View.VISIBLE);
-                                        }
+                    @Override
+                    public void onError(Exception e) {
+                        Picasso.get().load(uri).resize(400, 400).centerCrop().transform(new CircleTransform()).into(mPostPhoto, new Callback() {
+                            @Override
+                            public void onSuccess() {
+                                mProgressbar.setVisibility(View.INVISIBLE);
+                            }
 
-                                        @Override
-                                        public void onError(Exception e) {
-                                            Log.v("Picasso","Could not fetch image" + e.toString());
-                                        }
-                                    });
-                        }
-                    });
+                            @Override
+                            public void onError(Exception e) {
+                                //Try again online if cache failed
 
-                }
-            });
+                                mProgressbar.setVisibility(View.INVISIBLE);
+
+                            }
+                        });
+
+                    }
+
+                }));
+
         }
         else {
-            Picasso.get().load(R.drawable.ic_launcher).resize(400,400).centerCrop().into(mPostPhoto);
+            mProgressbar.setVisibility(View.INVISIBLE);
 
         }
     }

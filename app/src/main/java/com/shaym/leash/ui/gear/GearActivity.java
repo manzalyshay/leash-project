@@ -1,25 +1,27 @@
 package com.shaym.leash.ui.gear;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.database.Cursor;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
-import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
-import android.support.media.ExifInterface;
+import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.text.InputType;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -27,46 +29,32 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 import com.shaym.leash.R;
-import com.shaym.leash.logic.forum.Post;
-import com.shaym.leash.logic.gear.GearPost;
 import com.shaym.leash.logic.user.Profile;
-import com.shaym.leash.ui.gear.fragments.GearFragment;
-import com.shaym.leash.ui.gear.fragments.GearPostFragment;
+import com.shaym.leash.logic.utils.FireBasePostsHelper;
+import com.shaym.leash.logic.utils.FireBaseUsersHelper;
 import com.shaym.leash.ui.gear.fragments.NewGearFragment;
 import com.shaym.leash.ui.gear.fragments.UsedGearFragment;
 import com.shaym.leash.ui.home.SectionPagerAdapter;
 import com.shaym.leash.ui.utils.BottomNavigationViewHelper;
+import com.shaym.leash.ui.utils.NavHelper;
 import com.squareup.picasso.Picasso;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 import static android.provider.MediaStore.Images.Media.getBitmap;
-import static com.shaym.leash.logic.CONSTANT.ALL_GEAR_POSTS;
-import static com.shaym.leash.logic.CONSTANT.GEAR_POSTS_PICS;
-import static com.shaym.leash.logic.CONSTANT.NEW_GEAR_POSTS;
-import static com.shaym.leash.logic.CONSTANT.PROFILE_PICS;
-import static com.shaym.leash.logic.CONSTANT.USED_GEAR_POSTS;
-import static com.shaym.leash.logic.CONSTANT.USERS_TABLE;
-import static com.shaym.leash.logic.CONSTANT.USER_GEAR_POSTS;
-import static com.shaym.leash.logic.CONSTANT.USER_POSTS;
+import static com.shaym.leash.logic.utils.CONSTANT.GEAR_POSTS_PICS;
+import static com.shaym.leash.logic.utils.CONSTANT.NEW_GEAR_POSTS;
+import static com.shaym.leash.logic.utils.CONSTANT.USED_GEAR_POSTS;
+import static com.shaym.leash.logic.utils.FireBaseUsersHelper.BROADCAST_USER;
 
 /**
  * Created by shaym on 2/14/18.
@@ -74,11 +62,8 @@ import static com.shaym.leash.logic.CONSTANT.USER_POSTS;
 
 public class GearActivity extends AppCompatActivity {
     private static final String TAG = "GearActivity";
-    private static final int ACTIVITY_NUM = 3;
-    private BottomNavigationViewHelper mBottomNavHelper;
-    private SectionPagerAdapter mSectionPagerAdapter;
     private ViewPager mVpager;
-    private DatabaseReference mDatabase;
+    @SuppressLint("StaticFieldLeak")
     public static FloatingActionButton mGearFab;
     public static boolean mNewGearPostOpened = false;
     public static boolean mUsedGearPostOpened = false;
@@ -86,62 +71,115 @@ public class GearActivity extends AppCompatActivity {
     private Uri filePath;
     FirebaseStorage storage;
     StorageReference storageReference;
-    private AlertDialog.Builder mBuilder;
     private ImageView mGearPic;
     private String mGearPicRef;
     private String mGearType;
+    private DrawerLayout mDrawerLayout;
+    public final static int NEWGEAR_FRAGMENT_ITEM_ID = 0401;
+    public final static int USEDGEAR_FRAGMENT_ITEM_ID = 0402;
+    private Profile mUser;
+    private NavHelper mNavHelper;
+    private static final int ACTIVITY_NUM = 3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate: ");
         super.onCreate(savedInstanceState);
+
+        setContentView(R.layout.activity_gear);
+
+        initUI();
+    }
+
+    private void initUI() {
         storage = FirebaseStorage.getInstance();
         storageReference = storage.getReference();
-        setContentView(R.layout.activity_gear);
-        mBottomNavHelper = new BottomNavigationViewHelper(this, ACTIVITY_NUM);
-        mDatabase = FirebaseDatabase.getInstance().getReference();
+
+        mDrawerLayout = findViewById(R.id.drawer_layout_gear);
+
         setupFab();
         setupViewPager();
+        initToolBar();
 
+        mNavHelper = new NavHelper(findViewById(R.id.nav_view_gear), mVpager, new BottomNavigationViewHelper(GearActivity.this, ACTIVITY_NUM), ACTIVITY_NUM);
+    }
+
+    private void initToolBar() {
+        Toolbar toolbar = findViewById(R.id.toolbar_gear);
+        setSupportActionBar(toolbar);
+        ActionBar actionbar = getSupportActionBar();
+        assert actionbar != null;
+        actionbar.setDisplayHomeAsUpEnabled(true);
+        actionbar.setHomeAsUpIndicator(R.drawable.ic_menu);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        LocalBroadcastManager.getInstance(GearActivity.this).registerReceiver(mUserReceiver,
+                new IntentFilter(BROADCAST_USER));
+        FireBaseUsersHelper.getInstance().loadCurrentUserProfile();
+    }
+
+
+    private BroadcastReceiver mUserReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            // Get extra data included in the Intent
+            Log.d(TAG +"receiver", "Got message: ");
+            Bundle args = intent.getBundleExtra("DATA");
+
+            mUser = (Profile) args.getSerializable("USEROBJ");
+            updateUI();
+        }
+    };
+
+    private void updateUI() {
+        mNavHelper.setCurrentUser(mUser);
+    }
+
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        LocalBroadcastManager.getInstance(GearActivity.this).unregisterReceiver(mUserReceiver);
     }
 
     private void setupFab() {
         mGearFab = findViewById(R.id.fab_new_post_gear);
-        mGearFab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                switch (mVpager.getCurrentItem()) {
-                    case 0:
-                        mGearType = NEW_GEAR_POSTS;
-                        break;
-                    case 1:
-                        mGearType = USED_GEAR_POSTS;
-                        break;
-                }
-                showPostDialog(mGearType);
-                mGearFab.setVisibility(View.INVISIBLE);
+        mGearFab.setOnClickListener(v -> {
+            switch (mVpager.getCurrentItem()) {
+                case 0:
+                    mGearType = NEW_GEAR_POSTS;
+                    break;
+                case 1:
+                    mGearType = USED_GEAR_POSTS;
+                    break;
             }
+            showPostDialog(mGearType);
+            mGearFab.setVisibility(View.INVISIBLE);
         });
     }
 
     private String getUid() {
-        return FirebaseAuth.getInstance().getCurrentUser().getUid();
+        return Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
 
     }
 
     private void setupViewPager() {
-        mSectionPagerAdapter = new SectionPagerAdapter(getSupportFragmentManager());
+        SectionPagerAdapter mSectionPagerAdapter = new SectionPagerAdapter(getSupportFragmentManager());
         mSectionPagerAdapter.AddFragment(new NewGearFragment());
         mSectionPagerAdapter.AddFragment(new UsedGearFragment());
 
-        mVpager = (ViewPager) findViewById(R.id.container_gear);
+        mVpager = findViewById(R.id.container_gear);
 
         mVpager.setAdapter(mSectionPagerAdapter);
 
-        TabLayout tabLayout = (TabLayout) findViewById(R.id.tabgear);
+        TabLayout tabLayout = findViewById(R.id.tabgear);
         tabLayout.setupWithViewPager(mVpager);
-        tabLayout.getTabAt(0).setText("New Gear");
-        tabLayout.getTabAt(1).setText("Used Gear");
+        Objects.requireNonNull(tabLayout.getTabAt(0)).setText(getString(R.string.newgear_menu_title));
+        Objects.requireNonNull(tabLayout.getTabAt(1)).setText(getString(R.string.usedgear_menu_title));
 
         ViewPager.OnPageChangeListener pageChangeListener = new ViewPager.OnPageChangeListener() {
             @Override
@@ -207,46 +245,27 @@ public class GearActivity extends AppCompatActivity {
     }
 
 
-    // [START write_fan_out]
-    private void writeNewGearPost(String uid, String type, String author, String title, int price, String phonenumber, String description, String imageurl) {
-        // Create new post at /user-posts/$userid/$postid and at
-        // /posts/$postid simultaneously
-        String typekey = mDatabase.child(type).push().getKey();
-
-        GearPost post = new GearPost(uid, type, author, title, price, phonenumber, description, imageurl);
-        Map<String, Object> postValues = post.toMap();
-
-        Map<String, Object> childUpdates = new HashMap<>();
-        childUpdates.put("/" + ALL_GEAR_POSTS + "/" + typekey, postValues);
-        childUpdates.put("/" + USER_GEAR_POSTS + "/" + uid + "/" + typekey, postValues);
-        childUpdates.put("/" + type + "/" + typekey, postValues);
-
-        mDatabase.updateChildren(childUpdates);
-    }
 
     private void showPostDialog(final String geartype) {
-        mBuilder = new AlertDialog.Builder(GearActivity.this);
+        AlertDialog.Builder mBuilder = new AlertDialog.Builder(GearActivity.this);
         //you should edit this to fit your needs
-        mBuilder.setTitle("New Post");
+        mBuilder.setTitle(R.string.new_post_label);
 
         final EditText title = new EditText(GearActivity.this);
-        title.setHint("Title");//optional
+        title.setHint(R.string.title_label);//optional
         final EditText price = new EditText(GearActivity.this);
-        price.setHint("Price");//optional
+        price.setHint(R.string.price_label);//optional
         final EditText phonenumber = new EditText(GearActivity.this);
-        phonenumber.setHint("Phone Number");//optional
+        phonenumber.setHint(R.string.phone_number_label);//optional
         final Button uploadgearpic = new Button(GearActivity.this);
-        uploadgearpic.setText("Attach Image");
-        uploadgearpic.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+        uploadgearpic.setText(R.string.attach_image_label);
+        uploadgearpic.setOnClickListener(view -> {
 
-                Log.d(TAG, "onMenuItemClick: ");
-                Intent intent = new Intent();
-                intent.setType("image/*");
-                intent.setAction(Intent.ACTION_GET_CONTENT);
-                startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
-            }
+            Log.d(TAG, "onMenuItemClick: ");
+            Intent intent = new Intent();
+            intent.setType("image/*");
+            intent.setAction(Intent.ACTION_GET_CONTENT);
+            startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
         });
         mGearPic = new ImageView(GearActivity.this);
         mGearPic.setVisibility(View.INVISIBLE);
@@ -265,73 +284,31 @@ public class GearActivity extends AppCompatActivity {
         mBuilder.setView(lay);
 
         // Set up the buttons
-        mBuilder.setPositiveButton("Post", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-            }
+        mBuilder.setPositiveButton(getString(R.string.ok), (dialog, whichButton) -> {
         });
 
 
-        mBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                dialog.cancel();
-            }
-        });
+        mBuilder.setNegativeButton(getString(R.string.cancel), (dialog, whichButton) -> dialog.cancel());
         final AlertDialog dialog = mBuilder.create();
         dialog.show();
-        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                //get the two inputs
-                if (title.getText().length() == 0 || price.getText().length() == 0) {
-                    Toast.makeText(GearActivity.this, "All fields are required.", Toast.LENGTH_SHORT).show();
-                    return;
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(view -> {
+            //get the two inputs
+            if (title.getText().length() == 0 || price.getText().length() == 0) {
+                Toast.makeText(GearActivity.this, getString(R.string.fields_missing), Toast.LENGTH_SHORT).show();
+            } else  {
+                // Write new post
+                if (mGearPicRef != null) {
+                    FireBasePostsHelper.getInstance().writeNewGearPost(mUser.getUid(), geartype, mUser.getDisplayname(), title.getText().toString(), Integer.parseInt(price.getText().toString()), phonenumber.getText().toString(), geartype, mGearPicRef);
                 } else {
-                    final String userId = getUid();
-                    mDatabase.child(USERS_TABLE).child(userId).addListenerForSingleValueEvent(
-                            new ValueEventListener() {
-                                @Override
-                                public void onDataChange(DataSnapshot dataSnapshot) {
-                                    // Get user value
-                                    Profile user = dataSnapshot.getValue(Profile.class);
+                    FireBasePostsHelper.getInstance().writeNewGearPost(mUser.getUid(), geartype, mUser.getDisplayname(), title.getText().toString(), Integer.parseInt(price.getText().toString()), phonenumber.getText().toString(), geartype, "");
 
-                                    // [START_EXCLUDE]
-                                    if (user == null) {
-                                        // User is null, error out
-                                        Log.e(TAG, "User " + userId + " is unexpectedly null");
-                                        Toast.makeText(GearActivity.this,
-                                                "Error: could not fetch user.",
-                                                Toast.LENGTH_SHORT).show();
-                                    } else {
-                                        // Write new post
-                                        if (mGearPicRef != null) {
-                                            writeNewGearPost(userId, geartype, user.getDisplayname(), title.getText().toString(), Integer.parseInt(price.getText().toString()), phonenumber.getText().toString(), geartype, mGearPicRef);
-                                            mGearPicRef = null;
-                                        } else {
-                                            writeNewGearPost(userId, geartype, user.getDisplayname(), title.getText().toString(), Integer.parseInt(price.getText().toString()), phonenumber.getText().toString(), geartype, "");
-
-                                        }
-                                        dialog.dismiss();
-                                        mGearFab.setVisibility(View.VISIBLE);
-                                    }
-
-
-                                }
-
-                                @Override
-                                public void onCancelled(DatabaseError databaseError) {
-                                    Log.w(TAG, "getUser:onCancelled", databaseError.toException());
-                                    // [START_EXCLUDE]
-//                                        setEditingEnabled(true);
-                                    // [END_EXCLUDE]
-                                }
-                            });
-                    // [END single_value_read]
                 }
-
+                dialog.dismiss();
+                mGearFab.setVisibility(View.VISIBLE);
             }
+
+
         });
-
-
     }
 
     @Override
@@ -353,7 +330,7 @@ public class GearActivity extends AppCompatActivity {
 
         if (filePath != null) {
             final ProgressDialog progressDialog = new ProgressDialog(GearActivity.this);
-            progressDialog.setTitle("Uploading...");
+            progressDialog.setTitle(getString(R.string.uploading_label));
             progressDialog.show();
             String picref = UUID.randomUUID().toString();
             mGearPicRef = GEAR_POSTS_PICS + "/" + getUid() + "/" + picref;
@@ -365,32 +342,24 @@ public class GearActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            assert bmp != null;
             bmp.compress(Bitmap.CompressFormat.JPEG, 25, baos);
             byte[] data = baos.toByteArray();
             ref.putBytes(data)
-                    .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                        @Override
-                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                            progressDialog.dismiss();
-                            Toast.makeText(GearActivity.this, "Uploaded", Toast.LENGTH_SHORT).show();
+                    .addOnSuccessListener(taskSnapshot -> {
+                        progressDialog.dismiss();
+                        Toast.makeText(GearActivity.this, R.string.uploaded_label, Toast.LENGTH_SHORT).show();
 
-                            attachPicToDialog();
-                        }
+                        attachPicToDialog();
                     })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            progressDialog.dismiss();
-                            Toast.makeText(GearActivity.this, "Failed " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                        }
+                    .addOnFailureListener(e -> {
+                        progressDialog.dismiss();
+                        Toast.makeText(GearActivity.this, getString(R.string.failed_label) + e.getMessage(), Toast.LENGTH_SHORT).show();
                     })
-                    .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-                        @Override
-                        public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
-                            double progress = (100.0 * taskSnapshot.getBytesTransferred() / taskSnapshot
-                                    .getTotalByteCount());
-                            progressDialog.setMessage("Uploaded " + (int) progress + "%");
-                        }
+                    .addOnProgressListener(taskSnapshot -> {
+                        double progress = (100.0 * taskSnapshot.getBytesTransferred() / taskSnapshot
+                                .getTotalByteCount());
+                        progressDialog.setMessage(getString(R.string.uploaded_label) + (int) progress + "%");
                     });
 
 
@@ -405,6 +374,15 @@ public class GearActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                mDrawerLayout.openDrawer(GravityCompat.START);
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
 
 
 

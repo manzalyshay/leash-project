@@ -6,29 +6,45 @@
     android:gravity="center_vertical"
     android:orientation="horizontal">
 
+
     <RelativeLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content">
         <ImageView
-            android:id="@+id/post_author_photo"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:scaleType="center"
+            android:id="@+id/message_author_photo"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginStart="7dp"
+            android:layout_marginTop="7dp"
+
             android:src="@mipmap/ic_launcher"/>
         <ProgressBar
-            android:id="@+id/post_author_photo_progressbar"
+            android:id="@+id/message_author_photo_progressbar"
             style="@android:style/Widget.Holo.Light.ProgressBar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"/>
     </RelativeLayout>
-    <TextView
-        android:id="@+id/post_author"
-        style="@style/Base.TextAppearance.AppCompat.Small"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="10dp"
+        android:orientation="vertical">
+    <TextView
+        android:id="@+id/conv_author"
+        style="@style/Base.TextAppearance.AppCompat.Title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
         android:gravity="center_vertical"
         tools:text="someauthor@email.com" />
 
+    <TextView
+        android:id="@+id/last_message"
+        style="@style/Base.TextAppearance.AppCompat.Small"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:gravity="center_vertical"
+        tools:text="someauthor@email.com" />
+    </LinearLayout>
 </LinearLayout>

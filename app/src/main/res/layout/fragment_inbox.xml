@@ -3,18 +3,18 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:id="@+id/root_frame_usedgear"
+    android:id="@+id/root_frame_userinbox"
     android:background="?android:windowBackground"
     >
 
     <android.support.v7.widget.RecyclerView
-        android:id="@+id/used_gear_list"
+        android:id="@+id/user_inbox_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_alignParentTop="true"
         android:clipToPadding="false"
         android:padding="5dp"
         android:scrollbars="vertical"
-        tools:listitem="@layout/item_gear_post" />
+        tools:listitem="@layout/item_inbox" />
 
 </FrameLayout>

@@ -3,6 +3,7 @@ package com.shaym.leash.logic.aroundme;
 import android.graphics.Bitmap;
 import android.graphics.BitmapShader;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 
 import com.squareup.picasso.Transformation;
@@ -31,6 +32,13 @@ public class CircleTransform implements Transformation {
 
         float r = size / 2f;
         canvas.drawCircle(r, r, r, paint);
+
+        Paint paint2 = new Paint();
+        paint2.setColor(Color.LTGRAY);
+        paint2.setStyle(Paint.Style.STROKE);
+        paint2.setAntiAlias(true);
+        paint2.setStrokeWidth(3);
+        canvas.drawCircle((source.getWidth())/2, (source.getHeight())/2, r, paint2);
 
         squaredBitmap.recycle();
         return bitmap;

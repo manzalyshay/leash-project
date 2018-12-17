@@ -22,28 +22,19 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.MutableData;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.Transaction;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
 import com.shaym.leash.R;
 import com.shaym.leash.logic.forum.Post;
 import com.shaym.leash.logic.gear.GearPost;
-import com.shaym.leash.ui.forum.ForumActivity;
-import com.shaym.leash.ui.forum.PostViewHolder;
-import com.shaym.leash.ui.forum.fragments.PostFragment;
 import com.shaym.leash.ui.gear.GearActivity;
 import com.shaym.leash.ui.home.profile.UserGearPostsFragment;
 
-import static com.shaym.leash.logic.CONSTANT.ALL_GEAR_POSTS;
-import static com.shaym.leash.logic.CONSTANT.ALL_POSTS;
-import static com.shaym.leash.logic.CONSTANT.GENERAL_POSTS;
-import static com.shaym.leash.logic.CONSTANT.NEW_GEAR_POSTS;
-import static com.shaym.leash.logic.CONSTANT.SPOTS_POSTS;
-import static com.shaym.leash.logic.CONSTANT.TRIPS_POSTS;
-import static com.shaym.leash.logic.CONSTANT.USED_GEAR_POSTS;
-import static com.shaym.leash.logic.CONSTANT.USER_GEAR_POSTS;
-import static com.shaym.leash.logic.CONSTANT.USER_POSTS;
-import static com.shaym.leash.ui.forum.fragments.PostFragment.EXTRA_FORUM_KEY;
-import static com.shaym.leash.ui.forum.fragments.PostFragment.EXTRA_POST_KEY;
+import java.util.Objects;
+
+import static com.shaym.leash.logic.utils.CONSTANT.ALL_GEAR_POSTS;
+import static com.shaym.leash.logic.utils.CONSTANT.NEW_GEAR_POSTS;
+import static com.shaym.leash.logic.utils.CONSTANT.USED_GEAR_POSTS;
+import static com.shaym.leash.logic.utils.CONSTANT.USER_GEAR_POSTS;
+import static com.shaym.leash.logic.utils.CONSTANT.USER_POSTS;
 import static com.shaym.leash.ui.gear.fragments.GearPostFragment.EXTRA_GEAR_POST_KEY;
 import static com.shaym.leash.ui.gear.fragments.GearPostFragment.EXTRA_GEAR_TYPE_KEY;
 
@@ -56,12 +47,9 @@ public abstract class GearFragment extends Fragment {
 
     private FirebaseRecyclerAdapter<GearPost, GearPostViewHolder> mAdapter;
     private RecyclerView mRecycler;
-    private LinearLayoutManager mManager;
     private String mType;
     private int frameid;
     private boolean fabExists;
-
-
 
     @Nullable
     @Override
@@ -72,7 +60,7 @@ public abstract class GearFragment extends Fragment {
 
         int layoutname = 0;
         int listid = 0;
-        View v = null;
+        View v;
 
         if (GearFragment.this instanceof UserGearPostsFragment){
             layoutname = R.layout.fragment_user_gearposts;
@@ -102,14 +90,12 @@ public abstract class GearFragment extends Fragment {
         return v;
     }
 
-
-
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
         // Set up Layout Manager, reverse layout
-        mManager = new LinearLayoutManager(getActivity());
+        LinearLayoutManager mManager = new LinearLayoutManager(getActivity());
         mManager.setReverseLayout(true);
         mManager.setStackFromEnd(true);
         mRecycler.setLayoutManager(mManager);
@@ -123,52 +109,51 @@ public abstract class GearFragment extends Fragment {
 
         mAdapter = new FirebaseRecyclerAdapter<GearPost, GearPostViewHolder>(options) {
 
+            @NonNull
             @Override
-            public GearPostViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
+            public GearPostViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
                 LayoutInflater inflater = LayoutInflater.from(viewGroup.getContext());
                 return new GearPostViewHolder(inflater.inflate(R.layout.item_gear_post, viewGroup, false));
             }
 
             @Override
-            protected void onBindViewHolder(GearPostViewHolder viewHolder, int position, final GearPost model) {
+            protected void onBindViewHolder(@NonNull GearPostViewHolder viewHolder, int position, @NonNull final GearPost model) {
                 final DatabaseReference postRef = getRef(position);
 
                 // Set click listener for the whole post view
                 final String postKey = postRef.getKey();
                 mType = model.type;
-                viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        // Launch PostDetailActivity
-                        // Create new fragment and transaction
-                        if (fabExists) {
-                            GearActivity.mGearFab.setVisibility(View.INVISIBLE);
-                        }
-                        switch (mType){
-                            case NEW_GEAR_POSTS:
-                                GearActivity.mNewGearPostOpened = true;
-                                break;
-                            case USED_GEAR_POSTS:
-                                GearActivity.mUsedGearPostOpened = true;
-                                break;
-                        }
-                        GearPostFragment f = new GearPostFragment();
-                        // Supply index input as an argument.
-                        Bundle args = new Bundle();
-                        args.putString(EXTRA_GEAR_POST_KEY, postKey);
-                        args.putString(EXTRA_GEAR_TYPE_KEY, mType);
+                viewHolder.itemView.setOnClickListener(v -> {
+                    // Launch PostDetailActivity
+                    // Create new fragment and transaction
+                    if (fabExists) {
+                        GearActivity.mGearFab.setVisibility(View.INVISIBLE);
+                    }
+                    switch (mType){
+                        case NEW_GEAR_POSTS:
+                            GearActivity.mNewGearPostOpened = true;
+                            break;
+                        case USED_GEAR_POSTS:
+                            GearActivity.mUsedGearPostOpened = true;
+                            break;
+                    }
+                    GearPostFragment f = new GearPostFragment();
+                    // Supply index input as an argument.
+                    Bundle args = new Bundle();
+                    args.putString(EXTRA_GEAR_POST_KEY, postKey);
+                    args.putString(EXTRA_GEAR_TYPE_KEY, mType);
 
-                        f.setArguments(args);
-                        FragmentTransaction transaction = getFragmentManager().beginTransaction();
+                    f.setArguments(args);
+                    assert getFragmentManager() != null;
+                    FragmentTransaction transaction = getFragmentManager().beginTransaction();
 
 // Replace whatever is in the fragment_container view with this fragment,
 // and add the transaction to the back stack if needed
-                        transaction.replace(frameid, f, postKey);
+                    transaction.replace(frameid, f, postKey);
 
-                        transaction.addToBackStack(null);
+                    transaction.addToBackStack(null);
 
-                        transaction.commit();
-                    }
+                    transaction.commit();
                 });
 
                 // Determine if the current user has liked this post and set UI accordingly
@@ -179,29 +164,23 @@ public abstract class GearFragment extends Fragment {
                 }
 
                 // Bind Post to ViewHolder, setting OnClickListener for the star button
-                viewHolder.bindToPost(model, new View.OnClickListener() {
-                    @Override
-                    public void onClick(View starView) {
-                        // Need to write to both places the post is stored
-                        DatabaseReference globalPostRef = mDatabase.child(ALL_GEAR_POSTS).child(postRef.getKey());
-                        DatabaseReference userPostRef = mDatabase.child(USER_POSTS).child(model.uid).child(postRef.getKey());
+                viewHolder.bindToPost(model, starView -> {
+                    // Need to write to both places the post is stored
+                    DatabaseReference globalPostRef = mDatabase.child(ALL_GEAR_POSTS).child(Objects.requireNonNull(postRef.getKey()));
+                    DatabaseReference userPostRef = mDatabase.child(USER_POSTS).child(model.uid).child(postRef.getKey());
 
-                        // Run two transactions
-                        onStarClicked(globalPostRef);
-                        onStarClicked(userPostRef);
+                    // Run two transactions
+                    onStarClicked(globalPostRef);
+                    onStarClicked(userPostRef);
+                }, deleteview -> {
+                    // Need to write to both places the post is stored
+                    try {
+                        mDatabase.child(ALL_GEAR_POSTS).child(Objects.requireNonNull(postRef.getKey())).getRef().removeValue();
+                        mDatabase.child(USER_GEAR_POSTS).child(model.uid).child(postRef.getKey()).getRef().removeValue();
+                        mDatabase.child(model.type).child(postRef.getKey()).getRef().removeValue();
                     }
-                }, new View.OnClickListener() {
-                    @Override
-                    public void onClick(View deleteview) {
-                        // Need to write to both places the post is stored
-                        try {
-                            mDatabase.child(ALL_GEAR_POSTS).child(postRef.getKey()).getRef().removeValue();
-                            mDatabase.child(USER_GEAR_POSTS).child(model.uid).child(postRef.getKey()).getRef().removeValue();
-                            mDatabase.child(model.type).child(postRef.getKey()).getRef().removeValue();
-                        }
-                        catch (Exception e){
-                            Log.d(TAG, "onClick: Cannot Delete Record");
-                        }
+                    catch (Exception e){
+                        Log.d(TAG, "onClick: Cannot Delete Record");
                     }
                 });
             }
@@ -214,8 +193,9 @@ public abstract class GearFragment extends Fragment {
     // [START post_stars_transaction]
     private void onStarClicked(DatabaseReference postRef) {
         postRef.runTransaction(new Transaction.Handler() {
+            @NonNull
             @Override
-            public Transaction.Result doTransaction(MutableData mutableData) {
+            public Transaction.Result doTransaction(@NonNull MutableData mutableData) {
                 Post p = mutableData.getValue(Post.class);
                 if (p == null) {
                     return Transaction.success(mutableData);
@@ -264,7 +244,7 @@ public abstract class GearFragment extends Fragment {
     }
 
     public String getUid() {
-        return FirebaseAuth.getInstance().getCurrentUser().getUid();
+        return Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
     }
 
     public abstract Query getQuery(DatabaseReference databaseReference);

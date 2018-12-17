@@ -5,8 +5,9 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Query;
 import com.shaym.leash.ui.forum.fragments.ForumFragment;
 
-import static com.shaym.leash.logic.CONSTANT.GENERAL_POSTS;
-import static com.shaym.leash.logic.CONSTANT.USER_POSTS;
+import java.util.Objects;
+
+import static com.shaym.leash.logic.utils.CONSTANT.USER_POSTS;
 
 public class UserPostsFragment extends ForumFragment {
     public static final String TAG = "UserPostsFragment";
@@ -22,7 +23,7 @@ public class UserPostsFragment extends ForumFragment {
     }
 
     public String getUid() {
-        return FirebaseAuth.getInstance().getCurrentUser().getUid();
+        return Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
     }
 
 

@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:id="@+id/root_frame_aroundme_fragment"
+    android:background="?android:windowBackground">
 
 
     <fragment
         android:id="@+id/googleMap"
         android:name="com.google.android.gms.maps.SupportMapFragment"
-        android:layout_width="350dp"
-        android:layout_marginTop="20dp"
-        android:layout_height="500dp"
-        android:layout_centerHorizontal="true" />
-</RelativeLayout>
+        android:layout_width="340dp"
+        android:layout_marginTop="5dp"
+        android:layout_height="490dp"
+        android:layout_gravity="center" />
+</FrameLayout>

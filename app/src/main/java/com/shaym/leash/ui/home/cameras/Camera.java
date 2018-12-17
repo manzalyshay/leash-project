@@ -9,15 +9,24 @@ public class Camera {
     private String mLocation;
     private String mUrl;
     private String mStreamKind;
+    private String mTag;
 
-    public Camera(String name, String location, String url, String streamKind) {
+    String getPicName() {
+        return picName;
+    }
+
+    private String picName;
+
+
+    Camera(String name, String location, String url, String streamKind, String picname) {
         this.mBeachName = name;
         this.mLocation = location;
         this.mUrl = url;
         this.mStreamKind = streamKind;
+        this.picName = picname;
     }
 
-    public String getBeachName() {
+    String getBeachName() {
         return mBeachName;
     }
 
@@ -29,7 +38,15 @@ public class Camera {
         return mUrl;
     }
 
-    public String getmStreamKind() {
+    String getStreamKind() {
         return mStreamKind;
+    }
+
+    public String getTag() {
+        return mTag;
+    }
+
+    public void setTag(String mTag) {
+        this.mTag = mTag;
     }
 }

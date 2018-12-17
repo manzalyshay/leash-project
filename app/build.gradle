@@ -31,6 +31,10 @@ android {
             universalApk true
         }
     }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 }
 
 ext {
@@ -39,10 +43,10 @@ ext {
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation 'com.android.support:appcompat-v7:27.1.1'
     implementation 'com.android.support.constraint:constraint-layout:1.1.0'
-    implementation 'com.google.firebase:firebase-auth:16.0.1'
+    implementation 'com.google.firebase:firebase-auth:16.0.5'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
@@ -55,37 +59,36 @@ dependencies {
     implementation 'com.android.support:cardview-v7:27.1.1'
     implementation 'com.github.bumptech.glide:glide:4.6.1'
     // Video Player library
-    implementation 'com.github.tcking:giraffeplayer2:0.1.18-full'
+    implementation 'com.github.tcking:giraffeplayer2:0.1.19-full'
     // Charts Library
     implementation 'com.github.PhilJay:MPAndroidChart:v3.0.3'
     //Horizonal picker
     implementation 'com.github.adityagohad:HorizontalPicker:1.0.1'
     //DB
-    implementation "android.arch.persistence.room:runtime:1.1.0"
-    annotationProcessor "android.arch.persistence.room:compiler:1.1.0"
+    implementation 'android.arch.persistence.room:runtime:1.1.1'
+    annotationProcessor "android.arch.persistence.room:compiler:1.1.1"
     //Maps
-    implementation 'com.google.android.gms:play-services-maps:15.0.1'
-    implementation 'com.google.firebase:firebase-core:16.0.0'
+    implementation 'com.google.android.gms:play-services-maps:16.0.0'
+    implementation 'com.google.firebase:firebase-core:16.0.6'
     //Facebook
-    implementation 'com.facebook.android:facebook-login:[4,5)'
+    implementation 'com.facebook.android:facebook-login:4.38.1'
     //Database
-    implementation 'com.google.firebase:firebase-database:16.0.1'
+    implementation 'com.google.firebase:firebase-database:16.0.5'
     //Location
-    implementation 'com.google.android.gms:play-services-location:15.0.1'
+    implementation 'com.google.android.gms:play-services-location:16.0.0'
     //Firebase UI
     implementation 'com.firebaseui:firebase-ui-database:4.0.0'
     //Firebase Storage
-    implementation 'com.google.firebase:firebase-storage:16.0.1'
+    implementation 'com.google.firebase:firebase-storage:16.0.5'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.6.1'
-
     //Picasso
     implementation 'com.squareup.picasso:picasso:2.71828'
     implementation 'com.squareup.okhttp3:okhttp:3.10.0'
     implementation 'com.jakewharton.picasso:picasso2-okhttp3-downloader:1.1.0'
-    compile 'com.skyfishjy.ripplebackground:library:1.0.1'
-    compile 'com.github.markushi:circlebutton:1.1'
-
-
+    implementation 'com.github.jhonnyx2012:horizontal-picker:1.0.6'
+    implementation 'com.android.volley:volley:1.1.0'
+    implementation 'com.firebase:firebase-jobdispatcher:0.8.5'
+    implementation 'com.google.firebase:firebase-messaging:17.3.4'
 }
 
 apply plugin: 'com.google.gms.google-services'

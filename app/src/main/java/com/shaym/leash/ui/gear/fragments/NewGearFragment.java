@@ -1,14 +1,11 @@
 package com.shaym.leash.ui.gear.fragments;
 
-import android.support.v4.app.Fragment;
-
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Query;
 
-import static com.shaym.leash.logic.CONSTANT.NEW_GEAR_POSTS;
+import static com.shaym.leash.logic.utils.CONSTANT.NEW_GEAR_POSTS;
 
 public class NewGearFragment extends GearFragment {
-    private static final String TAG = "NewGearFragment";
 
     public NewGearFragment() {}
 

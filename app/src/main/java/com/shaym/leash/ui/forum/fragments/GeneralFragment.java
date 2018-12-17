@@ -3,7 +3,7 @@ package com.shaym.leash.ui.forum.fragments;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Query;
 
-import static com.shaym.leash.logic.CONSTANT.GENERAL_POSTS;
+import static com.shaym.leash.logic.utils.CONSTANT.GENERAL_POSTS;
 
 public class GeneralFragment extends ForumFragment {
     public static final String TAG = "GeneralFragment";

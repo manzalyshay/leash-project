@@ -2,35 +2,80 @@ package com.shaym.leash.logic.user;
 
 import com.google.firebase.database.IgnoreExtraProperties;
 
+import java.io.Serializable;
+
 @IgnoreExtraProperties
-public class Profile {
+public class Profile implements Serializable {
 
     private String displayname;
     private String email;
+    private boolean isemailhidden;
+    private String phonenumber;
+
+    private boolean isphonehidden;
     private String avatarurl;
     private double currentlat;
     private double currentlng;
     private int forumpostsamount;
     private int gearpostsamount;
-    private int inboxmsgsmount;
-    private int outboxmsgsmount;
-
+    private int conversationssmount;
+    private int unreadmsgsamount;
     private String uid;
+
+    public String getPushtoken() {
+        return pushtoken;
+    }
+
+    public void setPushtoken(String pushtoken) {
+        this.pushtoken = pushtoken;
+    }
+
+    private String pushtoken;
+
+
+    public boolean isIsemailhidden() {
+        return isemailhidden;
+    }
+
+    public void setIsemailhidden(boolean isemailhidden) {
+        this.isemailhidden = isemailhidden;
+    }
+
+    public String getPhonenumber() {
+        return phonenumber;
+    }
+
+    public void setPhonenumber(String phonenumber) {
+        this.phonenumber = phonenumber;
+    }
+
+    public boolean isIsphonehidden() {
+        return isphonehidden;
+    }
+
+    public void setIsphonehidden(boolean isphonehidden) {
+        this.isphonehidden = isphonehidden;
+    }
+
 
     public  Profile(){
     }
 
-    public Profile(String email, String uid, String displayname, double currentlat, double currentlng, int forumpostsamount, int gearpostsamount, int inboxmsgsmount, int outboxmsgsmount, String avatarurl) {
+    public Profile(String email, boolean isemailhidden, String phonenumber, boolean isphonehidden, String uid, String displayname, double currentlat, double currentlng, int forumpostsamount, int gearpostsamount, int conversationssmount, int unreadmsgsamount, String avatarurl, String pushtoken) {
         this.email = email;
+        this.isemailhidden = isemailhidden;
+        this.phonenumber = phonenumber;
+        this.isphonehidden = isphonehidden;
         this.uid = uid;
         this.displayname = displayname;
         this.currentlat = currentlat;
         this.currentlng = currentlng;
         this.forumpostsamount = forumpostsamount;
         this.gearpostsamount = gearpostsamount;
-        this.inboxmsgsmount = inboxmsgsmount;
-        this.outboxmsgsmount = outboxmsgsmount;
+        this.conversationssmount = conversationssmount;
+        this.unreadmsgsamount = unreadmsgsamount;
         this.avatarurl = avatarurl;
+        this.pushtoken = pushtoken;
     }
 
     public void setDisplayname(String disname) {
@@ -54,9 +99,7 @@ public class Profile {
     }
 
     public String getDisplayname() {
-        if (displayname.isEmpty() || displayname == null){
-            setDisplayname(email.substring(0, email.indexOf("@")));
-        }
+
         return displayname;
     }
 
@@ -96,24 +139,24 @@ public class Profile {
         return gearpostsamount;
     }
 
-    public int getInboxmsgsmount() {
-        return inboxmsgsmount;
-    }
-
     public void setGearpostsamount(int gearpostsamount) {
         this.gearpostsamount = gearpostsamount;
     }
 
-    public void setInboxmsgsmount(int messagesamount) {
-        this.inboxmsgsmount = messagesamount;
+    public int getConversationssmount() {
+        return conversationssmount;
     }
 
-    public int getOutboxmsgsmount() {
-        return outboxmsgsmount;
+    public void setConversationssmount(int conversationssmount) {
+        this.conversationssmount = conversationssmount;
     }
 
-    public void setOutboxmsgsmount(int outboxmsgsmount) {
-        this.outboxmsgsmount = outboxmsgsmount;
+    public int getUnreadmsgsamount() {
+        return unreadmsgsamount;
+    }
+
+    public void setUnreadmsgsamount(int unreadmsgsamount) {
+        this.unreadmsgsamount = unreadmsgsamount;
     }
 
     @Override
@@ -121,13 +164,16 @@ public class Profile {
         return "Profile{" +
                 "displayname='" + displayname + '\'' +
                 ", email='" + email + '\'' +
+                ", isemailhidden=" + isemailhidden +
+                ", phonenumber='" + phonenumber + '\'' +
+                ", isphonehidden=" + isphonehidden +
                 ", avatarurl='" + avatarurl + '\'' +
                 ", currentlat=" + currentlat +
                 ", currentlng=" + currentlng +
                 ", forumpostsamount=" + forumpostsamount +
                 ", gearpostsamount=" + gearpostsamount +
-                ", inboxmsgsmount=" + inboxmsgsmount +
-                ", outboxmsgsmount=" + outboxmsgsmount +
+                ", conversationssmount=" + conversationssmount +
+                ", unreadmsgsamount=" + unreadmsgsamount +
                 ", uid='" + uid + '\'' +
                 '}';
     }

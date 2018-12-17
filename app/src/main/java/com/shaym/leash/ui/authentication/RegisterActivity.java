@@ -20,6 +20,8 @@ import com.google.firebase.auth.UserProfileChangeRequest;
 import com.shaym.leash.R;
 import com.shaym.leash.ui.home.HomeActivity;
 
+import static com.shaym.leash.ui.authentication.LoginActivity.isEmailValid;
+
 public class RegisterActivity extends AppCompatActivity implements View.OnClickListener {
 
     private FirebaseAuth mAuth;
@@ -27,6 +29,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
     private EditText mSignUpEmailField;
     private EditText mSignUpPassField;
     private EditText mSignUpNameField;
+    public static final String REGISTER_KEY = "REGISTER_KEY";
 
     private static final String TAG = "RegisterActivity";
 
@@ -50,44 +53,48 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
             case R.id.signupbtn:
                 Log.d(TAG, "onClick: LoginBtn");
 
+                String disname = mSignUpNameField.getText().toString();
                 String email = mSignUpEmailField.getText().toString();
                 String pass = mSignUpPassField.getText().toString();
-                if (email.isEmpty() || pass.isEmpty()){
-                    Toast.makeText(RegisterActivity.this, "Email/Password is missing.",
+
+                if (email.isEmpty() || pass.isEmpty() || disname.isEmpty()){
+                    Toast.makeText(RegisterActivity.this, R.string.fields_missing,
                             Toast.LENGTH_SHORT).show();
                 }
                 else {
 
                     if (pass.length() < 6){
-                        Toast.makeText(RegisterActivity.this, "Password should be at least 6 characters",
+                        Toast.makeText(RegisterActivity.this, R.string.password_6_chars_message,
                                 Toast.LENGTH_SHORT).show();
+                    }
 
+                    if (!isEmailValid(email)){
+                        Toast.makeText(RegisterActivity.this, R.string.enter_valid_email_message,
+                                Toast.LENGTH_SHORT).show();
                     }
                     else {
                         mAuth.createUserWithEmailAndPassword(email, pass)
-                                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                                    @Override
-                                    public void onComplete(@NonNull Task<AuthResult> task) {
-                                        if (task.isSuccessful()) {
-                                            // Sign in success, update UI with the signed-in user's information
-                                            Log.d(TAG, "createUserWithEmail:success");
-                                            FirebaseUser user = mAuth.getCurrentUser();
-                                            if (!mSignUpNameField.getText().toString().isEmpty()) {
-                                                UserProfileChangeRequest profileUpdate = new UserProfileChangeRequest.Builder()
-                                                        .setDisplayName(mSignUpNameField.getText().toString()).build();
-                                                user.updateProfile(profileUpdate);
-                                            }
-                                            updateUI(user);
-                                        } else {
-                                            // If sign in fails, display a message to the user.
-                                            Log.w(TAG, "createUserWithEmail:failure", task.getException());
-                                            Toast.makeText(RegisterActivity.this, "Authentication failed.",
-                                                    Toast.LENGTH_SHORT).show();
-                                            updateUI(null);
-                                        }
+                                .addOnCompleteListener(this, task -> {
+                                    if (task.isSuccessful()) {
+                                        // Sign in success, update UI with the signed-in user's information
+                                        Log.d(TAG, "createUserWithEmail:success");
+                                        FirebaseUser user = mAuth.getCurrentUser();
+                                            UserProfileChangeRequest profileUpdate = new UserProfileChangeRequest.Builder()
+                                                    .setDisplayName(mSignUpNameField.getText().toString()).build();
+                                            user.updateProfile(profileUpdate).addOnCompleteListener(task1 -> {
+                                                updateUI(user);
 
-                                        // ...
+                                            });
+
+                                    } else {
+                                        // If sign in fails, display a message to the user.
+                                        Log.w(TAG, "createUserWithEmail:failure", task.getException());
+                                        Toast.makeText(RegisterActivity.this, "Authentication failed.",
+                                                Toast.LENGTH_SHORT).show();
+                                        updateUI(null);
                                     }
+
+                                    // ...
                                 });
                     }
                     break;
@@ -97,7 +104,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
 
     private void  updateUI(FirebaseUser user) {
         if (user != null) {
-            startActivity(new Intent(RegisterActivity.this, HomeActivity.class));
+            startActivity(new Intent(RegisterActivity.this, HomeActivity.class).putExtra(REGISTER_KEY, "REGISTER"));
         }
 
     }

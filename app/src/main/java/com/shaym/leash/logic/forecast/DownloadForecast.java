@@ -1,12 +1,12 @@
 package com.shaym.leash.logic.forecast;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
-
 
 import com.shaym.leash.MainApplication;
 import com.shaym.leash.R;
@@ -17,7 +17,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -32,13 +31,7 @@ import static com.shaym.leash.ui.forecast.ForecastActivity.TELAVIV_TAG;
 
 
 public class DownloadForecast extends AsyncTask<Integer, Void, ArrayList<ForecastObject>> {
-    private long mLocalTimeStamp;
-    private float mAbsMinBreakingHeight;
-    private float mAbsMaxBreakingHeight;
-    private int mWindSpeed;
-    private int mWindDirection;
-    private int mTempChill;
-    private int mTemp;
+    @SuppressLint("StaticFieldLeak")
     private Context mContext;
 
     public DownloadForecast (Context ctx){
@@ -72,7 +65,8 @@ public class DownloadForecast extends AsyncTask<Integer, Void, ArrayList<Forecas
 
         Log.e(TAG, "Response from url: " + jsonStr);
 
-        ArrayList<ForecastObject> forecasts = new ArrayList<ForecastObject>();
+        ArrayList<ForecastObject> forecasts;
+        forecasts = new ArrayList<>();
 
         if (jsonStr != null) {
             try {
@@ -83,29 +77,29 @@ public class DownloadForecast extends AsyncTask<Integer, Void, ArrayList<Forecas
                     JSONObject jsonobj = jsonarr.getJSONObject(i);
 //                    Log.e(TAG, "parsing obj: " + jsonobj);
 
-                    mLocalTimeStamp = jsonobj.getLong("localTimestamp");
+                    long mLocalTimeStamp = jsonobj.getLong("localTimestamp");
 //                    Log.e(TAG, "localtimestamp: " + mLocalTimeStamp);
 
                     JSONObject swell = jsonobj.getJSONObject("swell");
 //                    Log.e(TAG, "swellobject: " + swell);
-                    mAbsMinBreakingHeight = (float)swell.getDouble("absMinBreakingHeight");
+                    float mAbsMinBreakingHeight = (float) swell.getDouble("absMinBreakingHeight");
 //                    Log.e(TAG, "absMinBreakingHeight: " + mAbsMinBreakingHeight);
-                    mAbsMaxBreakingHeight = (float)swell.getDouble("absMaxBreakingHeight");
+                    float mAbsMaxBreakingHeight = (float) swell.getDouble("absMaxBreakingHeight");
 //                    Log.e(TAG, "absMaxBreakingHeight: " + mAbsMaxBreakingHeight);
 
 
                     JSONObject wind = jsonobj.getJSONObject("wind");
 //                    Log.e(TAG, "windobject: " + wind);
-                    mWindSpeed = wind.getInt("speed");
+                    int mWindSpeed = wind.getInt("speed");
 //                    Log.e(TAG, "WindSpeed: " + mWindSpeed);
-                    mWindDirection = wind.getInt("direction");
+                    int mWindDirection = wind.getInt("direction");
 //                    Log.e(TAG, "WindDirection: " + mWindDirection);
-                    mTempChill = wind.getInt("chill");
+                    int mTempChill = wind.getInt("chill");
 //                    Log.e(TAG, "TempChill: " + mTempChill);
 
                     JSONObject condition = jsonobj.getJSONObject("condition");
 //                    Log.e(TAG, "condition: " + condition);
-                    mTemp = condition.getInt("temperature");
+                    int mTemp = condition.getInt("temperature");
 //                    Log.e(TAG, "Temp: " + mTemp);
 
                     forecasts.add(new ForecastObject(location, mLocalTimeStamp, mAbsMinBreakingHeight, mAbsMaxBreakingHeight, mWindSpeed, mWindDirection, mTempChill, mTemp));
@@ -124,6 +118,7 @@ public class DownloadForecast extends AsyncTask<Integer, Void, ArrayList<Forecas
         return forecasts;
     }
 
+    @SuppressLint("ShowToast")
     @Override
     protected void onPostExecute(ArrayList<ForecastObject> result) {
         super.onPostExecute(result);
@@ -133,7 +128,7 @@ public class DownloadForecast extends AsyncTask<Integer, Void, ArrayList<Forecas
             Log.d("sender", "Broadcasting Forecast Result");
             Intent intent = new Intent("forecast");
             // You can also include some extra data.
-            intent.putExtra("result", (Serializable) result);
+            intent.putExtra("result", result);
             LocalBroadcastManager.getInstance(MainApplication.getInstace().getApplicationContext()).sendBroadcast(intent);
         }
         else {
