@@ -1,184 +1,191 @@
 package com.shaym.leash.ui.home.cameras;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.AppBarLayout;
-import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.app.Fragment;
-import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.widget.DefaultItemAnimator;
-import android.support.v7.widget.GridLayoutManager;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.shaym.leash.MainApplication;
 import com.shaym.leash.R;
-import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import static com.shaym.leash.ui.home.cameras.CamerasAdapter.PLAYER_STREAM;
-import static com.shaym.leash.ui.home.cameras.CamerasAdapter.WEB_STREAM;
+import static com.shaym.leash.logic.utils.CONSTANT.PLAYER_STREAM;
+import static com.shaym.leash.logic.utils.CONSTANT.WEB_STREAM;
 
 /**
  * Created by shaym on 2/17/18.
  */
-public class CamerasFragment extends Fragment {
+public class CamerasFragment extends Fragment implements onCameraSelectedListener, View.OnClickListener {
 
     private CamerasAdapter mAdapter;
-    private List<Camera> mCamerasList = new ArrayList<>();
-    private View mView;
-    private TextView mCamerasHeader;
-    private static final String TAG = "CamerasFragment";
+    private List<Camera> mIsraelCamerasList = new ArrayList<>();
+    private List<Camera> mCaliforniaCamerasList = new ArrayList<>();
 
+    private static final String TAG = "CamerasFragment";
+    public static final String CAMERA_PARCE = "CAMERA_PARCE";
+    private boolean mIsraelSelected = true;
+    private TextView mIsraelCamerasButton;
+    private TextView mCaliforniaCamerasButton;
+    private RecyclerView mRecyclerView;
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull final  LayoutInflater inflater, @Nullable final ViewGroup container, @Nullable Bundle savedInstanceState) {
-            mView = inflater.inflate(R.layout.fragment_cameras, container, false);
-        RecyclerView mRecyclerView = mView.findViewById(R.id.recycler_view);
-        mCamerasHeader = mView.findViewById(R.id.cameras_header);
+    public View onCreateView(@NonNull final LayoutInflater inflater, @Nullable final ViewGroup container, @Nullable Bundle savedInstanceState) {
+       return inflater.inflate(R.layout.fragment_cameras, container, false);
 
-        mAdapter = new CamerasAdapter(getActivity(), mCamerasList, Objects.requireNonNull(getActivity()).getSupportFragmentManager());
-
-        RecyclerView.LayoutManager mLayoutManager = new GridLayoutManager(mView.getContext(), 2);
-        mRecyclerView.setLayoutManager(mLayoutManager);
-        mRecyclerView.addItemDecoration(new GridSpacingItemDecoration(2, dpToPx(), true));
-        mRecyclerView.setItemAnimator(new DefaultItemAnimator());
-        mRecyclerView.setAdapter(mAdapter);
-
-        LocalBroadcastManager.getInstance(MainApplication.getInstace().getApplicationContext()).registerReceiver(mMessageReceiver,
-                new IntentFilter(getString(R.string.broadcast_cameras_changed)));
-
-        int mCountrySelect = 0;
-
-        prepareCameras(mCountrySelect);
-
-        try {
-            Picasso.get().load(R.drawable.wave_banner).into((ImageView) mView.findViewById(R.id.backdrop));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        initCollapsingToolbar();
-
-
-        return mView;
     }
 
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        Log.d(TAG, "onViewCreated: ");
+
+        mRecyclerView = Objects.requireNonNull(getView()).findViewById(R.id.cameras_list);
+        mAdapter = new CamerasAdapter(this, mIsraelCamerasList);
+        LinearLayoutManager mManager = new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL, true);
+        mRecyclerView.setLayoutManager(mManager);
+        mRecyclerView.setAdapter(mAdapter);
+        prepareCameras();
+
+        mIsraelCamerasButton = getView().findViewById(R.id.cameras_israel_label);
+        mIsraelCamerasButton.setOnClickListener(this);
+        mCaliforniaCamerasButton = getView().findViewById(R.id.cameras_california_label);
+        mCaliforniaCamerasButton.setOnClickListener(this);
+
+    }
+
+    private void setVideoViewPlayerFragment(Camera camera) {
+        VideoViewPlayerFragment childFragment = new VideoViewPlayerFragment();
+
+        Bundle bundle = new Bundle();
+        bundle.putParcelable(CAMERA_PARCE, camera);
+        childFragment.setArguments(bundle);
+
+        FragmentTransaction transaction = getChildFragmentManager().beginTransaction();
+        transaction.replace(R.id.player_fragment_container, childFragment).commit();
+    }
+
+    private void setWebViewPlayerFragment(Camera camera) {
+        WebViewPlayerFragment childFragment = new WebViewPlayerFragment();
+
+        Bundle bundle = new Bundle();
+        bundle.putParcelable(CAMERA_PARCE, camera);
+        childFragment.setArguments(bundle);
+
+        FragmentTransaction transaction = getChildFragmentManager().beginTransaction();
+        transaction.replace(R.id.player_fragment_container, childFragment).commit();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        Log.d(TAG, "onStart: ");
+
+        setVideoViewPlayerFragment(mIsraelCamerasList.get(0));
+    }
+
+    private void prepareCameras() {
+        mIsraelCamerasList.clear();
+        mCaliforniaCamerasList.clear();
+
+        Camera c = new Camera(getString(R.string.hiltonB_cam_title), getString(R.string.telaviv_location), getString(R.string.HiltonB), PLAYER_STREAM, R.drawable.hilton_cover);
+        mIsraelCamerasList.add(c);
+
+        Camera b = new Camera(getString(R.string.ceasearea_camtitle), getString(R.string.shfeld_location), getString(R.string.Caesarea), WEB_STREAM, R.drawable.netanya_cover);
+        mIsraelCamerasList.add(b);
+
+        Camera a = new Camera(getString(R.string.hiltonA_cam_title), getString(R.string.telaviv_location), getString(R.string.HiltonA), PLAYER_STREAM, R.drawable.hilton_cover);
+        mIsraelCamerasList.add(a);
+
+        Camera f = new Camera(getString(R.string.gordon), getString(R.string.telaviv_location), getString(R.string.Gordon), PLAYER_STREAM, R.drawable.hilton_cover);
+        mIsraelCamerasList.add(f);
+
+        Camera g = new Camera(getString(R.string.marina_cam_title), getString(R.string.herzelia_location), getString(R.string.MarinaHerzelia), WEB_STREAM, R.drawable.herzelia_cover);
+        mIsraelCamerasList.add(g);
 
 
-    private void prepareCameras(int mCountrySelect) {
+        Camera t = new Camera(getString(R.string.santa_monica_title), getString(R.string.cameras_title_california), getString(R.string.Santa_Monica), WEB_STREAM, R.drawable.herzelia_cover);
+        mCaliforniaCamerasList.add(t);
 
-        mCamerasList.clear();
+        Camera y = new Camera(getString(R.string.Huntington_Beach_title), getString(R.string.cameras_title_california), getString(R.string.Huntington_Beach), WEB_STREAM, R.drawable.herzelia_cover);
+        mCaliforniaCamerasList.add(y);
 
-        switch (mCountrySelect) {
-            case 0:
-            Camera a = new Camera(getString(R.string.hiltonA_cam_title), getString(R.string.telaviv_location), getString(R.string.HiltonA), PLAYER_STREAM, "hiltona");
-            mCamerasList.add(a);
+        Camera u = new Camera(getString(R.string.Redondo_Beach_title), getString(R.string.cameras_title_california), getString(R.string.Redondo_Beach), WEB_STREAM, R.drawable.herzelia_cover);
+        mCaliforniaCamerasList.add(u);
 
-            Camera b = new Camera(getString(R.string.ceasearea_camtitle), getString(R.string.shfeld_location), getString(R.string.Caesarea), WEB_STREAM, "");
-            mCamerasList.add(b);
+        Camera i = new Camera(getString(R.string.Farallon_Islands_title), getString(R.string.cameras_title_california), getString(R.string.Farallon_Islands), WEB_STREAM, R.drawable.herzelia_cover);
+        mCaliforniaCamerasList.add(i);
 
-            Camera c = new Camera(getString(R.string.hiltonB_cam_title), getString(R.string.telaviv_location), getString(R.string.HiltonB), PLAYER_STREAM, "hiltonb");
-            mCamerasList.add(c);
-
-            Camera f = new Camera(getString(R.string.gordon), getString(R.string.telaviv_location), getString(R.string.Gordon), PLAYER_STREAM, "gordon");
-            mCamerasList.add(f);
-
-            Camera g = new Camera(getString(R.string.marina_cam_title), getString(R.string.herzelia_location), getString(R.string.MarinaHerzelia), WEB_STREAM, "");
-            mCamerasList.add(g);
-
-            mCamerasHeader.setText(getString(R.string.cameras_title_israel));
-            break;
-
-            case 1:
-
-                Camera t = new Camera(getString(R.string.santa_monica_title), getString(R.string.cameras_title_california), getString(R.string.Santa_Monica), WEB_STREAM, "");
-                mCamerasList.add(t);
-
-                Camera y = new Camera(getString(R.string.Huntington_Beach_title), getString(R.string.cameras_title_california), getString(R.string.Huntington_Beach), WEB_STREAM, "");
-                mCamerasList.add(y);
-
-                Camera u = new Camera(getString(R.string.Redondo_Beach_title), getString(R.string.cameras_title_california), getString(R.string.Redondo_Beach), WEB_STREAM, "");
-                mCamerasList.add(u);
-
-                Camera i = new Camera(getString(R.string.Farallon_Islands_title), getString(R.string.cameras_title_california), getString(R.string.Farallon_Islands), WEB_STREAM, "");
-                mCamerasList.add(i);
-
-                mCamerasHeader.setText(getString(R.string.cameras_title_california));
-
-                break;
-
-        }
 
         mAdapter.notifyDataSetChanged();
     }
 
-
-    private void initCollapsingToolbar() {
-        final CollapsingToolbarLayout collapsingToolbar =
-                mView.findViewById(R.id.collapsing_toolbar);
-        collapsingToolbar.setTitle(" ");
-        AppBarLayout appBarLayout = mView.findViewById(R.id.appbar);
-        appBarLayout.setExpanded(true);
-
-        // hiding & showing the title when toolbar expanded & collapsed
-        appBarLayout.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
-            boolean isShow = false;
-            int scrollRange = -1;
-
-            @Override
-            public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
-                if (scrollRange == -1) {
-                    scrollRange = appBarLayout.getTotalScrollRange();
-                }
-                if (scrollRange + verticalOffset == 0) {
-                    collapsingToolbar.setTitle(getString(R.string.app_name));
-                    isShow = true;
-                } else if (isShow) {
-                    collapsingToolbar.setTitle(" ");
-                    isShow = false;
-                }
+    @Override
+    public void onCameraSelected(Camera cam) {
+        Fragment f = getChildFragmentManager().findFragmentById(R.id.player_fragment_container);
+        if (f instanceof VideoViewPlayerFragment) {
+            if (cam.getStreamKind().equals(PLAYER_STREAM)) {
+                // do something with f
+                ((VideoViewPlayerFragment) f).updateCamera(cam);
+            } else {
+                setWebViewPlayerFragment(cam);
             }
-        });
-    }
+        } else {
+            if (cam.getStreamKind().equals(PLAYER_STREAM)) {
+                setVideoViewPlayerFragment(cam);
+            } else {
+                ((WebViewPlayerFragment) f).updateCamera(cam);
 
-    private int dpToPx() {
-        Resources r = getResources();
-        return Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10, r.getDisplayMetrics()));
-    }
-
-    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            // Get extra data included in the Intent
-            Log.d(TAG +"receiver", "Got message: ");
-            int country = intent.getIntExtra("val", -1);
-            prepareCameras(country);
+            }
 
         }
-    };
+    }
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
-        LocalBroadcastManager.getInstance(MainApplication.getInstace().getApplicationContext()).unregisterReceiver(mMessageReceiver);
+    public void onClick(View v) {
+        switch (v.getId()){
+            case R.id.cameras_israel_label:
+                if (!mIsraelSelected){
+                    setIsraelCameras();
+                }
+                break;
 
+            case R.id.cameras_california_label:
+                if (mIsraelSelected){
+                    setCaliforniaCameras();
+
+                }
+                break;
+        }
+    }
+
+    private void setCaliforniaCameras() {
+        mIsraelSelected = false;
+        mCaliforniaCamerasButton.setBackground(Objects.requireNonNull(getActivity()).getDrawable(R.drawable.underline_cameras));
+        mIsraelCamerasButton.setBackgroundResource(R.color.transparent);
+
+        mAdapter = new CamerasAdapter(this, mCaliforniaCamerasList);
+        mRecyclerView.swapAdapter(mAdapter, true);
+    }
+
+    private void setIsraelCameras() {
+        mIsraelSelected = true;
+        mIsraelCamerasButton.setBackground(Objects.requireNonNull(getActivity()).getDrawable(R.drawable.underline_cameras));
+        mCaliforniaCamerasButton.setBackgroundResource(R.color.transparent);
+        mAdapter = new CamerasAdapter(this, mIsraelCamerasList);
+        mRecyclerView.swapAdapter(mAdapter, true);
     }
 }
+
+
 

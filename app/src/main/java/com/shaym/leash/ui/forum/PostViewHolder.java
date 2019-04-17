@@ -1,10 +1,14 @@
 package com.shaym.leash.ui.forum;
 
+import android.annotation.TargetApi;
+import android.graphics.Outline;
 import android.net.Uri;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewOutlineProvider;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -51,7 +55,7 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
         mDatabase = FirebaseDatabase.getInstance().getReference();
         progressBar = itemView.findViewById(R.id.post_author_photo_progressbar);
         authorPic = itemView.findViewById(R.id.post_author_photo);
-        titleView = itemView.findViewById(R.id.post_title);
+        //titleView = itemView.findViewById(R.id.post_title);
         authorView = itemView.findViewById(R.id.post_author);
         starView = itemView.findViewById(R.id.star);
         deleteView = itemView.findViewById(R.id.delete);
@@ -61,15 +65,16 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
 
 
     public void bindToPost(Post post, View.OnClickListener starClickListener, View.OnClickListener deleteClickListener) {
-        titleView.setText(post.title);
+//        titleView.setText(post.title);
         authorView.setText(post.author);
         numStarsView.setText(String.valueOf(post.starCount));
         bodyView.setText(post.body);
         if (post.uid.equals(getUid())){
             deleteView.setVisibility(View.VISIBLE);
         }
-        deleteView.setOnClickListener(deleteClickListener);
-        starView.setOnClickListener(starClickListener);
+//        deleteView.setOnClickListener(deleteClickListener);
+//        starView.setOnClickListener(starClickListener);
+
 
         mDatabase.child(USERS_TABLE).child(post.uid).addListenerForSingleValueEvent(
                 new ValueEventListener() {
@@ -142,7 +147,7 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
                             @Override
                             public void onError(Exception e) {
                                 //Try again online if cache failed
-
+                                e.printStackTrace();
                                 progressBar.setVisibility(View.INVISIBLE);
 
                             }
@@ -162,6 +167,9 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
     public String getUid() {
         return Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
     }
+
+
+
 
 
 }

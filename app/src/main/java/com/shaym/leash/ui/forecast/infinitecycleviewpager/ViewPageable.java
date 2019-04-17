@@ -10,7 +10,7 @@ import static android.support.v4.view.ViewPager.PageTransformer;
  * Created by GIGAMOLE on 7/27/16.
  */
 
-// Interface that duplicate methods of ViewPager for implements it in Horizontal and Vertical
+// Interface that duplicate methods of LeashViewPager for implements it in Horizontal and Vertical
 // InfiniteCycleViewPager for casting them to ViewPageable in InfiniteCycleManager
 interface ViewPageable {
 

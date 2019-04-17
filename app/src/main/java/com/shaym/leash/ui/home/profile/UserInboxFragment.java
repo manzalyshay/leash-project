@@ -21,6 +21,7 @@ import com.shaym.leash.R;
 import com.shaym.leash.logic.utils.FireBaseUsersHelper;
 
 import java.util.List;
+import java.util.Objects;
 
 import static com.shaym.leash.logic.utils.FireBaseUsersHelper.BROADCAST_USER_CONVERSATIONS;
 
@@ -51,7 +52,6 @@ public class UserInboxFragment extends Fragment {
         LocalBroadcastManager.getInstance(v.getContext()).registerReceiver(mUserConversationsReceiver,
                 new IntentFilter(BROADCAST_USER_CONVERSATIONS));
 
-        FireBaseUsersHelper.getInstance().loadUserConversations();
 
         // specify an adapter (see also next example)
 
@@ -80,16 +80,28 @@ public class UserInboxFragment extends Fragment {
         }
     };
 
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        FireBaseUsersHelper.getInstance().loadUserConversations();
+
+    }
+
     @Override
     public void onResume() {
         super.onResume();
+
 
         if (mAdapter != null) {
             mAdapter.notifyDataSetChanged();
         }
     }
 
-
-
+    @Override
+    public void onStop() {
+        super.onStop();
+        LocalBroadcastManager.getInstance(Objects.requireNonNull(getContext())).unregisterReceiver(mUserConversationsReceiver);
+    }
 }
 

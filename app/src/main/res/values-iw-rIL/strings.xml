@@ -98,4 +98,17 @@
     <string name="post_content">תוכן הפוסט</string>
     <string name="attach_image">צרף תמונה</string>
     <string name="submit">שלח</string>
+    <string name="select_picture">בחר תמונה</string>
+    <string name="write_a_comment">כתוב תגובה..</string>
+    <string name="upload_images">הוסף תמונות</string>
+    <string name="phone">טלפון</string>
+    <string name="contact_name">איש קשר</string>
+    <string name="price">מחיר</string>
+    <string name="new_gear_post">פוסט למכירה</string>
+    <string name="manufacturer">יצרן</string>
+    <string name="model">דגם</string>
+    <string name="volume">נפח</string>
+    <string name="width">רוחב</string>
+    <string name="height">גובה</string>
+    <string name="year">שנה</string>
 </resources>

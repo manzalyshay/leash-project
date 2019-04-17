@@ -11,9 +11,9 @@ import android.view.ViewGroup;
  * Created by GIGAMOLE on 7/27/16.
  */
 
-// PagerAdapter that wrap original ViewPager adapter with infinite scroll feature.
+// PagerAdapter that wrap original LeashViewPager adapter with infinite scroll feature.
 // There is VIRTUAL_ITEM_COUNT which equals to 10_000_000.
-// At start, ViewPager set position to half of virtual and find nearest zero position.
+// At start, LeashViewPager set position to half of virtual and find nearest zero position.
 class InfiniteCyclePagerAdapter extends PagerAdapter {
 
     private final static int VIRTUAL_ITEM_COUNT = 10_000_000;

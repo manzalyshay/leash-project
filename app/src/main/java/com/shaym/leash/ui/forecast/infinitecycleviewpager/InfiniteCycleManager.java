@@ -37,7 +37,7 @@ class InfiniteCycleManager implements OnNotifyDataSetChangedListener {
     private final static int MIN_CYCLE_COUNT = 3;
     private final static int MIN_POINTER_COUNT = 1;
 
-    // Default ViewPager constants and flags
+    // Default LeashViewPager constants and flags
     final static int DEFAULT_OFFSCREEN_PAGE_LIMIT = 2;
     final static int DEFAULT_PAGE_MARGIN = 0;
     final static boolean DEFAULT_DISABLE_FLAG = false;
@@ -53,7 +53,7 @@ class InfiniteCycleManager implements OnNotifyDataSetChangedListener {
 
     private Context mContext;
 
-    // Infinite ViewPager and adapter
+    // Infinite LeashViewPager and adapter
     private ViewPageable mViewPageable;
     private View mCastViewPageable;
     private InfiniteCyclePagerAdapter mInfiniteCyclePagerAdapter;
@@ -89,7 +89,7 @@ class InfiniteCycleManager implements OnNotifyDataSetChangedListener {
     private boolean mIsAdapterInitialPosition;
     // Flag for data set changed callback to invalidateTransformer()
     private boolean mIsDataSetChanged;
-    // Detect is ViewPager state
+    // Detect is LeashViewPager state
     private int mState;
 
     // Custom transform listener
@@ -389,7 +389,7 @@ class InfiniteCycleManager implements OnNotifyDataSetChangedListener {
         }
     }
 
-    // We are disable multitouch on ViewPager and settling scroll, also we disable outside drag
+    // We are disable multitouch on LeashViewPager and settling scroll, also we disable outside drag
     boolean onTouchEvent(final MotionEvent event) {
         if (mViewPageable.getAdapter() == null || mViewPageable.getAdapter().getCount() == 0)
             return false;
@@ -425,7 +425,7 @@ class InfiniteCycleManager implements OnNotifyDataSetChangedListener {
     }
 
     // Need to get current position of original adapter. We cant override getCurrentItem() method,
-    // because ViewPager must have original viewpager_item count relative to virtual adapter count
+    // because LeashViewPager must have original viewpager_item count relative to virtual adapter count
     int getRealItem() {
         if (mViewPageable.getAdapter() == null ||
                 mViewPageable.getAdapter().getCount() < MIN_CYCLE_COUNT)
@@ -433,7 +433,7 @@ class InfiniteCycleManager implements OnNotifyDataSetChangedListener {
         return mInfiniteCyclePagerAdapter.getVirtualPosition(mViewPageable.getCurrentItem());
     }
 
-    // Now you can call notify data on ViewPager nor adapter to invalidate all of positions
+    // Now you can call notify data on LeashViewPager nor adapter to invalidate all of positions
     void notifyDataSetChanged() {
         if (mInfiniteCyclePagerAdapter == null) {
             mViewPageable.getAdapter().notifyDataSetChanged();

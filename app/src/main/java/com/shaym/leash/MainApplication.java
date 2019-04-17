@@ -7,7 +7,6 @@ import android.util.Log;
 import com.facebook.FacebookSdk;
 import com.google.firebase.database.FirebaseDatabase;
 import com.shaym.leash.logic.user.Profile;
-import com.shaym.leash.ui.utils.BottomNavigationViewHelper;
 import com.squareup.picasso.OkHttp3Downloader;
 import com.squareup.picasso.Picasso;
 
@@ -17,7 +16,6 @@ import com.squareup.picasso.Picasso;
 
 public class MainApplication extends Application {
     private static final String TAG = "MainApplication";
-    public static BottomNavigationViewHelper mBottomNavHelper;
     private static MainApplication mInstance;
     private Profile mCurrentProfile;
 

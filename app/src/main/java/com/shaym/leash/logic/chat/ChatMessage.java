@@ -11,13 +11,13 @@ public class ChatMessage {
     public String uid;
     public String text;
     public String author;
-    public Date timesent;
+    public String timesent;
 
     public ChatMessage() {
         // Default constructor required for calls to DataSnapshot.getValue(Comment.class)
     }
 
-    public ChatMessage(String uid, String author,  String text, Date timesent, boolean isread) {
+    public ChatMessage(String uid, String author,  String text, String timesent, boolean isread) {
         this.uid = uid;
         this.author = author;
         this.text = text;
@@ -58,12 +58,12 @@ public class ChatMessage {
         this.author = author;
     }
 
-    public Date getTimesent() {
+    public String getTimesent() {
 
         return timesent;
     }
 
-    public void setTimesent(Date timesent) {
+    public void setTimesent(String timesent) {
         this.timesent = timesent;
     }
 }

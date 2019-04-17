@@ -43,6 +43,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.shaym.leash.MainApplication;
 import com.shaym.leash.R;
@@ -73,7 +74,7 @@ import static com.shaym.leash.ui.home.chat.ChatFragment.getUid;
 
 
 public class AroundMeFragment extends Fragment implements OnMapReadyCallback, OnMyLocationButtonClickListener,
-         OnMarkerClickListener {
+        OnMarkerClickListener {
     GoogleMap mGoogleMap;
     public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
     private FusedLocationProviderClient mFusedLocationClient;
@@ -90,7 +91,6 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_aroundme, container, false);
-        mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.googleMap);
 
         return v;
     }
@@ -98,6 +98,8 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
     @Override
     public void onStart() {
         super.onStart();
+        mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.googleMap);
+
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(Objects.requireNonNull(getActivity()));
         checkLocationPermission();
 
@@ -243,52 +245,52 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
             mGoogleMap.setOnMarkerClickListener(this);
 
 
-                    MAX_NUMBER_OF_MARKERS = safeLongToInt(mAllUsers.size());
-                    markerlocation = new HashMap<>();
+            MAX_NUMBER_OF_MARKERS = safeLongToInt(mAllUsers.size());
+            markerlocation = new HashMap<>();
 
-                    for (int i = 0; i<mAllUsers.size(); i++) {
-                        Profile user = mAllUsers.get(i);
+            for (int i = 0; i<mAllUsers.size(); i++) {
+                Profile user = mAllUsers.get(i);
 
-                        LatLng latLng = new LatLng(user.getcurrentlat(), user.getcurrentlng());
-                        markerlocation.put(user, latLng);
+                LatLng latLng = new LatLng(user.getcurrentlat(), user.getcurrentlng());
+                markerlocation.put(user, latLng);
 
-                    }
-                    for (Profile user : markerlocation.keySet()) {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                            markerlocation.replace(user, markerlocation.get(user), coordinateForMarker(markerlocation.get(user), user));
+            }
+            for (Profile user : markerlocation.keySet()) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    markerlocation.replace(user, markerlocation.get(user), coordinateForMarker(markerlocation.get(user), user));
+                }
+                Marker m = mGoogleMap.addMarker(new MarkerOptions()
+                        .position(markerlocation.get(user))
+                        .title(user.getDisplayname()));
+                final PoiTarget pt = new PoiTarget(m);
+
+                poiTargets.add(pt);
+                if (!user.getAvatarURL().isEmpty()) {
+
+                    if (user.getAvatarURL().charAt(0) == 'p') {
+                        try {
+                            FireBaseUsersHelper.getInstance().getStorageReference().child(user.getAvatarURL()).getDownloadUrl().addOnSuccessListener(uri -> Picasso.get().load(uri).resize(100, 100).centerCrop().transform(new CircleTransform()).into(pt));
+
+                        } catch (Exception e) {
+                            Log.d(TAG, "onDataChange: " + e.toString());
                         }
-                        Marker m = mGoogleMap.addMarker(new MarkerOptions()
-                                .position(markerlocation.get(user))
-                                .title(user.getDisplayname()));
-                        final PoiTarget pt = new PoiTarget(m);
+                    } else {
+                        try {
+                            Picasso.get().load(Uri.parse((user.getAvatarURL()))).resize(100, 100).centerCrop().transform(new CircleTransform()).into(pt);
 
-                        poiTargets.add(pt);
-                        if (!user.getAvatarURL().isEmpty()) {
-
-                            if (user.getAvatarURL().charAt(0) == 'p') {
-                                try {
-                                    FireBaseUsersHelper.getInstance().getStorageReference().child(user.getAvatarURL()).getDownloadUrl().addOnSuccessListener(uri -> Picasso.get().load(uri).resize(100, 100).centerCrop().transform(new CircleTransform()).into(pt));
-
-                                } catch (Exception e) {
-                                    Log.d(TAG, "onDataChange: " + e.toString());
-                                }
-                            } else {
-                                try {
-                                    Picasso.get().load(Uri.parse((user.getAvatarURL()))).resize(100, 100).centerCrop().transform(new CircleTransform()).into(pt);
-
-                                } catch (Exception e) {
-                                    Log.d(TAG, "onDataChange: " + e.toString());
-                                }
-                            }
-
-                        } else {
-                            Picasso.get().load(R.drawable.ic_launcher).resize(100, 100).centerCrop().transform(new CircleTransform()).into(pt);
-
+                        } catch (Exception e) {
+                            Log.d(TAG, "onDataChange: " + e.toString());
                         }
                     }
 
+                } else {
+                    Picasso.get().load(R.drawable.ic_launcher).resize(100, 100).centerCrop().transform(new CircleTransform()).into(pt);
 
                 }
+            }
+
+
+        }
 
 
 
@@ -364,10 +366,10 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
 
         for (int i = 0; i<mAllUsers.size(); i++) {
             Profile user = mAllUsers.get(i);
-                    if (marker.getTitle().equals(user.getDisplayname())) {
-                        showPopup(user);
-                    }
-                }
+            if (marker.getTitle().equals(user.getDisplayname())) {
+                showPopup(user);
+            }
+        }
 
         return false;
     }
@@ -479,9 +481,9 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
         }
         else{
             phonepic.setOnClickListener(view -> {
-                        Intent intent = new Intent(Intent.ACTION_DIAL, Uri.fromParts("tel", mClickedUser.getPhonenumber().trim(), null));
-                        startActivity(intent);
-        });
+                Intent intent = new Intent(Intent.ACTION_DIAL, Uri.fromParts("tel", mClickedUser.getPhonenumber().trim(), null));
+                startActivity(intent);
+            });
         }
 
         dmpic.setOnClickListener(view -> {
@@ -493,13 +495,13 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
             assert getFragmentManager() != null;
             cf.show(getFragmentManager(), "fragment_chat");
 
-                 mClickedUserDialog.dismiss();
+            mClickedUserDialog.dismiss();
 
 
         });
 
 
-                closedialogpic.setOnClickListener(view -> mClickedUserDialog.dismiss());
+        closedialogpic.setOnClickListener(view -> mClickedUserDialog.dismiss());
 
 
         Objects.requireNonNull(mClickedUserDialog.getWindow()).setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
@@ -514,6 +516,7 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
 
         @Override public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
             try {
+
                 m.setIcon(BitmapDescriptorFactory.fromBitmap(bitmap));
                 poiTargets.remove(this);
                 Log.d(TAG, "onBitmapLoaded: ");
@@ -561,9 +564,13 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
         if (ContextCompat.checkSelfPermission(Objects.requireNonNull(getActivity()),
                 Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
-            mFusedLocationClient.getLastLocation().addOnSuccessListener(location -> FireBaseUsersHelper.getInstance().updateUserLocation(location.getLatitude(), location.getLongitude()));
+            mFusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
+                if (location != null) {
+                    FireBaseUsersHelper.getInstance().updateUserLocation(location.getLatitude(), location.getLongitude());
+                }
 
-        } else {
+            });
+        }else {
 
             Log.d(TAG, "onRequestPermissionsResult: Permission Denied");
 

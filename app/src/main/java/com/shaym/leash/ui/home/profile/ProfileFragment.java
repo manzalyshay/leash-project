@@ -56,7 +56,9 @@ import static android.app.Activity.RESULT_OK;
 import static android.provider.MediaStore.Images.Media.getBitmap;
 import static com.shaym.leash.logic.utils.CONSTANT.PROFILE_PICS;
 import static com.shaym.leash.logic.utils.CONSTANT.USERS_TABLE;
+import static com.shaym.leash.logic.utils.CONSTANT.USER_BUNDLE;
 import static com.shaym.leash.logic.utils.CONSTANT.USER_GEAR_POSTS;
+import static com.shaym.leash.logic.utils.CONSTANT.USER_OBJ;
 import static com.shaym.leash.logic.utils.CONSTANT.USER_POSTS;
 import static com.shaym.leash.logic.utils.FireBaseUsersHelper.BROADCAST_USER;
 
@@ -87,7 +89,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener, P
     private ProgressBar mChangeMailProgressBar;
 
     private UserPostsFragment mUsersPostsFragment;
-    private UserGearPostsFragment mUsersGearPostsFragment;
+//    private UserGearPostsFragment mUsersGearPostsFragment;
     private UserInboxFragment mUserInboxFragment;
 
     private final static int UPLOAD_IMAGE_ID = 01;
@@ -110,18 +112,17 @@ public class ProfileFragment extends Fragment implements View.OnClickListener, P
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_profile, container, false);
 
-        initUI(v);
         return v;
     }
 
     @Override
     public void onStart() {
         super.onStart();
+        initUI();
+
         LocalBroadcastManager.getInstance(Objects.requireNonNull(getContext())).registerReceiver(mUserReceiver,
                 new IntentFilter(BROADCAST_USER));
-        LoadUserData();
-
-
+        FireBaseUsersHelper.getInstance().loadCurrentUserProfile();
     }
 
     @Override
@@ -143,12 +144,15 @@ public class ProfileFragment extends Fragment implements View.OnClickListener, P
 
     }
 
-    private void initUI(View v) {
+    private void initUI() {
         //Fragments
+
+        View v = getView();
         mUsersPostsFragment =  new UserPostsFragment();
-        mUsersGearPostsFragment = new UserGearPostsFragment();
+//        mUsersGearPostsFragment = new UserGearPostsFragment();
         mUserInboxFragment = new UserInboxFragment();
 
+        assert v != null;
         mProfileImage = v.findViewById(R.id.profilepic);
         mProfilePicProgressBar = v.findViewById(R.id.profilepic_progressbar);
         mChangeMailProgressBar = v.findViewById(R.id.changemail_progressbar);
@@ -209,9 +213,10 @@ public class ProfileFragment extends Fragment implements View.OnClickListener, P
         public void onReceive(Context context, Intent intent) {
             // Get extra data included in the Intent
             Log.d(TAG + "receiver", "Got message: ");
-            Bundle args = intent.getBundleExtra("DATA");
+            Bundle args = intent.getBundleExtra(USER_BUNDLE);
 
-            mUser = (Profile) args.getSerializable("USEROBJ");
+            mUser = (Profile) args.getSerializable(USER_OBJ);
+            FireBaseUsersHelper.getInstance().loadUserProfileData();
             updateUI();
 
         }
@@ -265,21 +270,21 @@ public class ProfileFragment extends Fragment implements View.OnClickListener, P
 
 
             case R.id.gearpostslayout:
-                if (mUser == null || mUser.getgearpostsamount() ==0) {
-                    Toast.makeText(getActivity(), "No Gear Posts For User", Toast.LENGTH_SHORT).show();
-                }
-                else {
-                    assert getFragmentManager() != null;
-                    FragmentTransaction transaction = getFragmentManager().beginTransaction();
-
-// Replace whatever is in the fragment_container view with this fragment,
-// and add the transaction to the back stack if needed
-                    transaction.replace(R.id.root_frame_profile_fragment, mUsersGearPostsFragment, USER_GEAR_POSTS);
-
-                    transaction.addToBackStack(null);
-
-                    transaction.commit();
-                }
+//                if (mUser == null || mUser.getgearpostsamount() ==0) {
+//                    Toast.makeText(getActivity(), "No Gear Posts For User", Toast.LENGTH_SHORT).show();
+//                }
+//                else {
+//                    assert getFragmentManager() != null;
+//                    FragmentTransaction transaction = getFragmentManager().beginTransaction();
+//
+//// Replace whatever is in the fragment_container view with this fragment,
+//// and add the transaction to the back stack if needed
+//                    transaction.replace(R.id.root_frame_profile_fragment, mUsersGearPostsFragment, USER_GEAR_POSTS);
+//
+//                    transaction.addToBackStack(null);
+//
+//                    transaction.commit();
+//                }
                 break;
 
             case R.id.incomingmessageslayout:

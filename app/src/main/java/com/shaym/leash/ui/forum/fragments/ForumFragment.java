@@ -24,18 +24,13 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.Transaction;
 import com.shaym.leash.R;
 import com.shaym.leash.logic.forum.Post;
-import com.shaym.leash.ui.forum.ForumActivity;
 import com.shaym.leash.ui.forum.PostViewHolder;
 import com.shaym.leash.ui.home.profile.UserPostsFragment;
 
 import java.util.Objects;
 
 import static com.shaym.leash.logic.utils.CONSTANT.ALL_POSTS;
-import static com.shaym.leash.logic.utils.CONSTANT.GENERAL_POSTS;
-import static com.shaym.leash.logic.utils.CONSTANT.SPOTS_POSTS;
-import static com.shaym.leash.logic.utils.CONSTANT.TRIPS_POSTS;
 import static com.shaym.leash.logic.utils.CONSTANT.USER_POSTS;
-import static com.shaym.leash.ui.forum.ForumActivity.mFab;
 import static com.shaym.leash.ui.forum.fragments.PostFragment.EXTRA_FORUM_KEY;
 import static com.shaym.leash.ui.forum.fragments.PostFragment.EXTRA_POST_KEY;
 
@@ -50,6 +45,7 @@ public abstract class ForumFragment extends Fragment {
     private RecyclerView mRecycler;
     private int frameid;
     private boolean fabExists;
+
 
     @Nullable
     @Override
@@ -135,22 +131,10 @@ public abstract class ForumFragment extends Fragment {
                 final String currentag = model.forum;
                 viewHolder.itemView.setOnClickListener(v -> {
 
-                    switch (currentag){
-                        case GENERAL_POSTS:
-                            ForumActivity.GeneralPostOpened = true;
-                            break;
-                        case SPOTS_POSTS:
-                            ForumActivity.SpotsPostOpened = true;
-                            break;
-                        case TRIPS_POSTS:
-                            ForumActivity.TripsPostOpened = true;
-                            break;
+                    if (com.shaym.leash.ui.forum.ForumFragment.mFab != null){
+                        com.shaym.leash.ui.forum.ForumFragment.mFab.setVisibility(View.INVISIBLE);
                     }
-                    // Launch PostDetailActivity
-                    // Create new fragment and transaction
-                    if (fabExists) {
-                        mFab.setVisibility(View.INVISIBLE);
-                    }
+
                     PostFragment f = new PostFragment();
                     // Supply index input as an argument.
                     Bundle args = new Bundle();

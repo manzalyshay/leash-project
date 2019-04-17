@@ -19,7 +19,11 @@ import com.google.firebase.storage.StorageReference;
 import com.shaym.leash.MainApplication;
 import com.shaym.leash.logic.chat.ChatMessage;
 import com.shaym.leash.logic.forum.Post;
+import com.shaym.leash.logic.gear.BoardGearPost;
+import com.shaym.leash.logic.gear.ClothingGearPost;
+import com.shaym.leash.logic.gear.FinsGearPost;
 import com.shaym.leash.logic.gear.GearPost;
+import com.shaym.leash.logic.gear.LeashGearPost;
 import com.shaym.leash.logic.user.Profile;
 
 import java.util.ArrayList;
@@ -31,6 +35,9 @@ import java.util.Objects;
 import static com.shaym.leash.logic.utils.CONSTANT.ALL_GEAR_POSTS;
 import static com.shaym.leash.logic.utils.CONSTANT.ALL_POSTS;
 import static com.shaym.leash.logic.utils.CONSTANT.CHAT_CONVERSATIONS;
+import static com.shaym.leash.logic.utils.CONSTANT.FORUM_POSTS;
+import static com.shaym.leash.logic.utils.CONSTANT.GEAR_POSTS;
+import static com.shaym.leash.logic.utils.CONSTANT.USED_GEAR_POSTS;
 import static com.shaym.leash.logic.utils.CONSTANT.USERS_TABLE;
 import static com.shaym.leash.logic.utils.CONSTANT.USER_GEAR_POSTS;
 import static com.shaym.leash.logic.utils.CONSTANT.USER_GEAR_POSTS_AMOUNT;
@@ -40,25 +47,15 @@ import static com.shaym.leash.logic.utils.CONSTANT.USER_POSTS_AMOUNT;
 public class FireBasePostsHelper {
 
     private static final String TAG = "FireBaseUsersHelper";
-    private final static String BROADCAST_USER = "FirebaseHelper-mUser";
-    private final static String BROADCAST_USER_BY_ID = "FirebaseHelper-USERbyID";
 
-    private final static String USER_OBJ = "USEROBJ";
-
-    private final static String BROADCAST_ALL_USERS = "FirebaseHelper-allUsers";
     private final static String BROADCAST_USER_CONVERSATIONS = "FirebaseHelper-userConversations";
     private static FireBasePostsHelper instance = new FireBasePostsHelper();
-    private Profile mUser;
-    private Profile mProfileByID;
 
-    private List<Profile> mAllUsers;
     private List<String> mUserConversations;
-    private String mToken = "";
     private FirebaseStorage storage = FirebaseStorage.getInstance();
     private StorageReference storageReference = storage.getReference();
     private DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference();
-    private int mUserTotalUnreadMsgs;
-    private int mUserTotalConversations;
+
 
     private FireBasePostsHelper() {
 
@@ -73,48 +70,105 @@ public class FireBasePostsHelper {
     }
 
     // [START write_fan_out]
-    public void writeNewGearPost(String uid, String type, String author, String title, int price, String phonenumber, String description, String imageurl) {
+    public void writeNewBoardGearPost(String uid, String category, int volume, int height, int width, int year, String model, String manufacturer, String contact, String location, int price, String phonenumber, String description, List<String> picsrefs) {
         // Create new post at /user-posts/$userid/$postid and at
         // /posts/$postid simultaneously
-        String typekey = mDatabase.child(type).push().getKey();
+        String typekey = mDatabase.child(category).push().getKey();
 
-        GearPost post = new GearPost(uid, type, author, title, price, phonenumber, description, imageurl);
+        BoardGearPost post = new BoardGearPost (uid, category,  volume,  height,  width,  year,  model,  manufacturer,  contact,  location,  price,  phonenumber,  description,  picsrefs);
         Map<String, Object> postValues = post.toMap();
 
         Map<String, Object> childUpdates = new HashMap<>();
-        childUpdates.put("/" + ALL_GEAR_POSTS + "/" + typekey, postValues);
-        childUpdates.put("/" + USER_GEAR_POSTS + "/" + uid + "/" + typekey, postValues);
-        childUpdates.put("/" + type + "/" + typekey, postValues);
+        childUpdates.put("/" + GEAR_POSTS + "/" + USED_GEAR_POSTS + "/" + ALL_GEAR_POSTS + "/" + typekey, postValues);
+        childUpdates.put("/" + GEAR_POSTS + "/" + USED_GEAR_POSTS + "/" + USER_GEAR_POSTS + "/" + uid + "/" + typekey, postValues);
+        childUpdates.put("/" + GEAR_POSTS + "/" + USED_GEAR_POSTS + "/" + category + "/" + typekey, postValues);
 
         mDatabase.updateChildren(childUpdates);
     }
+
+    public void  writeNewClothingGearPost(String uid, String category, String manufacturer, String kind, String size,  String contact, String location, int price, String phonenumber, String description, List<String> picsrefs) {
+        // Create new post at /user-posts/$userid/$postid and at
+        // /posts/$postid simultaneously
+        String typekey = mDatabase.child(category).push().getKey();
+
+        ClothingGearPost post = new ClothingGearPost( uid,  category,  manufacturer,  kind,  size,   contact,  location,  price,  phonenumber,  description,  picsrefs) ;
+        Map<String, Object> postValues = post.toMap();
+
+        Map<String, Object> childUpdates = new HashMap<>();
+        childUpdates.put("/" + GEAR_POSTS + "/" + USED_GEAR_POSTS + "/" + ALL_GEAR_POSTS + "/" + typekey, postValues);
+        childUpdates.put("/" + GEAR_POSTS + "/" + USED_GEAR_POSTS + "/" + USER_GEAR_POSTS + "/" + uid + "/" + typekey, postValues);
+        childUpdates.put("/" + GEAR_POSTS + "/" + USED_GEAR_POSTS + "/" + category + "/" + typekey, postValues);
+
+        mDatabase.updateChildren(childUpdates);
+    }
+
+    public void writeNewFinsGearPost(String uid, String category, String manufacturer, String contact, String location, int price, String phonenumber, String description, List<String> picsrefs) {
+        // Create new post at /user-posts/$userid/$postid and at
+        // /posts/$postid simultaneously
+        String typekey = mDatabase.child(category).push().getKey();
+
+        FinsGearPost post = new FinsGearPost( uid,  category,  manufacturer,  contact,  location,  price,  phonenumber,  description,  picsrefs) ;
+        Map<String, Object> postValues = post.toMap();
+
+        Map<String, Object> childUpdates = new HashMap<>();
+        childUpdates.put("/" + GEAR_POSTS + "/" + USED_GEAR_POSTS + "/"  +ALL_GEAR_POSTS + "/" + typekey, postValues);
+        childUpdates.put("/" + GEAR_POSTS + "/" + USED_GEAR_POSTS + "/" + USER_GEAR_POSTS + "/" + uid + "/" + typekey, postValues);
+        childUpdates.put("/" + GEAR_POSTS + "/" + USED_GEAR_POSTS + "/" + category + "/" + typekey, postValues);
+
+        mDatabase.updateChildren(childUpdates);
+    }
+
+    public void writeNewLeashGearPost(String uid, String category,  String manufacturer, String contact, String location, int price, String phonenumber, String description, List<String> picsrefs) {
+        // Create new post at /user-posts/$userid/$postid and at
+        // /posts/$postid simultaneously
+        String typekey = mDatabase.child(category).push().getKey();
+
+        LeashGearPost post = new LeashGearPost( uid,  category,   manufacturer,  contact,  location,  price,  phonenumber,  description,  picsrefs);
+        Map<String, Object> postValues = post.toMap();
+
+        Map<String, Object> childUpdates = new HashMap<>();
+        childUpdates.put("/" + GEAR_POSTS + "/" + USED_GEAR_POSTS + "/" + ALL_GEAR_POSTS + "/" + typekey, postValues);
+        childUpdates.put("/" + GEAR_POSTS + "/" + USED_GEAR_POSTS +"/" + USER_GEAR_POSTS + "/" + uid + "/" + typekey, postValues);
+        childUpdates.put("/" + GEAR_POSTS + "/" + USED_GEAR_POSTS + "/" + category + "/" + typekey, postValues);
+
+        mDatabase.updateChildren(childUpdates);
+    }
+
+    public void writeNewGearPost(String uid, String category, String contact, String location, int price, String phonenumber, String description, List<String> mgearpicrefs) {
+        // Create new post at /user-posts/$userid/$postid and at
+        // /posts/$postid simultaneously
+        String typekey = mDatabase.child(category).push().getKey();
+
+        GearPost post = new GearPost(uid,  category,  contact,  location,  price,  phonenumber,  description,  mgearpicrefs);
+        Map<String, Object> postValues = post.toMap();
+
+        Map<String, Object> childUpdates = new HashMap<>();
+        childUpdates.put("/" + GEAR_POSTS + "/" + USED_GEAR_POSTS + "/" + ALL_GEAR_POSTS + "/" + typekey, postValues);
+        childUpdates.put("/" + GEAR_POSTS + "/" + USED_GEAR_POSTS + "/" + USER_GEAR_POSTS + "/" + uid + "/" + typekey, postValues);
+        childUpdates.put("/" + GEAR_POSTS + "/" + USED_GEAR_POSTS + "/" + category + "/" + typekey, postValues);
+
+        mDatabase.updateChildren(childUpdates);
+    }
+
+
     // [START write_fan_out]
     public void writeNewPost(final String userId, String username, String title, String body, String forum, String attachment) {
         // Create new post at /user-posts/$userid/$postid and at
         // /posts/$postid simultaneously
         String forumkey = mDatabase.child(forum).push().getKey();
 
-        Post post = new Post(userId, forum, username, title, body, attachment);
+        Post post = new Post(userId, forum, username, title, body, attachment, 0);
         Map<String, Object> postValues = post.toMap();
 
         Map<String, Object> childUpdates = new HashMap<>();
-        childUpdates.put("/" + ALL_POSTS + "/" + forumkey, postValues);
-        childUpdates.put("/" + USER_POSTS + "/" + userId + "/" + forumkey, postValues);
-        childUpdates.put("/" + forum + "/" + forumkey, postValues);
-
+        childUpdates.put("/" + FORUM_POSTS+ "/" +ALL_POSTS + "/" + forumkey, postValues);
+        childUpdates.put("/" + FORUM_POSTS+ "/" + USER_POSTS + "/" + userId + "/" + forumkey, postValues);
+        childUpdates.put("/" + FORUM_POSTS+ "/" + forum + "/" + forumkey, postValues);
 
         mDatabase.updateChildren(childUpdates);
     }
 
 
-    public void loadUserConversations(){
-        if (mUserConversations != null && !mUserConversations.isEmpty()) {
-            notifyUIwithUserConversations();
-        }
-        else {
-            getCurrentUserConversations();
-        }
-    }
 
     private void getCurrentUserConversations() {
 
@@ -150,61 +204,6 @@ public class FireBasePostsHelper {
 
         LocalBroadcastManager.getInstance(MainApplication.getInstace().getApplicationContext()).sendBroadcast(intent1);
     }
-
-
-
-    public List<String> pullUserConversations(){
-
-        return mUserConversations;
-
-    }
-
-
-
-
-
-    private void loadPostsAmount() {
-        DatabaseReference mUserForumPostsRef = mDatabase.child(USER_POSTS).child(getUid());
-        ValueEventListener mUserPostsEventListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                Log.d(TAG, "onDataChange: Posts");
-                long amount = dataSnapshot.getChildrenCount();
-                int val = (int)amount;
-                mUser.setforumpostsamount(val);
-                mDatabase.child(USERS_TABLE).child(getUid()).child(USER_POSTS_AMOUNT).setValue(amount);
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        };
-
-        mUserForumPostsRef.addValueEventListener(mUserPostsEventListener);
-    }
-
-
-    private void loadGearPostsAmount() {
-        DatabaseReference mUserGearPostsref = mDatabase.child(USER_GEAR_POSTS).child(getUid());
-        ValueEventListener mUserGearPostsEventListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                Log.d(TAG, "onDataChange: GearPosts");
-                long amount = dataSnapshot.getChildrenCount();
-                int val = (int)amount;
-                mUser.setGearpostsamount(val);
-                mDatabase.child(USERS_TABLE).child(getUid()).child(USER_GEAR_POSTS_AMOUNT).setValue(amount);
-            }
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        };
-
-        mUserGearPostsref.addValueEventListener(mUserGearPostsEventListener);
-    }
-
 
     public String getUid() {
         return Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();

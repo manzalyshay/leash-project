@@ -21,6 +21,7 @@ import com.shaym.leash.R;
 import com.shaym.leash.ui.home.HomeActivity;
 
 import static com.shaym.leash.ui.authentication.LoginActivity.isEmailValid;
+import static com.shaym.leash.ui.home.HomeActivity.REGISTER_KEY;
 
 public class RegisterActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -29,7 +30,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
     private EditText mSignUpEmailField;
     private EditText mSignUpPassField;
     private EditText mSignUpNameField;
-    public static final String REGISTER_KEY = "REGISTER_KEY";
+
 
     private static final String TAG = "RegisterActivity";
 

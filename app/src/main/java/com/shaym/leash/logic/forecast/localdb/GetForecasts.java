@@ -1,23 +1,27 @@
 package com.shaym.leash.logic.forecast.localdb;
 
+import android.content.Intent;
 import android.os.AsyncTask;
-import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.shaym.leash.MainApplication;
 import com.shaym.leash.logic.forecast.ForecastObject;
 import com.shaym.leash.logic.forecast.localdb.dbhandlers.ForecastDB;
-import com.shaym.leash.ui.forecast.ForecastActivity;
 
+import java.io.Serializable;
 import java.util.List;
+
+import static com.shaym.leash.logic.utils.CONSTANT.FORECAST_BUNDLE;
+import static com.shaym.leash.logic.utils.CONSTANT.FORECAST_RESULTS;
+import static com.shaym.leash.logic.utils.CONSTANT.LOCAL_FORECAST_RESULTS;
 
 public class GetForecasts extends AsyncTask<Void, Void, List<ForecastObject>> {
     private static final String TAG = "GetForecasts";
-    private AppCompatActivity parent;
 
     // only retain a weak reference to the activity
-    public GetForecasts(AppCompatActivity forecastactivity) {
-        parent = forecastactivity;
+    public GetForecasts() {
     }
 
     @Override
@@ -28,7 +32,13 @@ public class GetForecasts extends AsyncTask<Void, Void, List<ForecastObject>> {
     @Override
     protected void onPostExecute(List<ForecastObject> result) {
         Log.d(TAG, "onPostExecute: " + result.toString());
-        ((ForecastActivity)parent).updateData(result);
-        return;
+        Log.d("sender", "Broadcasting cameras change");
+        Intent intent1 = new Intent(LOCAL_FORECAST_RESULTS);
+
+        Bundle args = new Bundle();
+        args.putSerializable(FORECAST_RESULTS, (Serializable) result);
+
+        intent1.putExtra(FORECAST_BUNDLE ,args);
+        LocalBroadcastManager.getInstance(MainApplication.getInstace().getApplicationContext()).sendBroadcast(intent1);
     }
 }

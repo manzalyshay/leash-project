@@ -54,7 +54,7 @@ import static android.support.v4.view.ViewPager.*;
  * Created by GIGAMOLE on 7/27/16.
  */
 
-// Copy of original ViewPager with vertical orientation
+// Copy of original LeashViewPager with vertical orientation
 public class VerticalViewPager extends ViewGroup {
 
     private static final String TAG = "VerticalViewPager";
@@ -379,7 +379,7 @@ public class VerticalViewPager extends ViewGroup {
 
 
     /**
-     * Set the currently selected page. If the ViewPager has already been through its first
+     * Set the currently selected page. If the LeashViewPager has already been through its first
      * layout with its current adapter there will be a smooth animated transition between
      * the current viewpager_item and the specified viewpager_item.
      *
@@ -1129,8 +1129,8 @@ public class VerticalViewPager extends ViewGroup {
     }
 
     /**
-     * This is the persistent state that is saved by ViewPager.  Only needed
-     * if you are creating a sublass of ViewPager that must save its own
+     * This is the persistent state that is saved by LeashViewPager.  Only needed
+     * if you are creating a sublass of LeashViewPager that must save its own
      * state, in which case it should implement a subclass of this which
      * contains that state.
      */
@@ -2226,13 +2226,13 @@ public class VerticalViewPager extends ViewGroup {
     /**
      * Start a fake drag of the pager.
      * <p/>
-     * <p>A fake drag can be useful if you want to synchronize the motion of the ViewPager
-     * with the touch scrolling of another view, while still letting the ViewPager
+     * <p>A fake drag can be useful if you want to synchronize the motion of the LeashViewPager
+     * with the touch scrolling of another view, while still letting the LeashViewPager
      * control the snapping motion and fling behavior. (e.g. parallax-scrolling tabs.)
      * Call {@link #fakeDragBy(float)} to simulate the actual drag motion. Call
      * {@link #endFakeDrag()} to complete the fake drag and fling as necessary.
      * <p/>
-     * <p>During a fake drag the ViewPager will ignore all touch events. If a real drag
+     * <p>During a fake drag the LeashViewPager will ignore all touch events. If a real drag
      * is already in progress, this method will return false.
      *
      * @return true if the fake drag began successfully, false if it could not be started.
@@ -2637,7 +2637,7 @@ public class VerticalViewPager extends ViewGroup {
     @Override
     public void addTouchables(ArrayList<View> views) {
         // Note that we don't call super.addTouchables(), which means that
-        // we don't call View.addTouchables().  This is okay because a ViewPager
+        // we don't call View.addTouchables().  This is okay because a LeashViewPager
         // is itself not touchable.
         for (int i = 0; i < getChildCount(); i++) {
             final View child = getChildAt(i);
@@ -2686,7 +2686,7 @@ public class VerticalViewPager extends ViewGroup {
     @SuppressLint("WrongConstant")
     @Override
     public boolean dispatchPopulateAccessibilityEvent(AccessibilityEvent event) {
-        // Dispatch scroll events from this ViewPager.
+        // Dispatch scroll events from this LeashViewPager.
         if (event.getEventType() == AccessibilityEventCompat.TYPE_VIEW_SCROLLED) {
             return super.dispatchPopulateAccessibilityEvent(event);
         }
@@ -2800,7 +2800,7 @@ public class VerticalViewPager extends ViewGroup {
 
     /**
      * Layout parameters that should be supplied for views added to a
-     * ViewPager.
+     * LeashViewPager.
      */
     public static class LayoutParams extends ViewGroup.LayoutParams {
         /**
@@ -2811,7 +2811,7 @@ public class VerticalViewPager extends ViewGroup {
 
         /**
          * Gravity setting for use on decor views only:
-         * Where to position the view page within the overall ViewPager
+         * Where to position the view page within the overall LeashViewPager
          * container; constants are defined in {@link Gravity}.
          */
         public int gravity;
@@ -2833,7 +2833,7 @@ public class VerticalViewPager extends ViewGroup {
         int position;
 
         /**
-         * Current child index within the ViewPager that this view occupies
+         * Current child index within the LeashViewPager that this view occupies
          */
         int childIndex;
 

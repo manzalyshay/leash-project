@@ -4,18 +4,91 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:layout_alignParentBottom="true">
+        android:layout_alignParentBottom="true"
+        android:transitionName="bottom_nav"
+        android:id="@+id/bottom_nav"
 
-        <com.aurelhubert.ahbottomnavigation.AHBottomNavigation
+        >
+
+
+        <com.gauravk.bubblenavigation.BubbleNavigationLinearView
+            android:id="@+id/bottom_navigation_constraint"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:id="@+id/bottomNavViewBar"
-            android:transitionName="bottomtrans"
-            android:background="@drawable/white_grey_border_top">
+            android:weightSum="4"
 
-        </com.aurelhubert.ahbottomnavigation.AHBottomNavigation>
+            android:background="@color/bottom_nav_bg_color"
+            android:elevation="4dp">
+            <com.gauravk.bubblenavigation.BubbleToggleView
+                android:id="@+id/c_item_home"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintHorizontal_chainStyle="packed"
+                app:layout_constraintEnd_toStartOf="@+id/c_item_forecast"
+                app:bt_colorActive="@color/white"
+                app:bt_colorInactive="@color/white"
+                app:bt_active="true"
+                app:bt_icon="@drawable/ic_cameras"
+                app:bt_shape="@drawable/transition_background_drawable_default"
+                app:bt_title="@string/home_menu_item"
+                app:bt_padding="@dimen/default_nav_item_padding"
+                app:bt_titlePadding="8dp" />
+
+            <com.gauravk.bubblenavigation.BubbleToggleView
+                android:id="@+id/c_item_forecast"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:bt_colorActive="@color/white"
+                app:bt_colorInactive="@color/white"
+                app:layout_constraintHorizontal_chainStyle="packed"
+                app:layout_constraintStart_toEndOf="@id/c_item_home"
+                app:layout_constraintEnd_toStartOf="@id/c_item_forum"
+
+                app:bt_icon="@drawable/ic_forecast"
+                app:bt_shape="@drawable/transition_background_drawable_default"
+                app:bt_title="@string/forecast_menu_item"
+                app:bt_padding="@dimen/default_nav_item_padding"
+                app:bt_titlePadding="8dp" />
 
 
+            <com.gauravk.bubblenavigation.BubbleToggleView
+                android:id="@+id/c_item_forum"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:layout_constraintStart_toEndOf="@id/c_item_forecast"
+                app:layout_constraintEnd_toStartOf="@id/c_item_gear"
+                app:bt_colorActive="@color/white"
+                app:bt_colorInactive="@color/white"
+                app:bt_icon="@drawable/ic_forum"
+                app:bt_shape="@drawable/transition_background_drawable_default"
+                app:bt_title="@string/forum_menu_item"
+                app:bt_padding="@dimen/default_nav_item_padding"
+                app:bt_titlePadding="8dp" />
+
+            <com.gauravk.bubblenavigation.BubbleToggleView
+                android:id="@+id/c_item_gear"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:layout_constraintStart_toEndOf="@id/c_item_forum"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:bt_colorActive="@color/white"
+                app:bt_colorInactive="@color/white"
+
+                app:bt_icon="@drawable/ic_gear"
+                app:bt_shape="@drawable/transition_background_drawable_default"
+                app:bt_title="@string/gear_menu_item"
+                app:bt_padding="@dimen/default_nav_item_padding"
+                app:bt_titlePadding="8dp" />
+
+
+
+        </com.gauravk.bubblenavigation.BubbleNavigationLinearView>
     </RelativeLayout>
 
 

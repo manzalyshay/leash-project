@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     package="com.shaym.leash">
 
 
@@ -21,6 +20,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
+        android:largeHeap="true"
         android:hardwareAccelerated="true">
 
         <meta-data android:name="com.facebook.sdk.ApplicationId"
@@ -55,23 +55,14 @@
 
         </activity>
         <activity android:name="com.shaym.leash.ui.home.HomeActivity"
-            android:windowSoftInputMode="stateAlwaysHidden|adjustResize">
+            android:windowSoftInputMode="stateAlwaysHidden|adjustResize"
+            >
 
         </activity>
-        <activity android:name="com.shaym.leash.ui.forecast.ForecastActivity"
-            android:noHistory="true">
-
-        </activity>
-        <activity android:name="com.shaym.leash.ui.forum.ForumActivity"
-            android:windowSoftInputMode="stateAlwaysHidden|adjustResize">
-
-        </activity>
+        <activity android:name="com.shaym.leash.ui.gear.NewGearPostActivity"
+            android:windowSoftInputMode="stateAlwaysHidden|adjustResize" />
 
 
-        <activity android:name="com.shaym.leash.ui.gear.GearActivity"
-            android:windowSoftInputMode="stateAlwaysHidden|adjustResize">
-
-        </activity>
 
 
         <meta-data

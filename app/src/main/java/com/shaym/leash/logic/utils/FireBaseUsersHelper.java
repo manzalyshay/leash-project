@@ -1,7 +1,6 @@
 package com.shaym.leash.logic.utils;
 
 import android.content.Intent;
-import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -34,9 +33,13 @@ import java.util.List;
 import java.util.Objects;
 
 import static com.shaym.leash.logic.utils.CONSTANT.CHAT_CONVERSATIONS;
+import static com.shaym.leash.logic.utils.CONSTANT.FORUM_POSTS;
+import static com.shaym.leash.logic.utils.CONSTANT.GEAR_POSTS;
 import static com.shaym.leash.logic.utils.CONSTANT.USERS_TABLE;
+import static com.shaym.leash.logic.utils.CONSTANT.USER_BUNDLE;
 import static com.shaym.leash.logic.utils.CONSTANT.USER_GEAR_POSTS;
 import static com.shaym.leash.logic.utils.CONSTANT.USER_GEAR_POSTS_AMOUNT;
+import static com.shaym.leash.logic.utils.CONSTANT.USER_OBJ;
 import static com.shaym.leash.logic.utils.CONSTANT.USER_POSTS;
 import static com.shaym.leash.logic.utils.CONSTANT.USER_POSTS_AMOUNT;
 
@@ -45,15 +48,12 @@ public class FireBaseUsersHelper {
     private static final String TAG = "FireBaseUsersHelper";
     public final static String BROADCAST_USER = "FirebaseHelper-mUser";
     public final static String BROADCAST_USER_BY_ID = "FirebaseHelper-USERbyID";
-
-    private final static String USER_OBJ = "USEROBJ";
-
     public final static String BROADCAST_ALL_USERS = "FirebaseHelper-allUsers";
     public final static String BROADCAST_USER_CONVERSATIONS = "FirebaseHelper-userConversations";
     private static FireBaseUsersHelper instance = new FireBaseUsersHelper();
     private Profile mUser;
     private Profile mProfileByID;
-
+    private boolean pushTokenUpdated;
     private List<Profile> mAllUsers;
     private List<String> mUserConversations;
     private String mToken = "";
@@ -284,9 +284,8 @@ public class FireBaseUsersHelper {
         Intent intent1 = new Intent(BROADCAST_USER_BY_ID);
         Bundle args = new Bundle();
 
-        // You can also include some extra data.
         args.putSerializable(USER_OBJ,mProfileByID);
-        intent1.putExtra("DATA",args);
+        intent1.putExtra(USER_BUNDLE,args);
 
         LocalBroadcastManager.getInstance(MainApplication.getInstace().getApplicationContext()).sendBroadcast(intent1);
     }
@@ -295,7 +294,8 @@ public class FireBaseUsersHelper {
         if (mUser == null || !mUser.getUid().equals(getUid())) {
 
             DatabaseReference mUserNameRef = mDatabase.child(USERS_TABLE).child(getUid());
-            ValueEventListener mValueEventListener = new ValueEventListener() {
+            mUserNameRef.addListenerForSingleValueEvent(new ValueEventListener() {
+
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     if (dataSnapshot.exists()) {
@@ -303,6 +303,7 @@ public class FireBaseUsersHelper {
                         assert mUser != null;
                         Log.d(TAG, "onDataChange: "+ mUser.toString());
 
+                        if (!pushTokenUpdated){
                         FirebaseInstanceId.getInstance().getInstanceId()
                                 .addOnCompleteListener(task -> {
                                     if (!task.isSuccessful()) {
@@ -311,16 +312,18 @@ public class FireBaseUsersHelper {
                                     }
 
                                     try {
-                                        // Get new Instance ID token
-                                        mToken = Objects.requireNonNull(task.getResult()).getToken();
-                                        updateUserPushToken(mToken);
+                                            // Get new Instance ID token
+                                            mToken = Objects.requireNonNull(task.getResult()).getToken();
+                                            updateUserPushToken(mToken);
+                                            pushTokenUpdated = true;
                                     }
                                     catch (Exception e){
                                         e.printStackTrace();
                                     }
-                                });
+                                }
+                                );
+                    }
                         notifyUIwithCurrentUser();
-                        saveUser();
 
                     }
                     else {
@@ -332,8 +335,8 @@ public class FireBaseUsersHelper {
                 public void onCancelled(@NonNull DatabaseError databaseError) {
                     Log.d(TAG, "onCancelled: "+ databaseError);
                 }
-            };
-            mUserNameRef.addListenerForSingleValueEvent(mValueEventListener);
+            });
+
         }
         else {
             notifyUIwithCurrentUser();
@@ -349,8 +352,8 @@ public class FireBaseUsersHelper {
         Bundle args = new Bundle();
 
         // You can also include some extra data.
-        args.putSerializable(USER_OBJ,mUser);
-        intent1.putExtra("DATA",args);
+        args.putSerializable(USER_OBJ , mUser);
+        intent1.putExtra(USER_BUNDLE ,args);
 
         LocalBroadcastManager.getInstance(MainApplication.getInstace().getApplicationContext()).sendBroadcast(intent1);
     }
@@ -395,7 +398,6 @@ public class FireBaseUsersHelper {
     private void saveUser(){
         try{
             mDatabase.child(USERS_TABLE).child(getUid()).setValue(mUser);
-            notifyUIwithCurrentUser();
         }
         catch (Exception e){
             Log.d(TAG, "saveUser: " + e.toString());
@@ -406,9 +408,10 @@ public class FireBaseUsersHelper {
         DatabaseReference userNameRef = mDatabase.child(USERS_TABLE).child(getUid());
         final FirebaseUser mCurrentUser = FirebaseAuth.getInstance().getCurrentUser();
 
-        ValueEventListener eventListener = new ValueEventListener() {
+        userNameRef.addListenerForSingleValueEvent(new ValueEventListener() {
+
             @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if (!dataSnapshot.exists()) {
                     Log.d(TAG, "onDataChange: User does not exist in DB");
 
@@ -437,8 +440,7 @@ public class FireBaseUsersHelper {
             public void onCancelled(DatabaseError databaseError) {
                 Log.d(TAG, "onCancelled: " + databaseError.toString());
             }
-        };
-        userNameRef.addListenerForSingleValueEvent(eventListener);
+        });
     }
 
     private void loadInboxData(){
@@ -491,16 +493,17 @@ public class FireBaseUsersHelper {
     }
 
     private void loadPostsAmount() {
-        DatabaseReference mUserForumPostsRef = mDatabase.child(USER_POSTS).child(getUid());
+        DatabaseReference mUserForumPostsRef = mDatabase.child(FORUM_POSTS).child(USER_POSTS).child(getUid());
         ValueEventListener mUserPostsEventListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 Log.d(TAG, "onDataChange: Posts");
                 long amount = dataSnapshot.getChildrenCount();
                 int val = (int)amount;
-                mUser.setforumpostsamount(val);
-                mDatabase.child(USERS_TABLE).child(getUid()).child(USER_POSTS_AMOUNT).setValue(amount);
-                saveUser();
+                    mUser.setforumpostsamount(val);
+                    mDatabase.child(USERS_TABLE).child(getUid()).child(USER_POSTS_AMOUNT).setValue(amount);
+                    saveUser();
+
             }
 
             @Override
@@ -514,7 +517,7 @@ public class FireBaseUsersHelper {
 
 
     private void loadGearPostsAmount() {
-        DatabaseReference mUserGearPostsref = mDatabase.child(USER_GEAR_POSTS).child(getUid());
+        DatabaseReference mUserGearPostsref = mDatabase.child(GEAR_POSTS).child(USER_GEAR_POSTS).child(getUid());
         ValueEventListener mUserGearPostsEventListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {

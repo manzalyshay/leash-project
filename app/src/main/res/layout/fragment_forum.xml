@@ -1,0 +1,70 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:weightSum="3">
+        <Button
+            android:id="@+id/general_forum_button"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:background="@drawable/rounded_button_unchecked"
+            android:text="@string/general_menu_title"
+            android:textColor="@color/bottom_nav_bg_color"
+            android:textStyle="bold"
+            android:layout_marginEnd="2dp" />
+
+        <Button
+            android:id="@+id/spots_forum_button"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:background="@drawable/rounded_button_unchecked"
+            android:text="@string/spots_menu_title"
+            android:textColor="@color/bottom_nav_bg_color"
+            android:layout_marginEnd="2dp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/trips_forum_button"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:background="@drawable/rounded_button_unchecked"
+            android:text="@string/trips_menu_title"
+            android:textColor="@color/bottom_nav_bg_color"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+    <android.support.design.widget.CoordinatorLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/posts_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <android.support.design.widget.FloatingActionButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:clickable="true"
+            android:layout_gravity="end|bottom"
+            android:id="@+id/fab_new_post"
+            android:src="@drawable/ic_edit_white"
+            app:layout_anchorGravity="bottom|right|end"/>
+
+
+
+    </android.support.design.widget.CoordinatorLayout>
+
+</LinearLayout>

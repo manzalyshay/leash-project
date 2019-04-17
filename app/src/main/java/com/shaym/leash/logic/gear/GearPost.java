@@ -4,6 +4,7 @@ import com.google.firebase.database.Exclude;
 import com.google.firebase.database.IgnoreExtraProperties;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 // [START post_class]
@@ -11,29 +12,31 @@ import java.util.Map;
 public class GearPost {
 
     public String uid;
-    public String author;
-    public String title;
+    public String contact;
+    public String location;
     public int price;
     public String phonenumber;
-    public String imageurl;
+
     public String description;
-    public String type;
-    public int starCount = 0;
-    public Map<String, Boolean> stars = new HashMap<>();
+    public String category;
+
+    public List<String> picsref;
+
+
 
     public GearPost() {
         // Default constructor required for calls to DataSnapshot.getValue(Post.class)
     }
 
-    public GearPost(String uid, String type, String author, String title, int price, String phonenumber, String description, String imageurl) {
+    public GearPost(String uid, String category, String contact, String location, int price, String phonenumber, String description, List<String> picsrefs) {
         this.uid = uid;
-        this.type = type;
-        this.author = author;
-        this.title = title;
+        this.category = category;
+        this.contact = contact;
+        this.location = location;
         this.price = price;
         this.phonenumber = phonenumber;
         this.description = description;
-        this.imageurl = imageurl;
+        this.picsref = picsrefs;
     }
 
     // [START post_to_map]
@@ -41,15 +44,15 @@ public class GearPost {
     public Map<String, Object> toMap() {
         HashMap<String, Object> result = new HashMap<>();
         result.put("uid", uid);
-        result.put("type", type);
-        result.put("author", author);
-        result.put("title", title);
+        result.put("category", category);
+        result.put("contact", contact);
+        result.put("location", location);
         result.put("price", price);
         result.put("phonenumber", phonenumber);
         result.put("description", description);
-        result.put("imageurl", imageurl);
-        result.put("starCount", starCount);
-        result.put("stars", stars);
+        result.put("images", picsref);
+
+
 
         return result;
     }

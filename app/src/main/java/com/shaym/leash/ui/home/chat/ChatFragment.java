@@ -39,12 +39,15 @@ import com.shaym.leash.logic.utils.FireBaseUsersHelper;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
 import static com.shaym.leash.logic.utils.CONSTANT.CHAT_CONVERSATIONS;
+import static com.shaym.leash.logic.utils.CONSTANT.USER_BUNDLE;
+import static com.shaym.leash.logic.utils.CONSTANT.USER_OBJ;
 import static com.shaym.leash.logic.utils.FireBaseUsersHelper.BROADCAST_USER;
 import static com.shaym.leash.logic.utils.FireBaseUsersHelper.BROADCAST_USER_BY_ID;
 import static com.shaym.leash.ui.home.HomeActivity.FROM_UID_KEY;
@@ -102,8 +105,6 @@ public class ChatFragment extends DialogFragment implements View.OnClickListener
         LocalBroadcastManager.getInstance(v.getContext()).registerReceiver(mConvPartnerReceiver,
                 new IntentFilter(BROADCAST_USER_BY_ID));
 
-        LoadUsersData();
-
         // Get post,forum key from intent
         assert args != null;
         mChatKey = args.getString(EXTRA_CHAT_KEY);
@@ -119,20 +120,22 @@ public class ChatFragment extends DialogFragment implements View.OnClickListener
 
         mMessageField = v.findViewById(R.id.edittext_chatbox);
         mSendButton = v.findViewById(R.id.button_chatbox_send);
+        mSendButton.setEnabled(false);
 
         mMessageRecycler = v.findViewById(R.id.reyclerview_message_list);
         // use a linear layout manager
 
+        LoadUsersData();
 
         return v;
     }
 
     public void LoadUsersData() {
-        if (mUser == null ||!mUser.getUid().equals(getUid())) {
+        if (mUser == null ) {
             FireBaseUsersHelper.getInstance().loadCurrentUserProfile();
         }
 
-        if (mConvPartner == null || !mConvPartner.getUid().equals(mToUid)) {
+        if (mConvPartner == null ) {
             FireBaseUsersHelper.getInstance().loadProfileByID(mToUid);
         }
 
@@ -144,12 +147,15 @@ public class ChatFragment extends DialogFragment implements View.OnClickListener
         public void onReceive(Context context, Intent intent) {
             // Get extra data included in the Intent
             Log.d(TAG + "receiver", "Got mUser message: ");
-            Bundle args = intent.getBundleExtra("DATA");
+            Bundle args = intent.getBundleExtra(USER_BUNDLE);
 
-            mUser = (Profile) args.getSerializable("USEROBJ");
-            if (mUser!=null && mConvPartner!=null){
-                initMessagesView();
+            if (args != null) {
 
+                mUser = (Profile) args.getSerializable(USER_OBJ);
+                if (mUser != null && mConvPartner != null) {
+                    initMessagesView();
+
+                }
             }
 
         }
@@ -160,13 +166,15 @@ public class ChatFragment extends DialogFragment implements View.OnClickListener
         public void onReceive(Context context, Intent intent) {
             // Get extra data included in the Intent
             Log.d(TAG + "receiver", "Got ConvPartner message: ");
-            Bundle args = intent.getBundleExtra("DATA");
+            Bundle args = intent.getBundleExtra(USER_BUNDLE);
 
-            mConvPartner = (Profile) args.getSerializable("USEROBJ");
+            if (args != null) {
+                mConvPartner = (Profile) args.getSerializable(USER_OBJ);
 
-            if (mUser!=null && mConvPartner!=null){
-                initMessagesView();
+                if (mUser != null && mConvPartner != null) {
+                    initMessagesView();
 
+                }
             }
 
         }
@@ -211,7 +219,7 @@ public class ChatFragment extends DialogFragment implements View.OnClickListener
         mAdapter = new MessageListAdapter(getActivity(), mChatReference, mConvPartner);
         mMessageRecycler.setAdapter(mAdapter);
         mMessageRecycler.postDelayed(() -> mMessageRecycler.scrollToPosition(mMessageRecycler.getAdapter().getItemCount() - 1), 500);
-
+        mSendButton.setEnabled(true);
     }
 
     @Override
@@ -239,7 +247,9 @@ public class ChatFragment extends DialogFragment implements View.OnClickListener
     @Override
     public void onClick(View v) {
         if (v.getId() == R.id.button_chatbox_send) {
-            postMessage();
+            if (mUser != null && mConvPartner !=null) {
+                postMessage();
+            }
         }
     }
 
@@ -268,7 +278,10 @@ public class ChatFragment extends DialogFragment implements View.OnClickListener
 
             // Create new message object
             String messageText = mMessageField.getText().toString();
-            ChatMessage message = new ChatMessage(mUser.getUid(), mUser.getDisplayname(), messageText, new Date(), false);
+            SimpleDateFormat simpleDate =  new SimpleDateFormat("dd/MM/yyyy");
+
+
+            ChatMessage message = new ChatMessage(mUser.getUid(), mUser.getDisplayname(), messageText, simpleDate.format(new Date()), false);
 
             sendNotification(message);
             // Push the message, it will appear in the list

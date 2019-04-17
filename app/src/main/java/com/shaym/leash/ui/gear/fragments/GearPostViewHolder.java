@@ -16,60 +16,43 @@ import com.squareup.picasso.Callback;
 import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
+import java.util.List;
+
 class GearPostViewHolder extends RecyclerView.ViewHolder {
 
     private TextView titleView;
     private TextView priceView;
     private TextView authorView;
-    private TextView phoneNumView;
     private ImageView gearPic;
     private StorageReference storageReference;
-    ImageView starView;
     private ProgressBar progressBar;
-
-    private ImageView deleteView;
-    private TextView numStarsView;
 
     GearPostViewHolder(View itemView) {
         super(itemView);
         FirebaseStorage storage = FirebaseStorage.getInstance();
         storageReference = storage.getReference();
-        titleView = itemView.findViewById(R.id.post_gear_title);
-        priceView = itemView.findViewById(R.id.post_gear_price);
-        authorView = itemView.findViewById(R.id.post_seller);
-        phoneNumView = itemView.findViewById(R.id.seller_phone_number);
-        gearPic = itemView.findViewById(R.id.post_gear_photo);
-        progressBar = itemView.findViewById(R.id.post_gear_photo_progressbar);
+        titleView = itemView.findViewById(R.id.gear_title);
+        priceView = itemView.findViewById(R.id.gear_price);
+        authorView = itemView.findViewById(R.id.gear_contact);
+        gearPic = itemView.findViewById(R.id.gear_thumb);
+        progressBar = itemView.findViewById(R.id.gear_thumb_progress);
 
-        starView = itemView.findViewById(R.id.star);
-        deleteView = itemView.findViewById(R.id.delete);
 
-        numStarsView = itemView.findViewById(R.id.post_num_stars);
     }
 
     @SuppressLint("SetTextI18n")
-    void bindToPost(GearPost post, View.OnClickListener starClickListener, View.OnClickListener deleteClickListener) {
-        titleView.setText(post.title);
+    void bindToPost(GearPost post) {
         priceView.setText(Integer.toString(post.price));
-        authorView.setText(post.author);
-        phoneNumView.setText(post.phonenumber);
-        attachPic(post.imageurl);
-        numStarsView.setText(String.valueOf(post.starCount));
-        deleteView.setOnClickListener(deleteClickListener);
-        starView.setOnClickListener(starClickListener);
+        authorView.setText(post.contact);
+        if (post.picsref != null && post.picsref.size() > 0) {
+            attachPic(post.picsref.get(0));
+        }
+
     }
 
     private void attachPic(String url){
         if (!url.isEmpty()) {
-                storageReference.child(url).getDownloadUrl().addOnSuccessListener(uri -> Picasso.get().load(uri).resize(200, 200).networkPolicy(NetworkPolicy.OFFLINE).centerCrop().transform(new CircleTransform()).into(gearPic, new Callback() {
-                    @Override
-                    public void onSuccess() {
-                        progressBar.setVisibility(View.INVISIBLE);
-                    }
-
-                    @Override
-                    public void onError(Exception e) {
-                        Picasso.get().load(uri).resize(200, 200).centerCrop().transform(new CircleTransform()).into(gearPic, new Callback() {
+                Picasso.get().load(url).resize(200, 200).centerCrop().into(gearPic, new Callback() {
                             @Override
                             public void onSuccess() {
                                 progressBar.setVisibility(View.INVISIBLE);
@@ -86,8 +69,8 @@ class GearPostViewHolder extends RecyclerView.ViewHolder {
 
                     }
 
-                }));
-            }
+
+
         else {
             progressBar.setVisibility(View.INVISIBLE);
 

@@ -233,11 +233,7 @@ public class MessageListAdapter extends RecyclerView.Adapter {
 
         void bind(ChatMessage message) {
             messageText.setText(message.getText());
-            // Format the stored timestamp into a readable String using method.
-            @SuppressLint("SimpleDateFormat") SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd hh:mm");
-// give a timezone reference for formatting (see comment at the bottom)
-            String formattedDate = sdf.format(message.getTimesent());
-            timeText.setText(formattedDate);
+            timeText.setText(message.getTimesent());
 
             if (message.getIsread()){
                 readIcon.setVisibility(View.VISIBLE);
@@ -269,11 +265,8 @@ public class MessageListAdapter extends RecyclerView.Adapter {
         void bind(ChatMessage message, int position) {
             messageText.setText(message.getText());
             LoadUserPic();
-            // Format the stored timestamp into a readable String using method.
-            @SuppressLint("SimpleDateFormat") SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd hh:mm");
-// give a timezone reference for formatting (see comment at the bottom)
-            String formattedDate = sdf.format(message.getTimesent());
-            timeText.setText(formattedDate);
+
+            timeText.setText(message.getTimesent());
 
             nameText.setText(message.getAuthor());
 

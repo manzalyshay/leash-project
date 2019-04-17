@@ -2,6 +2,7 @@ package com.shaym.leash.ui.gear.fragments;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.media.Image;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -56,12 +57,13 @@ public class GearPostFragment extends Fragment implements View.OnClickListener {
     private DatabaseReference mCommentsReference;
     private ValueEventListener mPostListener;
     private CommentAdapter mAdapter;
-    private ProgressBar mProgressbar;
     private TextView mGearTitle;
     private TextView mGearPrice;
     private TextView mPostSeller;
     private TextView mSellerPhoneNumber;
-    private ImageView mPostPhoto;
+    private List<ImageView> imageViews;
+    private List<ProgressBar> progressBars;
+
     private EditText mCommentField;
     private RecyclerView mCommentsRecycler;
     FirebaseStorage storage;
@@ -97,12 +99,13 @@ public class GearPostFragment extends Fragment implements View.OnClickListener {
                 .child(POST_COMMENTS).child(mGearPostKey);
 
         // Initialize Views
-        mGearTitle = v.findViewById(id.post_gear_title);
-        mGearPrice = v.findViewById(id.post_gear_price);
-        mPostPhoto = v.findViewById(id.post_gear_photo);
-        mProgressbar = v.findViewById(id.post_gear_photo_progressbar);
-        mPostSeller = v.findViewById(id.post_seller);
-        mSellerPhoneNumber = v.findViewById(id.seller_phone_number);
+//        mGearTitle = v.findViewById(id.post_gear_title);
+        mGearPrice = v.findViewById(id.gear_price);
+        ImageView mPostPhoto = v.findViewById(id.post_attached_image);
+        ProgressBar mPhotoProgressbar = v.findViewById(id.post_attached_progressbar);
+
+
+//        mPostSeller = v.findViewById(id.contact_name);
         mCommentField = v.findViewById(id.field_comment_text);
         Button mCommentButton = v.findViewById(id.button_post_comment);
         mCommentsRecycler = v.findViewById(id.comments_list);
@@ -127,11 +130,11 @@ public class GearPostFragment extends Fragment implements View.OnClickListener {
                 // [START_EXCLUDE]
                 if (gearPost != null) {
                     Log.d(TAG, "onDataChange: gearPost Displayed");
-                    mGearTitle.setText(gearPost.title);
                     mGearPrice.setText(Integer.toString(gearPost.price));
-                    mPostSeller.setText(gearPost.author);
+                    mPostSeller.setText(gearPost.contact);
                     mSellerPhoneNumber.setText(gearPost.phonenumber);
-                    attachPic(gearPost.imageurl);
+                    for (int i=0; i<gearPost.picsref.size(); i++)
+                    attachPic(gearPost.picsref.get(i), imageViews.get(i), progressBars.get(i));
                     // [END_EXCLUDE]
                 }
             }
@@ -367,27 +370,27 @@ public class GearPostFragment extends Fragment implements View.OnClickListener {
 
     }
 
-    public void attachPic(String url){
+    public void attachPic(String url, ImageView image, ProgressBar pbar){
         if (!url.isEmpty()) {
-                storageReference.child(url).getDownloadUrl().addOnSuccessListener(uri -> Picasso.get().load(uri).resize(400, 400).networkPolicy(NetworkPolicy.OFFLINE).centerCrop().transform(new CircleTransform()).into(mPostPhoto, new Callback() {
+                storageReference.child(url).getDownloadUrl().addOnSuccessListener(uri -> Picasso.get().load(uri).resize(400, 400).networkPolicy(NetworkPolicy.OFFLINE).centerCrop().into(image, new Callback() {
                     @Override
                     public void onSuccess() {
-                        mProgressbar.setVisibility(View.INVISIBLE);
+                        pbar.setVisibility(View.INVISIBLE);
                     }
 
                     @Override
                     public void onError(Exception e) {
-                        Picasso.get().load(uri).resize(400, 400).centerCrop().transform(new CircleTransform()).into(mPostPhoto, new Callback() {
+                        Picasso.get().load(uri).resize(400, 400).centerCrop().into(image, new Callback() {
                             @Override
                             public void onSuccess() {
-                                mProgressbar.setVisibility(View.INVISIBLE);
+                                pbar.setVisibility(View.INVISIBLE);
                             }
 
                             @Override
                             public void onError(Exception e) {
                                 //Try again online if cache failed
 
-                                mProgressbar.setVisibility(View.INVISIBLE);
+                                pbar.setVisibility(View.INVISIBLE);
 
                             }
                         });
@@ -398,7 +401,7 @@ public class GearPostFragment extends Fragment implements View.OnClickListener {
 
         }
         else {
-            mProgressbar.setVisibility(View.INVISIBLE);
+            pbar.setVisibility(View.INVISIBLE);
 
         }
     }

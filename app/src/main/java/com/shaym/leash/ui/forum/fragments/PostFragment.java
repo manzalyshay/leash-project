@@ -1,35 +1,24 @@
 package com.shaym.leash.ui.forum.fragments;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.animation.AnimatorSet;
-import android.animation.ObjectAnimator;
+
 import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Color;
-import android.graphics.Point;
-import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
-import android.media.Image;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.DecelerateInterpolator;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -45,13 +34,11 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.shaym.leash.R;
-import com.shaym.leash.logic.aroundme.CircleTransform;
 import com.shaym.leash.logic.forum.Comment;
 import com.shaym.leash.logic.forum.Post;
 import com.shaym.leash.logic.user.Profile;
-import com.shaym.leash.logic.utils.FireBasePostsHelper;
 import com.shaym.leash.logic.utils.FireBaseUsersHelper;
-import com.shaym.leash.ui.forum.ForumActivity;
+import com.shaym.leash.ui.forum.ForumFragment;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
@@ -60,10 +47,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-
 import static com.shaym.leash.logic.utils.CONSTANT.POST_COMMENTS;
 import static com.shaym.leash.logic.utils.CONSTANT.USERS_TABLE;
-import static com.shaym.leash.ui.home.chat.ChatFragment.getUid;
 
 public class PostFragment extends Fragment implements View.OnClickListener {
 
@@ -136,7 +121,7 @@ public class PostFragment extends Fragment implements View.OnClickListener {
 
         mAttachProgressBar = mView.findViewById(R.id.post_attached_progressbar);
         mAuthorView = mView.findViewById(R.id.post_author);
-        mTitleView = mView.findViewById(R.id.post_title);
+        //mTitleView = mView.findViewById(R.id.post_title);
         mBodyView = mView.findViewById(R.id.post_body);
         mCommentField = mView.findViewById(R.id.field_comment_text);
         Button mCommentButton = mView.findViewById(R.id.button_post_comment);
@@ -277,12 +262,15 @@ public class PostFragment extends Fragment implements View.OnClickListener {
 
     private static class CommentViewHolder extends RecyclerView.ViewHolder {
 
+        ImageView authorPic;
+        ProgressBar authorPicProgressBar;
         TextView authorView;
         TextView bodyView;
 
         CommentViewHolder(View itemView) {
             super(itemView);
-
+            authorPic = itemView.findViewById(R.id.comment_photo);
+            authorPicProgressBar = itemView.findViewById(R.id.comment_photo_progressbar);
             authorView = itemView.findViewById(R.id.comment_author);
             bodyView = itemView.findViewById(R.id.comment_body);
         }
@@ -404,6 +392,24 @@ public class PostFragment extends Fragment implements View.OnClickListener {
             Comment comment = mComments.get(position);
             holder.authorView.setText(comment.author);
             holder.bodyView.setText(comment.text);
+
+            FireBaseUsersHelper.getInstance().getDatabase().child(USERS_TABLE).child(comment.uid).addListenerForSingleValueEvent(
+                    new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            // Get user value
+                            Profile profile = dataSnapshot.getValue(Profile.class);
+                            assert profile != null;
+                            FireBaseUsersHelper.getInstance().LoadUserPic(profile.getAvatarURL(), holder.authorPic, holder.authorPicProgressBar, 50);
+
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+                            Log.w(TAG, "getUser:onCancelled", databaseError.toException());
+                        }
+                    });
+
         }
 
         @Override
@@ -419,8 +425,21 @@ public class PostFragment extends Fragment implements View.OnClickListener {
 
     }
 
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+
+        if (isVisibleToUser){
+            ForumFragment.mFab.setVisibility(View.INVISIBLE);
+        }
+        else {
+            ForumFragment.mFab.setVisibility(View.VISIBLE);
+
+        }
+    }
+
     public void attachPic(String url, ImageView pic, ProgressBar progressBar){
-        if (!url.isEmpty()) {
+        if (url != null && !url.isEmpty()) {
             mAttachLayout.setVisibility(View.VISIBLE);
             progressBar.setVisibility(View.VISIBLE);
                 storageReference.child(url).getDownloadUrl().addOnSuccessListener(uri -> Picasso.get().load(uri).resize(400, 400).networkPolicy(NetworkPolicy.OFFLINE).centerCrop().into(pic, new Callback() {

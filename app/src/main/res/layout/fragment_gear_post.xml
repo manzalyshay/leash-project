@@ -4,8 +4,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="?android:windowBackground"
-    android:id="@+id/postlay">
+    android:id="@+id/postlay"
+    android:background="@color/FragmentBackground"
+    >
 
     <include layout="@layout/item_gear_post" />
 
@@ -24,17 +25,17 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="horizontal"
-        android:layout_below="@+id/post_text_layout"
         android:layout_marginTop="20dp"
         android:weightSum="1.0">
 
         <EditText
             android:id="@+id/field_comment_text"
             android:layout_width="0dp"
+            android:textColor="@color/white"
             android:layout_weight="0.8"
             android:layout_height="wrap_content"
             android:maxLines="1"
-            android:hint="Write a comment..."/>
+            android:hint="@string/write_a_comment"/>
 
         <Button
             android:id="@+id/button_post_comment"
@@ -42,7 +43,7 @@
             android:layout_width="0dp"
             android:layout_weight="0.2"
             android:layout_height="wrap_content"
-            android:text="Post"/>
+            android:text="@string/SubmitPostLabel"/>
 
     </LinearLayout>
 </LinearLayout>

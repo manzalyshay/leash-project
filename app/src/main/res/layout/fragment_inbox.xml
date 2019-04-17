@@ -4,14 +4,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/root_frame_userinbox"
-    android:background="?android:windowBackground"
+    android:background="@color/FragmentBackground"
     >
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/user_inbox_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_alignParentTop="true"
         android:clipToPadding="false"
         android:padding="5dp"
         android:scrollbars="vertical"

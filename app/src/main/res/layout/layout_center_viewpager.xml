@@ -4,10 +4,12 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <android.support.v4.view.ViewPager
+        <com.shaym.leash.ui.utils.LeashViewPager
+            android:layout_marginTop="10dp"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:id="@+id/container_home" />
+            android:id="@+id/container_home"
+            android:background="@color/white"/>
 
     </RelativeLayout>
 

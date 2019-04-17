@@ -1,12 +1,9 @@
 package com.shaym.leash.logic.forecast;
 
-import android.annotation.SuppressLint;
-import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.shaym.leash.MainApplication;
 import com.shaym.leash.R;
@@ -22,8 +19,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import static android.content.ContentValues.TAG;
-import static com.shaym.leash.ui.forecast.ForecastActivity.CALIFORNIA_TAG;
-import static com.shaym.leash.ui.forecast.ForecastActivity.TELAVIV_TAG;
+import static com.shaym.leash.ui.forecast.ForecastFragment.CALIFORNIA_TAG;
+import static com.shaym.leash.ui.forecast.ForecastFragment.TELAVIV_TAG;
 
 /**
  * Created by shaym on 3/26/18.
@@ -31,11 +28,8 @@ import static com.shaym.leash.ui.forecast.ForecastActivity.TELAVIV_TAG;
 
 
 public class DownloadForecast extends AsyncTask<Integer, Void, ArrayList<ForecastObject>> {
-    @SuppressLint("StaticFieldLeak")
-    private Context mContext;
 
-    public DownloadForecast (Context ctx){
-        mContext = ctx;
+    public DownloadForecast (){
 
     }
     @Override
@@ -118,7 +112,6 @@ public class DownloadForecast extends AsyncTask<Integer, Void, ArrayList<Forecas
         return forecasts;
     }
 
-    @SuppressLint("ShowToast")
     @Override
     protected void onPostExecute(ArrayList<ForecastObject> result) {
         super.onPostExecute(result);
@@ -132,7 +125,7 @@ public class DownloadForecast extends AsyncTask<Integer, Void, ArrayList<Forecas
             LocalBroadcastManager.getInstance(MainApplication.getInstace().getApplicationContext()).sendBroadcast(intent);
         }
         else {
-            Toast.makeText(mContext, "No Internet Connection", Toast.LENGTH_LONG);
+            Log.d(TAG, "onPostExecute: " + "No Internet Connection");
         }
     }
 }

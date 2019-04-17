@@ -20,9 +20,10 @@
     <string name="MarinaHerzelia" translatable="false">http://62.219.45.26:140/mjpg/video.mjpg</string>
 
 
+    <string name="Carlton" translatable="false">https://balticlivecam.com/cameras/israel/tel-aviv/tel-aviv/?embed</string>
+
     <string name="Caesarea" translatable="false">http://ipcamlive.com/player/player.php?alias=freegullsouth</string>
     <string name="HiltonWindAlert" translatable="false">http://www.windalert.co.il/מצלמת-תל-אביב-הילטון</string>
-    <string name="Marina2_url" translatable="false">blob:https://balticlivecam.com/e5c97701-b16f-422a-b5b1-1c792b48ee09</string>
     <string name="Eilat" translatable="false">http://www.ustream.tv/embed/14676855?html5ui</string>
 
     //Califronia
@@ -148,7 +149,55 @@
     <string name="attach_image">Attach Image</string>
     <string name="submit">Submit</string>
     <string name="select_picture">Select Picture</string>
-    <string name="write_a_comment">Write a comment...</string>
+    <string name="write_a_comment">Write a comment…</string>
+    <string name="upload_images">Add Pictures</string>
+    <string name="phone">Phone</string>
+    <string name="contact_name">Contact Name</string>
+    <string name="price">Price</string>
+    <string name="new_gear_post">New Gear Post</string>
+    <string name="manufacturer">Manufacturer</string>
+    <string name="model">Model</string>
+    <string name="volume">Volume</string>
+    <string name="width">Width</string>
+    <string name="height">Height</string>
+    <string name="year">Year</string>
+    <string name="gearpost_pricelabel">Price:</string>
+    <string name="contact_name_label">Contact Name:</string>
+    <string name="description_description_description_description_description_description">Description Description Description Description Description Description</string>
 
+
+    <string-array name="forum_categories_array">
+        <item>@string/general_menu_title</item>
+        <item>@string/spots_menu_title</item>
+        <item>@string/trips_menu_title</item>
+
+    </string-array>
+
+
+    <string-array name="gear_categories_array">
+            <item>Boards</item>
+            <item>Leashes</item>
+            <item>Fins</item>
+            <item>Clothing</item>
+            <item>Other</item>
+        </string-array>
+
+    <string-array name="gear_clothing_size">
+        <item>S</item>
+        <item>M</item>
+        <item>L</item>
+        <item>XL</item>
+        <item>XXL</item>
+    </string-array>
+
+    <string-array name="gear_clothing_kind">
+        <item>Suit</item>
+        <item>Half-Suit</item>
+        <item>Vest</item>
+        <item>Shorts</item>
+        <item>Shoes</item>
+        <item>Spandex</item>
+
+    </string-array>
 
 </resources>

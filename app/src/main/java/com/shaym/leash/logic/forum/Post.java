@@ -24,13 +24,14 @@ public class Post {
         // Default constructor required for calls to DataSnapshot.getValue(Post.class)
     }
 
-    public Post(String uid, String forum, String author, String title, String body, String attachment) {
+    public Post(String uid, String forum, String author, String title, String body, String attachment, int starCount) {
         this.uid = uid;
         this.forum = forum;
         this.author = author;
         this.title = title;
         this.body = body;
         this.attachment = attachment;
+        this.starCount = starCount;
     }
 
     // [START post_to_map]
