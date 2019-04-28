@@ -1,7 +1,7 @@
 package com.shaym.leash.ui.gear.fragments;
 
 import android.annotation.SuppressLint;
-import android.support.v7.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -10,13 +10,9 @@ import android.widget.TextView;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.shaym.leash.R;
-import com.shaym.leash.logic.aroundme.CircleTransform;
 import com.shaym.leash.logic.gear.GearPost;
 import com.squareup.picasso.Callback;
-import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
-
-import java.util.List;
 
 class GearPostViewHolder extends RecyclerView.ViewHolder {
 

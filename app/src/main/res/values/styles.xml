@@ -9,6 +9,7 @@
         <item name="colorPrimary">@color/newgradStart</item>
         <item name="colorPrimaryDark">@color/newgradStart</item>
         <item name="colorAccent">@color/newAccent</item>
+        <item name="android:windowBackground">@color/white</item>
         <item name="android:windowActivityTransitions">true</item>
         <item name="android:windowContentTransitions">true</item>
         <item name="android:windowDrawsSystemBarBackgrounds">false</item>

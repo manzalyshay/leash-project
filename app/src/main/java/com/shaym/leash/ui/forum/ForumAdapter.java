@@ -1,23 +1,15 @@
 package com.shaym.leash.ui.forum;
 
-import android.content.Context;
-import android.graphics.Color;
-import android.support.annotation.NonNull;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.NonNull;
+
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
 
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.shaym.leash.R;
 import com.shaym.leash.logic.forum.Post;
-import com.shaym.leash.ui.forum.PostViewHolder;
-import com.shaym.leash.ui.forum.onPostSelectedListener;
-import com.squareup.picasso.Picasso;
-
-import java.util.List;
 
 public class ForumAdapter extends FirebaseRecyclerAdapter<Post, PostViewHolder> {
 

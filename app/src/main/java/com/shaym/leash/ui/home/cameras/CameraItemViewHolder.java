@@ -6,7 +6,7 @@ package com.shaym.leash.ui.home.cameras;
 
 import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
-import android.support.v7.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.View;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;

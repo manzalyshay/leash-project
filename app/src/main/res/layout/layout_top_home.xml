@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     >
 
-    <android.support.design.widget.CoordinatorLayout
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
@@ -17,7 +17,7 @@
             android:src="@drawable/wave_new"
             android:scaleType="fitXY" />
 
-        <android.support.v7.widget.Toolbar
+        <androidx.appcompat.widget.Toolbar
             android:gravity="bottom"
             android:id="@+id/toolbar_home"
             android:layout_width="match_parent"
@@ -80,9 +80,9 @@
         <!--</RelativeLayout>-->
 
 
-        </android.support.v7.widget.Toolbar>
+        </androidx.appcompat.widget.Toolbar>
 
-    </android.support.design.widget.CoordinatorLayout>
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
 
 

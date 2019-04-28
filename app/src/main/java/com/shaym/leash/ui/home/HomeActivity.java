@@ -10,14 +10,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
-import android.support.design.widget.NavigationView;
-import android.support.v4.content.LocalBroadcastManager;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.view.ViewPager;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+import com.google.android.material.navigation.NavigationView;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.core.view.GravityCompat;
+import androidx.viewpager.widget.ViewPager;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -30,6 +30,7 @@ import com.gauravk.bubblenavigation.listener.BubbleNavigationChangeListener;
 import com.shaym.leash.R;
 import com.shaym.leash.logic.user.Profile;
 import com.shaym.leash.logic.utils.FireBaseUsersHelper;
+import com.shaym.leash.logic.utils.UsersHelperListener;
 import com.shaym.leash.ui.forecast.ForecastFragment;
 import com.shaym.leash.ui.forum.ForumFragment;
 import com.shaym.leash.ui.gear.GearFragment;
@@ -39,7 +40,6 @@ import com.shaym.leash.ui.home.chat.ChatFragment;
 import com.shaym.leash.ui.home.profile.ProfileFragment;
 import com.shaym.leash.ui.utils.NavHelper;
 
-import static android.R.id.background;
 import static android.R.id.home;
 import static com.shaym.leash.logic.utils.CONSTANT.USER_BUNDLE;
 import static com.shaym.leash.logic.utils.CONSTANT.USER_OBJ;
@@ -49,7 +49,7 @@ import static com.shaym.leash.ui.utils.NavHelper.AROUNDME_FRAGMENT_ITEM_ID;
 import static com.shaym.leash.ui.utils.NavHelper.CAMERAS_FRAGMENT_ITEM_ID;
 import static com.shaym.leash.ui.utils.NavHelper.PROFILE_FRAGMENT_ITEM_ID;
 
-public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageChangeListener, BubbleNavigationChangeListener, View.OnClickListener {
+public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageChangeListener, BubbleNavigationChangeListener, View.OnClickListener, UsersHelperListener {
 
     private static final String TAG = "HomeActivity";
     public static final String FROM_UID_KEY = "FROM_UID_KEY";
@@ -64,13 +64,12 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
     private ForumFragment mForumFragment;
     private GearFragment mGearFragment;
 
-
-
     public ViewPager vp;
     private DrawerLayout mDrawerLayout;
     private NavigationView mNavigationView;
     private NavHelper mNavHelper;
     private Profile mUser;
+    private BubbleNavigationLinearView mBottomNav;
 
 
 
@@ -102,44 +101,17 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
         super.onStart();
         initUI();
 
-        LocalBroadcastManager.getInstance(this).registerReceiver(mUserReceiver,
-                new IntentFilter(BROADCAST_USER));
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         handleIntent();
-        FireBaseUsersHelper.getInstance().loadCurrentUserProfile();
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(mUserReceiver);
-
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
+        FireBaseUsersHelper.getInstance().getCurrentUserProfile(this);
     }
 
 
-    // Get extra data included in the Intent
-    BroadcastReceiver mUserReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            // Get extra data included in the Intent
-            Log.d(TAG + "receiver", "Got message: ");
-            Bundle args = intent.getBundleExtra(USER_BUNDLE);
 
-            mUser = (Profile) args.getSerializable(USER_OBJ);
-            if (mUser != null) {
-                updateUI();
-            }
-        }
-    };
 
     private void updateUI() {
         if (mNavHelper == null) {
@@ -189,12 +161,15 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
     private void initUI() {
         mDrawerLayout = findViewById(R.id.drawer_layout_home);
         mNavigationView = findViewById(R.id.nav_view);
-        BubbleNavigationLinearView mBottomNav = findViewById(R.id.bottom_navigation_constraint);
+        mBottomNav = findViewById(R.id.bottom_navigation_constraint);
         mBottomNav.setNavigationChangeListener(this);
         findViewById(R.id.location_icon_toolbar).setOnClickListener(this);
         findViewById(R.id.profile_icon_toolbar).setOnClickListener(this);
         findViewById(R.id.menu_icon_toolbar).setOnClickListener(this);
         findViewById(R.id.back_icon_toolbar).setOnClickListener(this);
+        findViewById(R.id.profile_back_icon).setOnClickListener(this);
+        findViewById(R.id.profile_location_icon).setOnClickListener(this);
+        findViewById(R.id.profile_menu_icon).setOnClickListener(this);
 
         mAroundMeFragment = new AroundMeFragment();
         mProfileFramgent = new ProfileFragment();
@@ -279,10 +254,13 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
     public void onNavigationChanged(View view, int position) {
         switch (position) {
             case 0:
-                enlargeHeaderSize();
+                changeHeaderSize(3.0f, 6.0f);
+                findViewById(R.id.layout_top_profile).setVisibility(View.GONE);
+                findViewById(R.id.layout_top_home).setVisibility(View.VISIBLE);
+
                 break;
             default:
-                shrinkHeaderSize();
+                changeHeaderSize(1.0f, 8.0f);
                 break;
         }
 
@@ -291,31 +269,19 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
 
     }
 
-    private void shrinkHeaderSize() {
+
+
+    private void changeHeaderSize(float headerSize, float bodySize) {
         RelativeLayout rl = findViewById(R.id.relLayout1);
         LinearLayout.LayoutParams params = (LinearLayout.LayoutParams)
                 rl.getLayoutParams();
-        params.weight = 1.0f;
+        params.weight = headerSize;
         rl.setLayoutParams(params);
 
         RelativeLayout rl2 = findViewById(R.id.relLayout2);
         LinearLayout.LayoutParams params2 = (LinearLayout.LayoutParams)
                 rl2.getLayoutParams();
-        params2.weight = 8.0f;
-        rl2.setLayoutParams(params2);
-    }
-
-    private void enlargeHeaderSize() {
-        RelativeLayout rl = findViewById(R.id.relLayout1);
-        LinearLayout.LayoutParams params = (LinearLayout.LayoutParams)
-                rl.getLayoutParams();
-        params.weight = 3.0f;
-        rl.setLayoutParams(params);
-
-        RelativeLayout rl2 = findViewById(R.id.relLayout2);
-        LinearLayout.LayoutParams params2 = (LinearLayout.LayoutParams)
-                rl2.getLayoutParams();
-        params2.weight = 6.0f;
+        params2.weight = bodySize;
         rl2.setLayoutParams(params2);
     }
 
@@ -324,20 +290,32 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
         switch (v.getId()){
 
             case R.id.profile_icon_toolbar:
+                mBottomNav.setCurrentActiveItem(0);
                 vp.setCurrentItem(4);
-                shrinkHeaderSize();
-                findViewById(R.id.profile_icon_toolbar).setVisibility(View.GONE);
-                findViewById(R.id.back_icon_toolbar).setVisibility(View.VISIBLE);
-
+                changeHeaderSize(4.0f, 5.0f);
+                findViewById(R.id.layout_top_home).setVisibility(View.GONE);
+                findViewById(R.id.layout_top_profile).setVisibility(View.VISIBLE);
                 break;
 
             case R.id.location_icon_toolbar:
+                mBottomNav.setCurrentActiveItem(0);
                 vp.setCurrentItem(5);
-                shrinkHeaderSize();
+                changeHeaderSize(1.0f, 8.0f);
                 findViewById(R.id.location_icon_toolbar).setVisibility(View.GONE);
                 findViewById(R.id.back_icon_toolbar).setVisibility(View.VISIBLE);
                 break;
 
+
+            case R.id.profile_location_icon:
+                vp.setCurrentItem(5);
+                changeHeaderSize(1.0f, 8.0f);
+                findViewById(R.id.layout_top_profile).setVisibility(View.GONE);
+                findViewById(R.id.layout_top_home).setVisibility(View.VISIBLE);
+                findViewById(R.id.location_icon_toolbar).setVisibility(View.GONE);
+                findViewById(R.id.back_icon_toolbar).setVisibility(View.VISIBLE);
+                break;
+
+            case R.id.profile_menu_icon:
             case R.id.menu_icon_toolbar:
                 mDrawerLayout.openDrawer(GravityCompat.START);
                 break;
@@ -349,12 +327,28 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
                 findViewById(R.id.back_icon_toolbar).setVisibility(View.GONE);
 
                 vp.setCurrentItem(0);
-                enlargeHeaderSize();
+                changeHeaderSize(3.0f, 6.0f);
                 break;
 
+                case R.id.profile_back_icon:
+                    findViewById(R.id.layout_top_home).setVisibility(View.VISIBLE);
+                    findViewById(R.id.layout_top_profile).setVisibility(View.GONE);
+                    findViewById(R.id.back_icon_toolbar).setVisibility(View.GONE);
+                    findViewById(R.id.profile_icon_toolbar).setVisibility(View.VISIBLE);
+                    findViewById(R.id.location_icon_toolbar).setVisibility(View.VISIBLE);
+
+                    changeHeaderSize(3.0f, 6.0f);
+                    vp.setCurrentItem(0);
+                    break;
 
         }
 
+    }
+
+    @Override
+    public void onCurrentProfileLoaded(Profile mCurrentUser) {
+        mUser = mCurrentUser;
+        updateUI();
     }
 }
 

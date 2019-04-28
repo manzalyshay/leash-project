@@ -21,7 +21,6 @@ public class CONSTANT {
 
     //GEAR
     final public static String GEAR_POSTS = "gear_posts";
-    final public static String USER_GEAR_POSTS = "user_gear_posts";
     final public static String ALL_GEAR_POSTS = "posts_gear";
     final public static String NEW_GEAR_POSTS = "new_gear";
     final public static String USED_GEAR_POSTS = "used_gear";

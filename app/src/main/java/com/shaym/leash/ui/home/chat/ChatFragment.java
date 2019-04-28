@@ -1,18 +1,17 @@
 package com.shaym.leash.ui.home.chat;
 
 import android.annotation.SuppressLint;
-import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.DialogFragment;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -35,6 +34,7 @@ import com.shaym.leash.R;
 import com.shaym.leash.logic.chat.ChatMessage;
 import com.shaym.leash.logic.user.Profile;
 import com.shaym.leash.logic.utils.FireBaseUsersHelper;
+import com.shaym.leash.logic.utils.UsersHelperListener;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -52,7 +52,7 @@ import static com.shaym.leash.logic.utils.FireBaseUsersHelper.BROADCAST_USER;
 import static com.shaym.leash.logic.utils.FireBaseUsersHelper.BROADCAST_USER_BY_ID;
 import static com.shaym.leash.ui.home.HomeActivity.FROM_UID_KEY;
 
-public class ChatFragment extends DialogFragment implements View.OnClickListener {
+public class ChatFragment extends DialogFragment implements View.OnClickListener, UsersHelperListener {
 
     public static final String EXTRA_CHAT_KEY = "chat_key";
 
@@ -132,7 +132,7 @@ public class ChatFragment extends DialogFragment implements View.OnClickListener
 
     public void LoadUsersData() {
         if (mUser == null ) {
-            FireBaseUsersHelper.getInstance().loadCurrentUserProfile();
+            FireBaseUsersHelper.getInstance().getCurrentUserProfile(this);
         }
 
         if (mConvPartner == null ) {
@@ -332,5 +332,9 @@ public class ChatFragment extends DialogFragment implements View.OnClickListener
     }
 
 
+    @Override
+    public void onCurrentProfileLoaded(Profile mCurrentUser) {
+
+    }
 }
 

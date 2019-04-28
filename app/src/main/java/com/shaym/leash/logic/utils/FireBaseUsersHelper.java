@@ -3,8 +3,8 @@ package com.shaym.leash.logic.utils;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v4.content.LocalBroadcastManager;
+import androidx.annotation.NonNull;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -37,7 +37,6 @@ import static com.shaym.leash.logic.utils.CONSTANT.FORUM_POSTS;
 import static com.shaym.leash.logic.utils.CONSTANT.GEAR_POSTS;
 import static com.shaym.leash.logic.utils.CONSTANT.USERS_TABLE;
 import static com.shaym.leash.logic.utils.CONSTANT.USER_BUNDLE;
-import static com.shaym.leash.logic.utils.CONSTANT.USER_GEAR_POSTS;
 import static com.shaym.leash.logic.utils.CONSTANT.USER_GEAR_POSTS_AMOUNT;
 import static com.shaym.leash.logic.utils.CONSTANT.USER_OBJ;
 import static com.shaym.leash.logic.utils.CONSTANT.USER_POSTS;
@@ -75,15 +74,7 @@ public class FireBaseUsersHelper {
         return storageReference;
     }
 
-    public void loadCurrentUserProfile(){
-        if (mUser != null && mUser.getUid().equals(getUid())) {
-            notifyUIwithCurrentUser();
-        }
-        else {
-            getCurrentUserProfile();
 
-        }
-    }
 
     public void loadUserProfileData(){
         loadInboxData();
@@ -91,14 +82,6 @@ public class FireBaseUsersHelper {
         loadGearPostsAmount();
     }
 
-    public void loadUserConversations(){
-        if (mUserConversations != null && !mUserConversations.isEmpty()) {
-            notifyUIwithUserConversations();
-        }
-        else {
-            getCurrentUserConversations();
-        }
-    }
 
     private void getCurrentUserConversations() {
 
@@ -115,9 +98,7 @@ public class FireBaseUsersHelper {
                     }
                 }
 
-                if (!mUserConversations.isEmpty()) {
-                    notifyUIwithUserConversations();
-                }
+
             }
 
             @Override
@@ -127,13 +108,6 @@ public class FireBaseUsersHelper {
         });
     }
 
-    private void notifyUIwithUserConversations() {
-        Log.d("sender", "Broadcasting User Conversations");
-
-        Intent intent1 = new Intent(BROADCAST_USER_CONVERSATIONS);
-
-        LocalBroadcastManager.getInstance(MainApplication.getInstace().getApplicationContext()).sendBroadcast(intent1);
-    }
 
 
     public void loadAllUserProfiles(){
@@ -290,14 +264,12 @@ public class FireBaseUsersHelper {
         LocalBroadcastManager.getInstance(MainApplication.getInstace().getApplicationContext()).sendBroadcast(intent1);
     }
 
-    private void getCurrentUserProfile(){
-        if (mUser == null || !mUser.getUid().equals(getUid())) {
-
+    public void getCurrentUserProfile(UsersHelperListener listener){
             DatabaseReference mUserNameRef = mDatabase.child(USERS_TABLE).child(getUid());
-            mUserNameRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            mUserNameRef.addValueEventListener(new ValueEventListener() {
 
                 @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     if (dataSnapshot.exists()) {
                         mUser = dataSnapshot.getValue(Profile.class);
                         assert mUser != null;
@@ -323,7 +295,7 @@ public class FireBaseUsersHelper {
                                 }
                                 );
                     }
-                        notifyUIwithCurrentUser();
+                        listener.onCurrentProfileLoaded(mUser);
 
                     }
                     else {
@@ -338,25 +310,8 @@ public class FireBaseUsersHelper {
             });
 
         }
-        else {
-            notifyUIwithCurrentUser();
 
-        }
 
-    }
-
-    private void notifyUIwithCurrentUser() {
-        Log.d("sender", "Broadcasting mUser ");
-
-        Intent intent1 = new Intent(BROADCAST_USER);
-        Bundle args = new Bundle();
-
-        // You can also include some extra data.
-        args.putSerializable(USER_OBJ , mUser);
-        intent1.putExtra(USER_BUNDLE ,args);
-
-        LocalBroadcastManager.getInstance(MainApplication.getInstace().getApplicationContext()).sendBroadcast(intent1);
-    }
 
     public List<Profile> pullUsers(){
 
@@ -517,7 +472,7 @@ public class FireBaseUsersHelper {
 
 
     private void loadGearPostsAmount() {
-        DatabaseReference mUserGearPostsref = mDatabase.child(GEAR_POSTS).child(USER_GEAR_POSTS).child(getUid());
+        DatabaseReference mUserGearPostsref = mDatabase.child(GEAR_POSTS).child(USER_POSTS).child(getUid());
         ValueEventListener mUserGearPostsEventListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {

@@ -7,19 +7,17 @@ import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.annotation.RequiresApi;
-import android.support.design.widget.NavigationView;
-import android.support.v4.app.Fragment;
-import android.support.v4.content.LocalBroadcastManager;
-import android.support.v4.widget.DrawerLayout;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
+import androidx.fragment.app.Fragment;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import com.github.jhonnyx2012.horizontalpicker.DatePickerListener;
 import com.github.jhonnyx2012.horizontalpicker.HorizontalPicker;
@@ -28,10 +26,7 @@ import com.shaym.leash.logic.forecast.DownloadForecast;
 import com.shaym.leash.logic.forecast.ForecastHelper;
 import com.shaym.leash.logic.forecast.ForecastObject;
 import com.shaym.leash.logic.forecast.localdb.GetForecasts;
-import com.shaym.leash.logic.user.Profile;
-import com.shaym.leash.logic.utils.FireBaseUsersHelper;
 import com.shaym.leash.ui.forecast.infinitecycleviewpager.HorizontalInfiniteCycleViewPager;
-import com.shaym.leash.ui.utils.NavHelper;
 
 import org.joda.time.DateTime;
 

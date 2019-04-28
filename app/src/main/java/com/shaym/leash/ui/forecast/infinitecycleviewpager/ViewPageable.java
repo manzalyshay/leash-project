@@ -1,10 +1,10 @@
 package com.shaym.leash.ui.forecast.infinitecycleviewpager;
 
-import android.support.v4.view.PagerAdapter;
+import androidx.viewpager.widget.PagerAdapter;
 import android.view.View;
 
-import static android.support.v4.view.ViewPager.OnPageChangeListener;
-import static android.support.v4.view.ViewPager.PageTransformer;
+import static androidx.viewpager.widget.ViewPager.OnPageChangeListener;
+import static androidx.viewpager.widget.ViewPager.PageTransformer;
 
 /**
  * Created by GIGAMOLE on 7/27/16.

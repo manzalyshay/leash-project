@@ -34,7 +34,7 @@
                                           <PersistentState>
                                             <option name="values">
                                               <map>
-                                                <entry key="url" value="jar:file:/Applications/Android%20Studio.app/Contents/plugins/android/lib/android.jar!/images/material_design_icons/communication/ic_location_on_black_24dp.xml" />
+                                                <entry key="url" value="jar:file:/Applications/Android%20Studio.app/Contents/plugins/android/lib/android.jar!/images/material_design_icons/navigation/ic_more_horiz_black_24dp.xml" />
                                               </map>
                                             </option>
                                           </PersistentState>
@@ -56,7 +56,7 @@
                                   <option name="values">
                                     <map>
                                       <entry key="imageAsset" value="$PROJECT_DIR$/app/src/main/res/drawable/logo_toolbar.png" />
-                                      <entry key="outputName" value="ic_location" />
+                                      <entry key="outputName" value="ic_more" />
                                       <entry key="themeColor" value="feb954" />
                                     </map>
                                   </option>

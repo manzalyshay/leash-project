@@ -1,6 +1,6 @@
 package com.shaym.leash.logic.forecast.localdb.dbhandlers;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.shaym.leash.logic.forecast.ForecastObject;
 

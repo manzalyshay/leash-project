@@ -1,12 +1,7 @@
 package com.shaym.leash.logic.utils;
 
-import android.Manifest;
-import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.ContentUris;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
@@ -15,9 +10,7 @@ import android.os.Build;
 import android.os.Environment;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
-import android.support.media.ExifInterface;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
+import androidx.exifinterface.media.ExifInterface;
 
 import java.io.IOException;
 

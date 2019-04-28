@@ -1,30 +1,23 @@
 package com.shaym.leash.logic.utils;
 
 import android.content.Intent;
-import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.shaym.leash.MainApplication;
-import com.shaym.leash.logic.chat.ChatMessage;
 import com.shaym.leash.logic.forum.Post;
 import com.shaym.leash.logic.gear.BoardGearPost;
 import com.shaym.leash.logic.gear.ClothingGearPost;
 import com.shaym.leash.logic.gear.FinsGearPost;
 import com.shaym.leash.logic.gear.GearPost;
 import com.shaym.leash.logic.gear.LeashGearPost;
-import com.shaym.leash.logic.user.Profile;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,17 +25,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import androidx.annotation.NonNull;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
 import static com.shaym.leash.logic.utils.CONSTANT.ALL_GEAR_POSTS;
 import static com.shaym.leash.logic.utils.CONSTANT.ALL_POSTS;
 import static com.shaym.leash.logic.utils.CONSTANT.CHAT_CONVERSATIONS;
 import static com.shaym.leash.logic.utils.CONSTANT.FORUM_POSTS;
 import static com.shaym.leash.logic.utils.CONSTANT.GEAR_POSTS;
 import static com.shaym.leash.logic.utils.CONSTANT.USED_GEAR_POSTS;
-import static com.shaym.leash.logic.utils.CONSTANT.USERS_TABLE;
-import static com.shaym.leash.logic.utils.CONSTANT.USER_GEAR_POSTS;
-import static com.shaym.leash.logic.utils.CONSTANT.USER_GEAR_POSTS_AMOUNT;
 import static com.shaym.leash.logic.utils.CONSTANT.USER_POSTS;
-import static com.shaym.leash.logic.utils.CONSTANT.USER_POSTS_AMOUNT;
 
 public class FireBasePostsHelper {
 
@@ -80,7 +72,7 @@ public class FireBasePostsHelper {
 
         Map<String, Object> childUpdates = new HashMap<>();
         childUpdates.put("/" + GEAR_POSTS + "/" + USED_GEAR_POSTS + "/" + ALL_GEAR_POSTS + "/" + typekey, postValues);
-        childUpdates.put("/" + GEAR_POSTS + "/" + USED_GEAR_POSTS + "/" + USER_GEAR_POSTS + "/" + uid + "/" + typekey, postValues);
+        childUpdates.put("/" + GEAR_POSTS + "/" + USED_GEAR_POSTS + "/" + USER_POSTS + "/" + uid + "/" + typekey, postValues);
         childUpdates.put("/" + GEAR_POSTS + "/" + USED_GEAR_POSTS + "/" + category + "/" + typekey, postValues);
 
         mDatabase.updateChildren(childUpdates);
@@ -96,7 +88,7 @@ public class FireBasePostsHelper {
 
         Map<String, Object> childUpdates = new HashMap<>();
         childUpdates.put("/" + GEAR_POSTS + "/" + USED_GEAR_POSTS + "/" + ALL_GEAR_POSTS + "/" + typekey, postValues);
-        childUpdates.put("/" + GEAR_POSTS + "/" + USED_GEAR_POSTS + "/" + USER_GEAR_POSTS + "/" + uid + "/" + typekey, postValues);
+        childUpdates.put("/" + GEAR_POSTS + "/" + USED_GEAR_POSTS + "/" + USER_POSTS + "/" + uid + "/" + typekey, postValues);
         childUpdates.put("/" + GEAR_POSTS + "/" + USED_GEAR_POSTS + "/" + category + "/" + typekey, postValues);
 
         mDatabase.updateChildren(childUpdates);
@@ -112,7 +104,7 @@ public class FireBasePostsHelper {
 
         Map<String, Object> childUpdates = new HashMap<>();
         childUpdates.put("/" + GEAR_POSTS + "/" + USED_GEAR_POSTS + "/"  +ALL_GEAR_POSTS + "/" + typekey, postValues);
-        childUpdates.put("/" + GEAR_POSTS + "/" + USED_GEAR_POSTS + "/" + USER_GEAR_POSTS + "/" + uid + "/" + typekey, postValues);
+        childUpdates.put("/" + GEAR_POSTS + "/" + USED_GEAR_POSTS + "/" + USER_POSTS + "/" + uid + "/" + typekey, postValues);
         childUpdates.put("/" + GEAR_POSTS + "/" + USED_GEAR_POSTS + "/" + category + "/" + typekey, postValues);
 
         mDatabase.updateChildren(childUpdates);
@@ -128,7 +120,7 @@ public class FireBasePostsHelper {
 
         Map<String, Object> childUpdates = new HashMap<>();
         childUpdates.put("/" + GEAR_POSTS + "/" + USED_GEAR_POSTS + "/" + ALL_GEAR_POSTS + "/" + typekey, postValues);
-        childUpdates.put("/" + GEAR_POSTS + "/" + USED_GEAR_POSTS +"/" + USER_GEAR_POSTS + "/" + uid + "/" + typekey, postValues);
+        childUpdates.put("/" + GEAR_POSTS + "/" + USED_GEAR_POSTS +"/" + USER_POSTS + "/" + uid + "/" + typekey, postValues);
         childUpdates.put("/" + GEAR_POSTS + "/" + USED_GEAR_POSTS + "/" + category + "/" + typekey, postValues);
 
         mDatabase.updateChildren(childUpdates);
@@ -144,7 +136,7 @@ public class FireBasePostsHelper {
 
         Map<String, Object> childUpdates = new HashMap<>();
         childUpdates.put("/" + GEAR_POSTS + "/" + USED_GEAR_POSTS + "/" + ALL_GEAR_POSTS + "/" + typekey, postValues);
-        childUpdates.put("/" + GEAR_POSTS + "/" + USED_GEAR_POSTS + "/" + USER_GEAR_POSTS + "/" + uid + "/" + typekey, postValues);
+        childUpdates.put("/" + GEAR_POSTS + "/" + USED_GEAR_POSTS + "/" + USER_POSTS + "/" + uid + "/" + typekey, postValues);
         childUpdates.put("/" + GEAR_POSTS + "/" + USED_GEAR_POSTS + "/" + category + "/" + typekey, postValues);
 
         mDatabase.updateChildren(childUpdates);

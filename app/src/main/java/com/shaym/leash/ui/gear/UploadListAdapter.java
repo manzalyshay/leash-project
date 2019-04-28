@@ -1,27 +1,18 @@
 package com.shaym.leash.ui.gear;
 
 import android.graphics.Bitmap;
-import android.net.Uri;
-import android.support.annotation.NonNull;
-import android.support.v7.widget.RecyclerView;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.storage.FirebaseStorage;
 import com.shaym.leash.R;
-import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-
-import static com.shaym.leash.logic.utils.CONSTANT.FORUM_POSTS_PICS;
-import static com.shaym.leash.logic.utils.CONSTANT.GEAR_POSTS_PICS;
-import static com.shaym.leash.ui.home.chat.ChatFragment.getUid;
 
 /**
  * Created by akshayejh on 19/12/17.
