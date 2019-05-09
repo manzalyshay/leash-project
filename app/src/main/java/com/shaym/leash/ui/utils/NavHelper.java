@@ -3,10 +3,6 @@ package com.shaym.leash.ui.utils;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import androidx.annotation.NonNull;
-import com.google.android.material.navigation.NavigationView;
-import androidx.viewpager.widget.ViewPager;
-import androidx.drawerlayout.widget.DrawerLayout;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -17,6 +13,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.facebook.login.LoginManager;
+import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.shaym.leash.R;
 import com.shaym.leash.logic.aroundme.CircleTransform;
@@ -29,11 +26,12 @@ import com.squareup.picasso.Picasso;
 
 import java.util.Objects;
 
+import androidx.annotation.NonNull;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.viewpager.widget.ViewPager;
+
 import static com.shaym.leash.ui.forecast.ForecastFragment.CALIFORNIA_FRAGMENT_ITEM_ID;
 import static com.shaym.leash.ui.forecast.ForecastFragment.ISRAEL_FRAGMENT_ITEM_ID;
-
-import static com.shaym.leash.ui.gear.GearFragment.NEWGEAR_FRAGMENT_ITEM_ID;
-import static com.shaym.leash.ui.gear.GearFragment.USEDGEAR_FRAGMENT_ITEM_ID;
 
 public class NavHelper implements View.OnClickListener, NavigationView.OnNavigationItemSelectedListener {
     public final static int CAMERAS_FRAGMENT_ITEM_ID = 0101;
@@ -146,12 +144,12 @@ public class NavHelper implements View.OnClickListener, NavigationView.OnNavigat
 
     private void initGearActivityMenu() {
         Menu submenu = navMenu.addSubMenu(mContext.getString(R.string.forum_menu_item));
-
-        submenu.add(1, NEWGEAR_FRAGMENT_ITEM_ID, 0, mContext.getString(R.string.newgear_menu_title));
-        //item.setIcon(R.drawable.ic_israel); // add icon with drawable resource
-
-        submenu.add(1, USEDGEAR_FRAGMENT_ITEM_ID, 1, mContext.getString(R.string.usedgear_menu_title));
-        //item2.setIcon(R.drawable.ic_california); // add icon with drawable resource
+//
+//        submenu.add(1, NEWGEAR_FRAGMENT_ITEM_ID, 0, mContext.getString(R.string.newgear_menu_title));
+//        //item.setIcon(R.drawable.ic_israel); // add icon with drawable resource
+//
+//        submenu.add(1, USEDGEAR_FRAGMENT_ITEM_ID, 1, mContext.getString(R.string.usedgear_menu_title));
+//        //item2.setIcon(R.drawable.ic_california); // add icon with drawable resource
 
 
     }
@@ -206,20 +204,15 @@ public class NavHelper implements View.OnClickListener, NavigationView.OnNavigat
         return Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
     }
 
-    private void initNavProfile(){
-        if (mUser != null ) {
-            LoadUI();
-        }
 
-    }
+    private void updateUI() {
+        Log.d(TAG, "updateUI: ");
 
-    private void LoadUI() {
-        Log.d(TAG, "LoadUI: " + mNavigationView.getParent().toString());
-        if (mUser.getDisplayname() != null) {
+        if (!mUser.getDisplayname().isEmpty()) {
             mNavUsername.setText(mUser.getDisplayname());
         }
 
-        if (mUser.getAvatarURL()!= null && !mUser.getAvatarURL().isEmpty()) {
+        if (!mUser.getAvatarURL().isEmpty()) {
             if (mUser.getAvatarURL().charAt(0) == 'p') {
                 FireBaseUsersHelper.getInstance().getStorageReference().child(mUser.getAvatarURL()).getDownloadUrl().addOnSuccessListener(uri -> Picasso.get().load(uri).resize(200, 200).networkPolicy(NetworkPolicy.OFFLINE).centerCrop().transform(new CircleTransform()).into(mNavProfilePic, new Callback() {
                     @Override
@@ -348,12 +341,12 @@ public class NavHelper implements View.OnClickListener, NavigationView.OnNavigat
 //                            break;
 
             case PROFILE_FRAGMENT_ITEM_ID:
-                vp.setCurrentItem(1);
+                vp.setCurrentItem(4);
 
                 break;
 
             case AROUNDME_FRAGMENT_ITEM_ID:
-                vp.setCurrentItem(2);
+                vp.setCurrentItem(5);
                 break;
 
             case ISRAEL_FRAGMENT_ITEM_ID:
@@ -365,15 +358,6 @@ public class NavHelper implements View.OnClickListener, NavigationView.OnNavigat
                 break;
 
 
-
-            case NEWGEAR_FRAGMENT_ITEM_ID:
-                vp.setCurrentItem(0);
-                break;
-
-            case USEDGEAR_FRAGMENT_ITEM_ID:
-                vp.setCurrentItem(1);
-                break;
-
         }
         // close drawer when item is tapped
         ((DrawerLayout)mNavigationView.getParent()).closeDrawers();
@@ -381,8 +365,8 @@ public class NavHelper implements View.OnClickListener, NavigationView.OnNavigat
         return true;
     }
 
-    public void setCurrentUser(Profile mUser) {
-        this.mUser = mUser;
-        LoadUI();
+    public void setCurrentUser(Profile currentUser) {
+        mUser = currentUser;
+        updateUI();
     }
 }

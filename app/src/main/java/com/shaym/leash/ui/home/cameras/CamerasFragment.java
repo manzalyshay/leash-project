@@ -132,6 +132,7 @@ public class CamerasFragment extends Fragment implements onCameraSelectedListene
 
     @Override
     public void onCameraSelected(Camera cam) {
+        Log.d(TAG, "onCameraSelected: ");
         Fragment f = getChildFragmentManager().findFragmentById(R.id.player_fragment_container);
         if (f instanceof VideoViewPlayerFragment) {
             if (cam.getStreamKind().equals(PLAYER_STREAM)) {

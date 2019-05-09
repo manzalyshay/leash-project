@@ -164,6 +164,11 @@
     <string name="gearpost_pricelabel">Price:</string>
     <string name="contact_name_label">Contact Name:</string>
     <string name="description_description_description_description_description_description">Description Description Description Description Description Description</string>
+    <string name="board_category">Boards</string>
+    <string name="leash_category">Leashes</string>
+    <string name="fins_category">Fins</string>
+    <string name="clothing_category">Clothing</string>
+    <string name="other_category">Other</string>
 
 
     <string-array name="forum_categories_array">
@@ -175,29 +180,14 @@
 
 
     <string-array name="gear_categories_array">
-            <item>Boards</item>
-            <item>Leashes</item>
-            <item>Fins</item>
-            <item>Clothing</item>
-            <item>Other</item>
+            <item>@string/board_category</item>
+            <item>@string/leash_category</item>
+            <item>@string/fins_category</item>
+            <item>@string/clothing_category</item>
+            <item>@string/other_category</item>
         </string-array>
 
-    <string-array name="gear_clothing_size">
-        <item>S</item>
-        <item>M</item>
-        <item>L</item>
-        <item>XL</item>
-        <item>XXL</item>
-    </string-array>
 
-    <string-array name="gear_clothing_kind">
-        <item>Suit</item>
-        <item>Half-Suit</item>
-        <item>Vest</item>
-        <item>Shorts</item>
-        <item>Shoes</item>
-        <item>Spandex</item>
 
-    </string-array>
 
 </resources>

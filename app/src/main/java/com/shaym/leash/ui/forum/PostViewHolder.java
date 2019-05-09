@@ -22,6 +22,7 @@ import com.shaym.leash.R;
 import com.shaym.leash.logic.aroundme.CircleTransform;
 import com.shaym.leash.logic.forum.Post;
 import com.shaym.leash.logic.user.Profile;
+import com.shaym.leash.logic.utils.FireBasePostsHelper;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
@@ -33,8 +34,9 @@ import static tcking.github.com.giraffeplayer2.GiraffePlayer.TAG;
 
 public class PostViewHolder extends RecyclerView.ViewHolder {
 
-    private TextView titleView;
     private TextView authorView;
+    private TextView publishdate;
+
     private ImageView authorPic;
     private ProgressBar progressBar;
     public ImageView starView;
@@ -52,7 +54,7 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
         mDatabase = FirebaseDatabase.getInstance().getReference();
         progressBar = itemView.findViewById(R.id.post_author_photo_progressbar);
         authorPic = itemView.findViewById(R.id.post_author_photo);
-        //titleView = itemView.findViewById(R.id.post_title);
+        publishdate = itemView.findViewById(R.id.publish_date);
         authorView = itemView.findViewById(R.id.post_author);
         starView = itemView.findViewById(R.id.star);
         deleteView = itemView.findViewById(R.id.delete);
@@ -62,8 +64,15 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
 
 
     public void bindToPost(Post post, View.OnClickListener starClickListener, View.OnClickListener deleteClickListener) {
-//        titleView.setText(post.title);
-        authorView.setText(post.author);
+        int dayspast = FireBasePostsHelper.getInstance().getDaysDifference(post.date);
+        if (dayspast != 0) {
+            publishdate.setText("לפני " + dayspast + " ימים");
+        }
+        else {
+            publishdate.setText("היום");
+
+        }
+
         numStarsView.setText(String.valueOf(post.starCount));
         bodyView.setText(post.body);
         if (post.uid.equals(getUid())){
@@ -81,6 +90,7 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
                         postProfile = dataSnapshot.getValue(Profile.class);
                         assert postProfile != null;
                         attachPic(postProfile.getAvatarURL());
+                        authorView.setText(postProfile.getDisplayname());
 
                     }
 
@@ -99,7 +109,7 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
 
     private void attachPic(String url){
         if (!url.isEmpty()) {
-            if (url.charAt(0) == 'p') {
+            if (url.charAt(0) == 'g') {
                         storageReference.child(url).getDownloadUrl().addOnSuccessListener(uri -> Picasso.get().load(uri).resize(100, 100).networkPolicy(NetworkPolicy.OFFLINE).centerCrop().transform(new CircleTransform()).into(authorPic, new Callback() {
                     @Override
                     public void onSuccess() {

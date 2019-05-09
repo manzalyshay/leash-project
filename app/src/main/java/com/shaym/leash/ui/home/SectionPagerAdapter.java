@@ -3,6 +3,7 @@ package com.shaym.leash.ui.home;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.fragment.app.FragmentStatePagerAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +12,7 @@ import java.util.List;
  * Created by shaym on 2/17/18.
  */
 
-public class SectionPagerAdapter extends FragmentPagerAdapter {
+public class SectionPagerAdapter extends FragmentStatePagerAdapter {
 
     private static final String TAG = "SectionPagerAdapter";
     private final List<Fragment> mFragmentList = new ArrayList<>();

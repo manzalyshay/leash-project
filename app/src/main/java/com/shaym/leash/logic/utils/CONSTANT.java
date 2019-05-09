@@ -11,7 +11,6 @@ public class CONSTANT {
 
     //FORUM
     final public static String FORUM_POSTS = "forum_posts";
-
     final public static String USER_POSTS = "user_posts";
     final public static String ALL_POSTS = "all_posts";
     final public static String GENERAL_POSTS = "general_posts";
@@ -21,7 +20,6 @@ public class CONSTANT {
 
     //GEAR
     final public static String GEAR_POSTS = "gear_posts";
-    final public static String ALL_GEAR_POSTS = "posts_gear";
     final public static String NEW_GEAR_POSTS = "new_gear";
     final public static String USED_GEAR_POSTS = "used_gear";
     final public static String BOARDS_POSTS = "boards_posts";

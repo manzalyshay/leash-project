@@ -53,7 +53,7 @@ public class ForecastFragment extends Fragment implements DatePickerListener {
     private List<ForecastObject> mDayData;
     private HorizontalPicker mPicker;
     private ProgressBar mProgressBar;
-    private HorizontalInfiniteCycleViewPager mInfiniteCycleViewPager;
+//    private HorizontalInfiniteCycleViewPager mInfiniteCycleViewPager;
 
 
     @Nullable
@@ -101,51 +101,51 @@ public class ForecastFragment extends Fragment implements DatePickerListener {
 
         mProgressBar = getView().findViewById(R.id.vpprogressbar);
 
-        setupViewPager();
-        initPicker();
+//        setupViewPager();
+//        initPicker();
 
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.M)
-    private void initPicker() {
-        mPicker = getView().findViewById(R.id.datePicker);
-        mPicker.setBackgroundColor(Color.WHITE);
+//    @RequiresApi(api = Build.VERSION_CODES.M)
+//    private void initPicker() {
+////        mPicker = getView().findViewById(R.id.datePicker);
+//        mPicker.setBackgroundColor(Color.WHITE);
+//
+//
+//        // initialize it and attach a listener
+//        mPicker
+//                .setListener(ForecastFragment.this)
+//                .setTodayDateBackgroundColor(getActivity().getColor(R.color.newAccent))
+//                .setDateSelectedColor(getActivity().getColor(R.color.newAccent))
+//                .setMonthAndYearTextColor(getActivity().getColor(R.color.FragmentBackground))
+//                .setDayOfWeekTextColor(getActivity().getColor(R.color.FragmentBackground))
+//                .setUnselectedDayTextColor(getActivity().getColor(R.color.FragmentBackground))
+//                .showTodayButton(false)
+//                .init();
+//        mPicker.setDate(new DateTime());
+//
+//    }
 
 
-        // initialize it and attach a listener
-        mPicker
-                .setListener(ForecastFragment.this)
-                .setTodayDateBackgroundColor(getActivity().getColor(R.color.newAccent))
-                .setDateSelectedColor(getActivity().getColor(R.color.newAccent))
-                .setMonthAndYearTextColor(getActivity().getColor(R.color.FragmentBackground))
-                .setDayOfWeekTextColor(getActivity().getColor(R.color.FragmentBackground))
-                .setUnselectedDayTextColor(getActivity().getColor(R.color.FragmentBackground))
-                .showTodayButton(false)
-                .init();
-        mPicker.setDate(new DateTime());
 
-    }
-
-
-
-    private void setupViewPager() {
-        if (mDayData != null && !mDayData.isEmpty()) {
-
-            mInfiniteCycleViewPager = getView().findViewById(R.id.hicvp);
-            mInfiniteCycleViewPager.setAdapter(new HorizontalPagerAdapter(getContext(), mDayData));
-
-            mInfiniteCycleViewPager.setOffscreenPageLimit(2);
-            mInfiniteCycleViewPager.setScrollDuration(500);
-            mInfiniteCycleViewPager.setMediumScaled(true);
-            mInfiniteCycleViewPager.setMaxPageScale(0.8F);
-            mInfiniteCycleViewPager.setMinPageScale(0.5F);
-            mInfiniteCycleViewPager.setCenterPageScaleOffset(30.0F);
-            mInfiniteCycleViewPager.setMinPageScaleOffset(5.0F);
-            mProgressBar.setVisibility(View.INVISIBLE);
-        }
-
-
-    }
+//    private void setupViewPager() {
+//        if (mDayData != null && !mDayData.isEmpty()) {
+//
+//            mInfiniteCycleViewPager = getView().findViewById(R.id.hicvp);
+//            mInfiniteCycleViewPager.setAdapter(new HorizontalPagerAdapter(getContext(), mDayData));
+//
+//            mInfiniteCycleViewPager.setOffscreenPageLimit(2);
+//            mInfiniteCycleViewPager.setScrollDuration(500);
+//            mInfiniteCycleViewPager.setMediumScaled(true);
+//            mInfiniteCycleViewPager.setMaxPageScale(0.8F);
+//            mInfiniteCycleViewPager.setMinPageScale(0.5F);
+//            mInfiniteCycleViewPager.setCenterPageScaleOffset(30.0F);
+//            mInfiniteCycleViewPager.setMinPageScaleOffset(5.0F);
+//            mProgressBar.setVisibility(View.INVISIBLE);
+//        }
+//
+//
+//    }
 
     // Our handler for received Intents. This will be called whenever an Intent
 // with an action named "custom-event-name" is broadcasted.
@@ -175,7 +175,7 @@ public class ForecastFragment extends Fragment implements DatePickerListener {
         if (!result.isEmpty()) {
             mData = result;
             mDayData = ForecastHelper.getInstance().getForecastsByDay(ForecastHelper.getInstance().formatDay(new Date()), mData);
-            setupViewPager();
+//            setupViewPager();
         }
 
 
@@ -194,7 +194,7 @@ public class ForecastFragment extends Fragment implements DatePickerListener {
         if (mData != null && !mData.isEmpty()) {
             mDayData = ForecastHelper.getInstance().getForecastsByDay(ForecastHelper.getInstance().formatDay(dateSelected.toDate()), mData);
             if (!mDayData.isEmpty()) {
-                setupViewPager();
+//                setupViewPager();
             }
             else {
 //                Toast.makeText(getContext(), R.string.forecast_notavailable_date, Toast.LENGTH_LONG).show();

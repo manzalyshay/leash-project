@@ -7,6 +7,8 @@ package com.shaym.leash.ui.home.cameras;
 import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import androidx.recyclerview.widget.RecyclerView;
+
+import android.util.Log;
 import android.view.View;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -45,6 +47,7 @@ public class CameraItemViewHolder extends RecyclerView.ViewHolder implements Vie
     public void onClick(View v) {
         // Below line is just like a safety check, because sometimes holder could be null,
         // in that case, getAdapterPosition() will return RecyclerView.NO_POSITION
+        Log.d(TAG, "onClick: ");
         if (getAdapterPosition() == RecyclerView.NO_POSITION) return;
 
         // Updating old as well as new positions

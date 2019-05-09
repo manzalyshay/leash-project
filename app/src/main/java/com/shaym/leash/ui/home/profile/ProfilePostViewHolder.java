@@ -72,7 +72,7 @@ public class ProfilePostViewHolder extends RecyclerView.ViewHolder {
 
     private void attachPic(String url){
         if (!url.isEmpty()) {
-            if (url.charAt(0) == 'p') {
+            if (url.charAt(0) == 'g') {
                         storageReference.child(url).getDownloadUrl().addOnSuccessListener(uri -> Picasso.get().load(uri).resize(100, 100).networkPolicy(NetworkPolicy.OFFLINE).centerCrop().transform(new CircleTransform()).into(authorPic, new Callback() {
                     @Override
                     public void onSuccess() {

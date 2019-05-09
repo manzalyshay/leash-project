@@ -3,7 +3,9 @@ package com.shaym.leash.logic.forum;
 import com.google.firebase.database.Exclude;
 import com.google.firebase.database.IgnoreExtraProperties;
 
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 // [START post_class]
@@ -11,11 +13,10 @@ import java.util.Map;
 public class Post {
 
     public String uid;
-    public String author;
-    public String title;
     public String body;
     public String forum;
-    public String attachment;
+    public List<String> images;
+    public Date date;
 
     public int starCount = 0;
     public Map<String, Boolean> stars = new HashMap<>();
@@ -24,13 +25,12 @@ public class Post {
         // Default constructor required for calls to DataSnapshot.getValue(Post.class)
     }
 
-    public Post(String uid, String forum, String author, String title, String body, String attachment, int starCount) {
+    public Post(String uid, String forum, String body, Date date, List<String> images, int starCount) {
         this.uid = uid;
         this.forum = forum;
-        this.author = author;
-        this.title = title;
+        this.date = date;
         this.body = body;
-        this.attachment = attachment;
+        this.images = images;
         this.starCount = starCount;
     }
 
@@ -40,10 +40,10 @@ public class Post {
         HashMap<String, Object> result = new HashMap<>();
         result.put("uid", uid);
         result.put("forum", forum);
-        result.put("author", author);
-        result.put("title", title);
-        result.put("attachment", attachment);
+        result.put("images", images);
         result.put("body", body);
+        result.put("date", date);
+
         result.put("starCount", starCount);
         result.put("stars", stars);
 

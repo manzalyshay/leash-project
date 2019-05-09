@@ -34,6 +34,7 @@ import static com.shaym.leash.logic.utils.CONSTANT.FORUM_POSTS;
 import static com.shaym.leash.logic.utils.CONSTANT.GEAR_POSTS;
 import static com.shaym.leash.logic.utils.CONSTANT.SPOTS_POSTS;
 import static com.shaym.leash.logic.utils.CONSTANT.TRIPS_POSTS;
+import static com.shaym.leash.logic.utils.CONSTANT.USED_GEAR_POSTS;
 import static com.shaym.leash.logic.utils.CONSTANT.USER_POSTS;
 
 /**
@@ -112,6 +113,7 @@ public class ProfileFragment extends Fragment implements onPostSelectedListener,
 
         mRecyclerView = Objects.requireNonNull(getView()).findViewById(R.id.profile_list);
         mRecyclerView.setHasFixedSize(true);
+
         // Set up Layout Manager, reverse layout
         LinearLayoutManager mManager = new LinearLayoutManager(getActivity());
         mManager.setReverseLayout(true);
@@ -156,9 +158,8 @@ public class ProfileFragment extends Fragment implements onPostSelectedListener,
             case 0:
                 query = mDatabase.child(FORUM_POSTS).child(USER_POSTS).child(getUid());
                 break;
-
             case 1:
-                query = mDatabase.child(GEAR_POSTS).child(USER_POSTS).child(getUid());
+                query = mDatabase.child(GEAR_POSTS).child(USED_GEAR_POSTS).child(USER_POSTS).child(getUid());
                 break;
             case 2:
                 query = mDatabase.child(CHAT_CONVERSATIONS).child(USER_POSTS).child(getUid());

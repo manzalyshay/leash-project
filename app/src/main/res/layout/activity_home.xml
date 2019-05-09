@@ -1,77 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+
     android:id="@+id/drawer_layout_home"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
-    tools:openDrawer="start">
+    android:fitsSystemWindows="true">
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:weightSum="10"
+    android:fitsSystemWindows="true"
     android:id="@+id/general_layout">
 
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="3"
-        android:id="@+id/relLayout1">
-
-        <RelativeLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/layout_top_home">
             <include layout="@layout/layout_top_home" />
-        </RelativeLayout>
 
 
-        <RelativeLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/layout_top_profile"
-
-            android:visibility="gone">
-        <include layout="@layout/layout_top_profile" />
-
-        </RelativeLayout>
-
-
-    </RelativeLayout>
-
-
-    <RelativeLayout
-        android:layout_height="0dp"
-        android:layout_weight="6"
+    <com.shaym.leash.ui.utils.LeashViewPager
+        android:layout_margin="10dp"
         android:layout_width="match_parent"
-        android:id="@+id/relLayout2"
-        android:layout_marginStart="10dp"
-        android:layout_marginEnd="10dp">
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:id="@+id/container_home"
+        android:background="@color/white"/>
 
-        <include layout="@layout/layout_center_viewpager"/>
-
-
-    </RelativeLayout>
-
-
-
-    <!--bottom navigation -->
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:id="@+id/relLayout3">
-
-        <include layout="@layout/layout_bottom_navigation_view" />
+        <include layout="@layout/layout_bottom_navigation_view"
+            app:layout_anchorGravity="bottom"
+            />
 
 
-    </RelativeLayout>
 
-</LinearLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/nav_view"
         android:layout_width="wrap_content"

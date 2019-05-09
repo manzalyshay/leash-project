@@ -111,4 +111,9 @@
     <string name="width">רוחב</string>
     <string name="height">גובה</string>
     <string name="year">שנה</string>
+    <string name="board_category">גלשנים</string>
+    <string name="leash_category">רצועות ליש</string>
+    <string name="fins_category">חרבות</string>
+    <string name="clothing_category">ביגוד</string>
+    <string name="other_category">אחר</string>
 </resources>

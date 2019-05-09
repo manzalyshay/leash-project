@@ -35,6 +35,8 @@ public class VideoViewPlayerFragment extends Fragment {
         mVideoView = v.findViewById(R.id.player_video_view);
         mCoverView = v.findViewById(R.id.camera_cover);
 
+        mVideoView.getVideoInfo().setPortraitWhenFullScreen(false);
+
         // 1. Get the object in onCreate();
         if (getArguments() != null) {
             mCurrentCamera = getArguments().getParcelable(CAMERA_PARCE);

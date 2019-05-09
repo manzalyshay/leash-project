@@ -10,6 +10,7 @@ import androidx.annotation.RequiresApi;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import androidx.fragment.app.Fragment;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
@@ -24,6 +25,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.shaym.leash.R;
 import com.shaym.leash.logic.forum.Post;
+import com.shaym.leash.ui.gear.NewGearPostDialog;
+import com.shaym.leash.ui.utils.FabClickedListener;
 
 import java.util.Objects;
 
@@ -36,12 +39,10 @@ import static com.shaym.leash.logic.utils.CONSTANT.TRIPS_POSTS;
  * Created by shaym on 2/14/18.
  */
 
-public class ForumFragment extends Fragment implements onPostSelectedListener, View.OnClickListener {
+public class ForumFragment extends Fragment implements onPostSelectedListener, View.OnClickListener, FabClickedListener {
     private static final String TAG = "ForumFragment";
     // 0 - General, 1 - Spots, 2 - Trips, 3- All
     private int mCurrentForum;
-    @SuppressLint("StaticFieldLeak")
-    public static FloatingActionButton mFab;
     private RecyclerView mRecyclerView;
     private ForumAdapter mAdapter;
     private DatabaseReference mDatabase;
@@ -97,7 +98,6 @@ public class ForumFragment extends Fragment implements onPostSelectedListener, V
                 .build();
 
         mAdapter = new ForumAdapter(options, this );
-        setupFab();
         mRecyclerView.setAdapter(mAdapter);
 
     }
@@ -132,10 +132,7 @@ public class ForumFragment extends Fragment implements onPostSelectedListener, V
     }
 
 
-    private void setupFab() {
-        mFab = Objects.requireNonNull(getView()).findViewById(R.id.fab_new_post);
 
-    }
 
 
 
@@ -207,6 +204,19 @@ public class ForumFragment extends Fragment implements onPostSelectedListener, V
         b.setBackground(getActivity().getDrawable(R.drawable.rounded_button_checked));
         b.setTextColor(Color.WHITE);
 
+    }
+
+    @Override
+    public void onFabClicked() {
+        Log.d(TAG, "onFabClicked: ");
+        try {
+            FragmentManager fm = Objects.requireNonNull(getActivity()).getSupportFragmentManager();
+            NewForumPostDialog newForumPostDialog= NewForumPostDialog.newInstance();
+            newForumPostDialog.show(fm, newForumPostDialog.getTag());
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
     }
 }
 

@@ -1,38 +1,52 @@
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    >
 
-    <RelativeLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-
-        <!--middle section - body -->
-        <FrameLayout
-            android:id="@+id/container_gearactivity"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            >
-
-
-        </FrameLayout>
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fab_new_post_gear"
-            android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:weightSum="2">
+        <Button
+            android:id="@+id/secondhand_button"
+            android:layout_width="0dp"
+            android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentEnd="true"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="55dp"
-            android:src="@drawable/ic_image_edit"
-            app:elevation="0dp"
-            app:pressedTranslationZ="0dp"
-            app:fabSize="normal"/>
+            android:background="@drawable/rounded_button_unchecked"
+            android:text="יד-שניה"
+            android:textColor="@color/bottom_nav_bg_color"
+            android:textStyle="bold"
+            android:layout_marginEnd="2dp" />
+
+
+        <Button
+            android:id="@+id/stores_button"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:background="@drawable/rounded_button_unchecked"
+            android:text="חנויות"
+            android:textColor="@color/bottom_nav_bg_color"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+    <Spinner
+        android:id="@+id/secondhand_categories"
+        android:layout_margin="10dp"
+        android:layout_width="wrap_content"
+        android:layout_gravity="end"
+        android:layout_height="wrap_content"/>
+
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/posts_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
 
 
 
-    </RelativeLayout>
-
-
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+</LinearLayout>
