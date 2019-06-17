@@ -1,5 +1,6 @@
 package com.shaym.leash.ui.home;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
@@ -21,6 +22,7 @@ public class SectionPagerAdapter extends FragmentStatePagerAdapter {
         super(fm);
     }
 
+    @NonNull
     @Override
     public Fragment getItem(int position) {
         return mFragmentList.get(position);
@@ -33,7 +35,16 @@ public class SectionPagerAdapter extends FragmentStatePagerAdapter {
 
     public void AddFragment(Fragment fr){
         mFragmentList.add(fr);
+
     }
+
+    public void RemoveFragment(int pos){
+        mFragmentList.remove(pos);
+
+    }
+
+
+
 
 
 }

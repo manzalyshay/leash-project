@@ -1,8 +1,11 @@
 package com.shaym.leash.ui.forum;
 
+import android.Manifest;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.net.Uri;
+import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -13,9 +16,12 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.ThemedSpinnerAdapter;
 import androidx.fragment.app.DialogFragment;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -24,25 +30,33 @@ import com.google.firebase.storage.StorageReference;
 import com.shaym.leash.R;
 import com.shaym.leash.logic.utils.FireBasePostsHelper;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+import permissions.dispatcher.NeedsPermission;
+import permissions.dispatcher.OnShowRationale;
+import permissions.dispatcher.PermissionRequest;
+import permissions.dispatcher.RuntimePermissions;
+
 import static android.app.Activity.RESULT_OK;
-import static com.shaym.leash.logic.utils.CONSTANT.GEAR_POSTS_PICS;
+import static com.shaym.leash.logic.utils.CONSTANT.FORUM_POSTS_PICS;
 import static com.shaym.leash.logic.utils.CONSTANT.GENERAL_POSTS;
 import static com.shaym.leash.logic.utils.CONSTANT.SPOTS_POSTS;
 import static com.shaym.leash.logic.utils.CONSTANT.TRIPS_POSTS;
 
-
+@RuntimePermissions
 public class NewForumPostDialog extends DialogFragment {
     public static final String TAG = "NewGearPostDialog";
-    private final int PICK_IMAGE_REQUEST = 71;
+    public static final String CATEGORY_KEY = "CATEGORY_KEY";
+
+    private final int FORUM_PICK_IMAGE_REQUEST = 72;
     private Spinner mCategorySpinner;
     private List<String> mPostImagepaths;
-    private Uri filePath;
+    private Bitmap filePath;
     //Firebase
     FirebaseStorage storage;
     StorageReference storageReference;
@@ -52,6 +66,8 @@ public class NewForumPostDialog extends DialogFragment {
 
     private StorageReference mStorage;
     private String mNewPostCategory;
+    private TextView mUploadLabel;
+    private boolean mImagePicked;
 
 
     public NewForumPostDialog() {
@@ -60,17 +76,19 @@ public class NewForumPostDialog extends DialogFragment {
         // Use `newInstance` instead as shown below
     }
 
-    public static NewForumPostDialog newInstance() {
+    public static NewForumPostDialog newInstance(String NewPostCategory) {
         NewForumPostDialog frag = new NewForumPostDialog();
-//        Bundle args = new Bundle();
-//        args.putString("title", title);
-//        frag.setArguments(args);
+        Bundle args = new Bundle();
+        args.putString(CATEGORY_KEY, NewPostCategory);
+        frag.setArguments(args);
         return frag;
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        Bundle args = getArguments();
+        mNewPostCategory = args.getString(CATEGORY_KEY);
         storage = FirebaseStorage.getInstance();
         storageReference = storage.getReference();
         return inflater.inflate(R.layout.dialog_newforumpost, container);
@@ -91,13 +109,13 @@ public class NewForumPostDialog extends DialogFragment {
     }
 
     private void initBodyLayout() {
-        Spinner categorySpinner = Objects.requireNonNull(getView()).findViewById(R.id.category_spinner);
+        mCategorySpinner = Objects.requireNonNull(getView()).findViewById(R.id.category_spinner);
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(Objects.requireNonNull(getContext()),
                 R.array.forum_categories_array, R.layout.spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        categorySpinner.setAdapter(adapter);
-
-        categorySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        mCategorySpinner.setAdapter(adapter);
+        setCurrentCategory();
+        mCategorySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                                                       @Override
                                                       public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                                                           Log.d(TAG, "onItemSelected: " + id);
@@ -126,7 +144,26 @@ public class NewForumPostDialog extends DialogFragment {
         );
 
         mBodyInput = getView().findViewById(R.id.forumpost_body);
+        mUploadLabel = getView().findViewById(R.id.upload_label);
 
+    }
+
+    private void setCurrentCategory() {
+        switch (mNewPostCategory){
+            case GENERAL_POSTS:
+                mCategorySpinner.setSelection(0);
+                break;
+
+            case SPOTS_POSTS:
+                mCategorySpinner.setSelection(1);
+                break;
+
+            case TRIPS_POSTS:
+                mCategorySpinner.setSelection(2);
+                break;
+
+
+        }
     }
 
     private void initViews() throws IOException {
@@ -139,27 +176,58 @@ public class NewForumPostDialog extends DialogFragment {
         mUploadLayout = Objects.requireNonNull(getView()).findViewById(R.id.upload_layout);
         mPostImagepaths = new ArrayList<>();
         mUploadLayout.setOnClickListener(view -> {
-                Intent intent = new Intent();
-                intent.setType("image/*");
-                intent.setAction(Intent.ACTION_GET_CONTENT);
-                startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
+            NewForumPostDialogPermissionsDispatcher.pickImageWithPermissionCheck(NewForumPostDialog.this);
+
         });
 
     }
+
+    @OnShowRationale({Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA})
+    void showRationaleForExtStorage(final PermissionRequest request){
+        new AlertDialog.Builder(getContext())
+                .setTitle("Permission Needed")
+                .setMessage("This permission is needed in order to upload image")
+                .setPositiveButton("OK", (dialog, which) -> request.proceed())
+                .setNegativeButton("Cancel", (dialog, which) -> request.cancel())
+                .show();
+    }
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        NewForumPostDialogPermissionsDispatcher.onRequestPermissionsResult(this, requestCode, grantResults);
+    }
+
+
+    @NeedsPermission({Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA})
+    public void pickImage(){
+//        Intent chooseImageIntent = ImagePicker.getPickImageIntent(getContext());
+//        startActivityForResult(chooseImageIntent, FORUM_PICK_IMAGE_REQUEST);
+    }
+
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         Log.d(TAG, "onActivityResult: ");
-        if(requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK
-                && data != null && data.getData() != null )
+        if(requestCode == FORUM_PICK_IMAGE_REQUEST && resultCode == RESULT_OK)
         {
-            filePath = data.getData();
-            uploadImage();
+//            try {
+////                filePath = ImagePicker.getImageFromResult(getContext(), resultCode, data);
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+
+            if ( filePath != null) {
+                mImagePicked = true;
+                mUploadLabel.setText("Image Picked!");
+                mUploadLabel.setTextColor(Color.RED);
+            }
         }
     }
 
-    private void initSubmitLayout() throws IOException {
+    private void initSubmitLayout() {
         mSubmitLayout = Objects.requireNonNull(getView()).findViewById(R.id.postdialog_submit);
 
         mSubmitLayout.setOnClickListener(view -> {
@@ -177,17 +245,25 @@ public class NewForumPostDialog extends DialogFragment {
 
 
     private void submitPost() {
-            //get the two inputs
-            FireBasePostsHelper.getInstance().writeNewForumPost(getUid(), mBodyInput.getText().toString().trim(), mNewPostCategory, mPostImagepaths);
+        if (!mImagePicked) {
+            publishPost();
 
-            Toast.makeText(getContext(), "Post Published.", Toast.LENGTH_SHORT).show();
-            this.dismiss();
+        }
+        else{
+            uploadImage();
+        }
     }
 
 
     private String getUid() {
         return Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
 
+    }
+
+    private void publishPost() {
+        FireBasePostsHelper.getInstance().writeNewForumPost(getUid(), mBodyInput.getText().toString().trim(), mNewPostCategory, mPostImagepaths);
+        Toast.makeText(getContext(), "Post Published.", Toast.LENGTH_SHORT).show();
+        this.dismiss();
     }
 
     private void uploadImage() {
@@ -198,12 +274,16 @@ public class NewForumPostDialog extends DialogFragment {
             progressDialog.setTitle("Uploading...");
             progressDialog.show();
 
-            StorageReference ref = storageReference.child(GEAR_POSTS_PICS + "/" + getUid() + "/" + UUID.randomUUID().toString());
-            ref.putFile(filePath)
+            String uploadPath = FORUM_POSTS_PICS + "/" + getUid() + "/" + UUID.randomUUID().toString();
+            StorageReference ref = storageReference.child(uploadPath);
+            byte[] data = convertBitmapToByteArray(filePath);
+
+            ref.putBytes(data)
                     .addOnSuccessListener(taskSnapshot -> {
                         progressDialog.dismiss();
                         Toast.makeText(getContext(), "Uploaded", Toast.LENGTH_SHORT).show();
-                        mPostImagepaths.add(ref.toString());
+                        mPostImagepaths.add(uploadPath);
+                        publishPost();
                     })
                     .addOnFailureListener(e -> {
                         progressDialog.dismiss();
@@ -214,6 +294,24 @@ public class NewForumPostDialog extends DialogFragment {
                                 .getTotalByteCount());
                         progressDialog.setMessage("Uploaded "+(int)progress+"%");
                     });
+        }
+    }
+
+    public byte[] convertBitmapToByteArray(Bitmap bitmap) {
+        ByteArrayOutputStream stream = null;
+        try {
+            stream = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+
+            return stream.toByteArray();
+        }finally {
+            if (stream != null) {
+                try {
+                    stream.close();
+                } catch (IOException e) {
+                    Log.e(ThemedSpinnerAdapter.Helper.class.getSimpleName(), "ByteArrayOutputStream was not closed");
+                }
+            }
         }
     }
 

@@ -5,9 +5,10 @@ package com.shaym.leash.ui.home;
  */
 
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
-import android.media.Image;
-import android.net.Uri;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
@@ -16,60 +17,51 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.ViewModelProviders;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.viewpager.widget.ViewPager;
 
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.bottomappbar.BottomAppBar;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
+import com.google.firebase.database.DataSnapshot;
 import com.shaym.leash.R;
-import com.shaym.leash.logic.aroundme.CircleTransform;
 import com.shaym.leash.logic.user.Profile;
+import com.shaym.leash.logic.user.UsersViewModel;
+import com.shaym.leash.logic.utils.FireBasePostsHelper;
 import com.shaym.leash.logic.utils.FireBaseUsersHelper;
-import com.shaym.leash.logic.utils.UsersHelperListener;
 import com.shaym.leash.ui.forecast.ForecastFragment;
 import com.shaym.leash.ui.forum.ForumFragment;
 import com.shaym.leash.ui.gear.GearFragment;
 import com.shaym.leash.ui.home.aroundme.AroundMeFragment;
 import com.shaym.leash.ui.home.cameras.CamerasFragment;
-import com.shaym.leash.ui.home.chat.ChatFragment;
 import com.shaym.leash.ui.home.profile.ProfileFragment;
 import com.shaym.leash.ui.utils.FabClickedListener;
 import com.shaym.leash.ui.utils.NavHelper;
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.NetworkPolicy;
-import com.squareup.picasso.Picasso;
+import com.shaym.leash.ui.utils.UIHelper;
 
 import static android.R.id.home;
-import static com.shaym.leash.ui.authentication.LoginActivity.PROFILE_PIC_KEY;
-import static com.shaym.leash.ui.gear.NewGearPostDialog.GEAR_PICK_IMAGE_REQUEST;
-import static com.shaym.leash.ui.utils.NavHelper.AROUNDME_FRAGMENT_ITEM_ID;
-import static com.shaym.leash.ui.utils.NavHelper.CAMERAS_FRAGMENT_ITEM_ID;
-import static com.shaym.leash.ui.utils.NavHelper.FORECAST_ITEM_ID;
-import static com.shaym.leash.ui.utils.NavHelper.GEAR_ITEM_ID;
-import static com.shaym.leash.ui.utils.NavHelper.PROFILE_FRAGMENT_ITEM_ID;
 
-public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageChangeListener, View.OnClickListener, UsersHelperListener {
+public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageChangeListener, View.OnClickListener {
 
     private static final String TAG = "HomeActivity";
     public static final String FROM_UID_KEY = "FROM_UID_KEY";
+    public static final String PUSH_RECEIVED = "PUSH_RECEIVED";
 
     private static final int ACTIVITY_NUM = 0;
     public final static String REGISTER_KEY = "REGISTER";
-    public final static String CAMERAS_SELECTED = "CAMERAS_SELECTED";
-    public final static String PROFILE_SELECTED = "PROFILE_SELECTED";
-    public final static String AROUNDME_SELECTED = "AROUNDME_SELECTED";
-    public final static String FORECAST_SELECTED = "FORECAST_SELECTED";
-    public final static String FORUM_SELECTED = "FORUM_SELECTED";
-    public final static String GEAR_SELECTED = "GEAR_SELECTED";
+
 
     private CamerasFragment mCamerasFragment;
     private AroundMeFragment mAroundMeFragment;
@@ -85,7 +77,7 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
     private NavHelper mNavHelper;
     private Profile mUser;
     private AppBarLayout mAppBar;
-
+    private TextView mProfileIconUnreadCounter;
     private LinearLayout mCamerasMenuItem;
     private LinearLayout mForecastMenuItem;
     private ImageView mSepearatorMenuItem;
@@ -97,8 +89,10 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
     private ImageView mProfilePicture;
     private ProgressBar mToolbarProfileProgressBar;
     private ImageView mToolbarProfilePicture;
-    private StorageReference storageReference;
     private boolean uiSet;
+    private UsersViewModel mUserViewModel;
+    private SectionPagerAdapter mSectionPagerAdapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate: ");
@@ -108,82 +102,33 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
                 WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
                 WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
         );
+
         setContentView(R.layout.activity_home);
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(mPushReceiver,
+                new IntentFilter(PUSH_RECEIVED));
+
     }
 
-    private void attachProfilePic(String url, ImageView imageView, ProgressBar progressBar){
-        if (!url.isEmpty()) {
-            progressBar.setVisibility(View.VISIBLE);
-            if (url.charAt(0) == 'g') {
-                storageReference.child(url).getDownloadUrl().addOnSuccessListener(uri -> Picasso.get().load(uri).resize(100, 100).networkPolicy(NetworkPolicy.OFFLINE).centerCrop().transform(new CircleTransform()).into(imageView, new Callback() {
-                    @Override
-                    public void onSuccess() {
-                        progressBar.setVisibility(View.GONE);
-                    }
+    private BroadcastReceiver mPushReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            // Get extra data included in the Intent
+            Log.d(TAG, "onReceive: ");
+           if (mUser != null){
+               mUser.setUnreadcounter(mUser.getUnreadcounter() + 1);
+               FireBaseUsersHelper.getInstance().saveUserByID(mUser.getUid(), mUser);
+           }
 
-                    @Override
-                    public void onError(Exception e) {
-                        Picasso.get().load(uri).resize(100, 100).centerCrop().transform(new CircleTransform()).into(imageView, new Callback() {
-                            @Override
-                            public void onSuccess() {
-                                progressBar.setVisibility(View.GONE);
-                            }
-
-                            @Override
-                            public void onError(Exception e) {
-                                //Try again online if cache failed
-
-                                progressBar.setVisibility(View.GONE);
-
-                            }
-                        });
-
-                    }
-
-                }));
-            } else {
-                Picasso.get().load(Uri.parse(url)).resize(100, 100).networkPolicy(NetworkPolicy.OFFLINE).centerCrop().transform(new CircleTransform()).into(imageView, new Callback() {
-                    @Override
-                    public void onSuccess() {
-                        progressBar.setVisibility(View.GONE);
-                    }
-
-                    @Override
-                    public void onError(Exception e) {
-                        Picasso.get().load(Uri.parse(url)).resize(100, 100).centerCrop().transform(new CircleTransform()).into(imageView, new Callback() {
-                            @Override
-                            public void onSuccess() {
-                                progressBar.setVisibility(View.GONE);
-                            }
-
-                            @Override
-                            public void onError(Exception e) {
-                                //Try again online if cache failed
-                                e.printStackTrace();
-                                progressBar.setVisibility(View.GONE);
-
-                            }
-                        });
-
-                    }
-
-                });
-            }
+           UIHelper.getInstance().showSnackBar(findViewById(R.id.drawer_layout_home));
         }
-        else {
-            progressBar.setVisibility(View.GONE);
-
-        }
-    }
+    };
 
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         Log.d(TAG, "onActivityResult: ");
         super.onActivityResult(requestCode, resultCode, data);
-
-
-
 
     }
 
@@ -200,37 +145,36 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
         if (!uiSet) {
             initUI();
         }
-
-
     }
 
     @Override
     protected void onResume() {
         Log.d(TAG, "onResume: ");
         super.onResume();
-        if (!uiSet){
-            handleIntent();
-            FireBaseUsersHelper.getInstance().getCurrentUserProfile(this);
-        }
-
+        initUsersViewModel();
+        handleIntent();
     }
-
-
 
 
     private void updateUI() {
         Log.d(TAG, "updateUI: ");
         mNavHelper.setCurrentUser(mUser);
-        attachProfilePic(mUser.getAvatarURL(),mToolbarProfilePicture, mToolbarProfileProgressBar);
+        FireBasePostsHelper.getInstance().attachRoundPic(mUser.getAvatarurl(),mToolbarProfilePicture, mToolbarProfileProgressBar, 100, 100);
         uiSet = true;
+
+        if (mUser.getUnreadcounter() > 0){
+            mProfileIconUnreadCounter.setVisibility(View.VISIBLE);
+            mProfileIconUnreadCounter.setText(String.valueOf(mUser.getUnreadcounter()));
+        }
+        else {
+            mProfileIconUnreadCounter.setVisibility(View.GONE);
+
+        }
     }
-
-
 
     private void handleIntent() {
         Log.d(TAG, "handleIntent: ");
         Bundle b = getIntent().getExtras();
-
         if(b != null) {
 
             String mFromUID = b.getString(FROM_UID_KEY);
@@ -238,37 +182,59 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
             //If came from chat push -> trigger conversation
             if (mFromUID !=null && !mFromUID.isEmpty()) {
                 Log.d(TAG, "handleIntent: " + mFromUID);
-                ChatFragment cf = ChatFragment.newInstance(mFromUID);
-                cf.show(getSupportFragmentManager(), "fragment_chat");
+//                ChatFragment cf = ChatFragment.newInstance(mFromUID);
+//                cf.show(getSupportFragmentManager(), "activity_chat");
+
             }
-            else {
 
-                String mProfilePicURL = b.getString(PROFILE_PIC_KEY);
-                String mRegisterKey = b.getString(REGISTER_KEY);
-
-                if (mProfilePicURL == null){
-                    mProfilePicURL = "";
-                }
-
-                // If registered by APP/FB
-                if ((mRegisterKey != null && mRegisterKey.equals(REGISTER_KEY)) || !mProfilePicURL.isEmpty()){
-                    FireBaseUsersHelper.getInstance().createUserInDB(mProfilePicURL);
-                }
-            }
         }
-
-
-
-
-
     }
 
+    private void initUsersViewModel() {
+        // Obtain a new or prior instance of HotStockViewModel from the
+        // ViewModelProviders utility class.
+        mUserViewModel = ViewModelProviders.of(this).get(UsersViewModel.class);
+
+        LiveData<DataSnapshot> currentUserLiveData = mUserViewModel.getCurrentUserDataSnapshotLiveData();
+
+        currentUserLiveData.observe(this, dataSnapshot -> {
+            if (dataSnapshot != null) {
+                Log.d(TAG, "initUsersViewModel: ");
+                mUser = dataSnapshot.getValue(Profile.class);
+                if (mUser != null){
+                    updateUI();
+                    FireBaseUsersHelper.getInstance().updateUserpushToken();
+                }
+            }
+        });
+    }
+
+
     private void initUI() {
+//        new KeyboardUtil(this, findViewById(R.id.container_home));
+
         mDrawerLayout = findViewById(R.id.drawer_layout_home);
         mNavigationView = findViewById(R.id.nav_view);
-        storageReference = FirebaseStorage.getInstance().getReference();
 
         mAppBar = findViewById(R.id.app_bar);
+
+        CoordinatorLayout.LayoutParams params = (CoordinatorLayout.LayoutParams) mAppBar.getLayoutParams();
+        if (params.getBehavior() == null){
+
+            AppBarLayout.Behavior behavior = new AppBarLayout.Behavior();
+            behavior.setDragCallback(new AppBarLayout.Behavior.DragCallback() {
+                @Override
+                public boolean canDrag(@NonNull AppBarLayout appBarLayout) {
+                    return false;
+                }
+            });
+            params.setBehavior(behavior);
+    }
+
+        mAppBar.setLayoutParams(params);
+
+
+
         mFab = findViewById(R.id.fab_new_post);
         mFab.setOnClickListener(this);
         findViewById(R.id.location_icon_toolbar).setOnClickListener(this);
@@ -276,7 +242,7 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
         findViewById(R.id.menu_icon_toolbar).setOnClickListener(this);
         findViewById(R.id.back_icon_toolbar).setOnClickListener(this);
         findViewById(R.id.back_icon_toolbar).setClickable(false);
-
+        mProfileIconUnreadCounter = findViewById(R.id.profile_icon_unread_counter);
         mCamerasMenuItem = findViewById(R.id.bottom_nav_cameras);
         mCamerasMenuItem.setOnClickListener(this);
         mForecastMenuItem = findViewById(R.id.bottom_nav_forecast);
@@ -287,7 +253,7 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
         mGearMenuItem = findViewById(R.id.bottom_nav_gear);
         mGearMenuItem.setOnClickListener(this);
         mBottomAppBar = findViewById(R.id.bottom_bar);
-        setMenuItemSelected(findViewById(R.id.bottom_nav_cameras_selectedindicator));
+        UIHelper.getInstance().setMenuItemSelected(findViewById(R.id.bottom_nav_cameras_selectedindicator), this);
         mHeaderView = findViewById(R.id.header);
 
         mProfilePicture = findViewById(R.id.profile_pic);
@@ -315,85 +281,27 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
         actionbar.setDisplayShowTitleEnabled(false);
 
         mNavHelper = new NavHelper(mNavigationView, vp, ACTIVITY_NUM);
-
+        uiSet = true;
     }
 
     private void setupViewPager() {
-        SectionPagerAdapter sectionPagerAdapter = new SectionPagerAdapter(getSupportFragmentManager());
-        sectionPagerAdapter.AddFragment(mCamerasFragment);
+        mSectionPagerAdapter = new SectionPagerAdapter(getSupportFragmentManager());
+        mSectionPagerAdapter.AddFragment(mCamerasFragment);
 //        sectionPagerAdapter.AddFragment(mVisualizeFragment);
-        sectionPagerAdapter.AddFragment(mForecastFragment);
-        sectionPagerAdapter.AddFragment(mForumFragment);
-        sectionPagerAdapter.AddFragment(mGearFragment);
-        sectionPagerAdapter.AddFragment(mProfileFramgent);
-        sectionPagerAdapter.AddFragment(mAroundMeFragment);
+        mSectionPagerAdapter.AddFragment(mForecastFragment);
+        mSectionPagerAdapter.AddFragment(mForumFragment);
+        mSectionPagerAdapter.AddFragment(mGearFragment);
+        mSectionPagerAdapter.AddFragment(mProfileFramgent);
+        mSectionPagerAdapter.AddFragment(mAroundMeFragment);
 
         vp = findViewById(R.id.container_home);
-        vp.setAdapter(sectionPagerAdapter);
+        vp.setAdapter(mSectionPagerAdapter);
         vp.setClipToPadding(true);
         vp.setPadding(5,0,5,0);
-        vp.setOffscreenPageLimit(6);
         vp.addOnPageChangeListener(this);
 
     }
 
-    private void updateToolBar(String currentState){
-        switch (currentState) {
-            case CAMERAS_SELECTED:
-                mAppBar.setExpanded(true);
-                findViewById(R.id.location_icon_toolbar).setVisibility(View.VISIBLE);
-                findViewById(R.id.profile_layout_toolbar).setVisibility(View.VISIBLE);
-                findViewById(R.id.back_icon_toolbar).setVisibility(View.GONE);
-                findViewById(R.id.back_icon_toolbar).setClickable(false);
-
-                findViewById(R.id.profile_pic).setVisibility(View.GONE);
-                mHeaderView.setImageDrawable(getDrawable(R.drawable.wave_new));
-                break;
-
-            case FORECAST_SELECTED:
-                mAppBar.setExpanded(false);
-                findViewById(R.id.profile_pic).setVisibility(View.GONE);
-
-                break;
-
-            case FORUM_SELECTED:
-                mAppBar.setExpanded(false);
-                findViewById(R.id.profile_pic).setVisibility(View.GONE);
-
-                break;
-
-            case GEAR_SELECTED:
-                mAppBar.setExpanded(false);
-                findViewById(R.id.profile_pic).setVisibility(View.GONE);
-
-                break;
-
-            case PROFILE_SELECTED:
-                mAppBar.setExpanded(true);
-                findViewById(R.id.location_icon_toolbar).setVisibility(View.GONE);
-                findViewById(R.id.profile_layout_toolbar).setVisibility(View.GONE);
-                findViewById(R.id.back_icon_toolbar).setVisibility(View.VISIBLE);
-                findViewById(R.id.back_icon_toolbar).setClickable(true);
-
-                findViewById(R.id.profile_pic).setVisibility(View.VISIBLE);
-                mHeaderView.setImageDrawable(getDrawable(R.drawable.surfer_profile));
-                attachProfilePic(mUser.getAvatarURL(), mProfilePicture, mProfileProgressBar);
-
-                break;
-
-            case AROUNDME_SELECTED:
-                mAppBar.setExpanded(false);
-                findViewById(R.id.location_icon_toolbar).setVisibility(View.GONE);
-                findViewById(R.id.profile_layout_toolbar).setVisibility(View.GONE);
-                findViewById(R.id.back_icon_toolbar).setVisibility(View.VISIBLE);
-                findViewById(R.id.back_icon_toolbar).setClickable(true);
-                findViewById(R.id.profile_pic).setVisibility(View.GONE);
-
-                break;
-
-
-        }
-    }
 
 
     @Override
@@ -406,16 +314,15 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
         Log.d(TAG, "onPageSelected: ");
         switch (position){
             case 0:
-                updateToolBar(CAMERAS_SELECTED);
-                setMenuItemSelected(findViewById(R.id.bottom_nav_cameras_selectedindicator));
+                UIHelper.getInstance().updateToolBar(UIHelper.CAMERAS_SELECTED, this, mAppBar, mHeaderView );
+                UIHelper.getInstance().setMenuItemSelected(findViewById(R.id.bottom_nav_cameras_selectedindicator), this);
                 mSepearatorMenuItem.setVisibility(View.GONE);
                 mFab.hide();
-//                mNavHelper.onNavigationItemSelected(mNavigationView.getMenu().findItem(CAMERAS_FRAGMENT_ITEM_ID));
                 break;
 
             case 1:
-                updateToolBar(FORECAST_SELECTED);
-                setMenuItemSelected(findViewById(R.id.bottom_nav_forecast_selectedindicator));
+                UIHelper.getInstance().updateToolBar(UIHelper.FORECAST_SELECTED, this, mAppBar, mHeaderView );
+                UIHelper.getInstance().setMenuItemSelected(findViewById(R.id.bottom_nav_forecast_selectedindicator), this);
                 mSepearatorMenuItem.setVisibility(View.GONE);
                 mFab.hide();
 //                mNavHelper.onNavigationItemSelected(mNavigationView.getMenu().findItem(FORECAST_ITEM_ID));
@@ -423,8 +330,8 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
 
 
             case 2:
-                updateToolBar(FORUM_SELECTED);
-                setMenuItemSelected(findViewById(R.id.bottom_nav_forum_selectedindicator));
+                UIHelper.getInstance().updateToolBar(UIHelper.FORUM_SELECTED, this, mAppBar, mHeaderView );
+                UIHelper.getInstance().setMenuItemSelected(findViewById(R.id.bottom_nav_forum_selectedindicator), this);
                 mSepearatorMenuItem.setVisibility(View.VISIBLE);
                 mFabClickedListener = mForumFragment;
                 mFab.show();
@@ -433,8 +340,8 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
 
 
             case 3:
-                updateToolBar(GEAR_SELECTED);
-                setMenuItemSelected(findViewById(R.id.bottom_nav_gear_selectedindicator));
+                UIHelper.getInstance().updateToolBar(UIHelper.GEAR_SELECTED, this, mAppBar, mHeaderView );
+                UIHelper.getInstance().setMenuItemSelected(findViewById(R.id.bottom_nav_gear_selectedindicator), this);
                 mSepearatorMenuItem.setVisibility(View.VISIBLE);
                 mFabClickedListener = mGearFragment;
                 mFab.show();
@@ -442,14 +349,21 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
                 break;
 
             case 4:
-                updateToolBar(PROFILE_SELECTED);
+                UIHelper.getInstance().updateToolBar(UIHelper.PROFILE_SELECTED, this, mAppBar, mHeaderView );
                 mSepearatorMenuItem.setVisibility(View.GONE);
                 mFab.hide();
 //                mNavHelper.onNavigationItemSelected(mNavigationView.getMenu().findItem(PROFILE_FRAGMENT_ITEM_ID));
                 break;
 
             case 5:
-                updateToolBar(AROUNDME_SELECTED);
+                UIHelper.getInstance().updateToolBar(UIHelper.AROUNDME_SELECTED, this, mAppBar, mHeaderView );
+                mSepearatorMenuItem.setVisibility(View.GONE);
+                mFab.hide();
+//                mNavHelper.onNavigationItemSelected(mNavigationView.getMenu().findItem(PROFILE_FRAGMENT_ITEM_ID));
+                break;
+
+            case 6:
+                UIHelper.getInstance().updateToolBar(UIHelper.CHAT_SELECTED, this, mAppBar, mHeaderView );
                 mSepearatorMenuItem.setVisibility(View.GONE);
                 mFab.hide();
 //                mNavHelper.onNavigationItemSelected(mNavigationView.getMenu().findItem(PROFILE_FRAGMENT_ITEM_ID));
@@ -515,30 +429,15 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
                 mDrawerLayout.openDrawer(GravityCompat.START);
                 break;
 
-
-
         }
-
     }
 
     @Override
-    public void onCurrentProfileLoaded(Profile mCurrentUser) {
-        mUser = mCurrentUser;
-        updateUI();
+    protected void onDestroy() {
+        super.onDestroy();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mPushReceiver);
+
     }
-
-    private void setMenuItemSelected(View menuItemSelectedView){
-
-        findViewById(R.id.bottom_nav_cameras_selectedindicator).setVisibility(View.GONE);
-        findViewById(R.id.bottom_nav_forecast_selectedindicator).setVisibility(View.GONE);
-        findViewById(R.id.bottom_nav_forum_selectedindicator).setVisibility(View.GONE);
-        findViewById(R.id.bottom_nav_gear_selectedindicator).setVisibility(View.GONE);
-
-
-        menuItemSelectedView.setVisibility(View.VISIBLE);
-    }
-
-
 }
 
 

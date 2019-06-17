@@ -13,6 +13,7 @@ import java.util.Map;
 public class Post {
 
     public String uid;
+    public String key;
     public String body;
     public String forum;
     public List<String> images;
@@ -25,8 +26,9 @@ public class Post {
         // Default constructor required for calls to DataSnapshot.getValue(Post.class)
     }
 
-    public Post(String uid, String forum, String body, Date date, List<String> images, int starCount) {
+    public Post(String uid, String key, String forum, String body, Date date, List<String> images, int starCount) {
         this.uid = uid;
+        this.key = key;
         this.forum = forum;
         this.date = date;
         this.body = body;
@@ -39,6 +41,8 @@ public class Post {
     public Map<String, Object> toMap() {
         HashMap<String, Object> result = new HashMap<>();
         result.put("uid", uid);
+        result.put("key", key);
+
         result.put("forum", forum);
         result.put("images", images);
         result.put("body", body);

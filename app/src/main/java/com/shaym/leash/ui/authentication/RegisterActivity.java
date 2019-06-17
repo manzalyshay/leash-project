@@ -7,16 +7,22 @@ import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
 import com.shaym.leash.R;
+import com.shaym.leash.logic.utils.FireBaseUsersHelper;
 import com.shaym.leash.ui.home.HomeActivity;
 
+import java.util.Objects;
+
+import static com.shaym.leash.ui.authentication.LoginActivity.GENDER_KEY;
 import static com.shaym.leash.ui.authentication.LoginActivity.isEmailValid;
 import static com.shaym.leash.ui.home.HomeActivity.REGISTER_KEY;
 
@@ -27,6 +33,8 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
     private EditText mSignUpEmailField;
     private EditText mSignUpPassField;
     private EditText mSignUpNameField;
+    private Spinner mGenderSpinner;
+    private String mGender;
 
 
     private static final String TAG = "RegisterActivity";
@@ -40,6 +48,12 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
         mSignUpEmailField = findViewById(R.id.signupemail);
         mSignUpPassField = findViewById(R.id.signuppass);
         mSignUpNameField = findViewById(R.id.signupname);
+        mGenderSpinner = findViewById(R.id.genderSpinner);
+
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
+                R.array.gender_array, android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        mGenderSpinner.setAdapter(adapter);
         mAuth = FirebaseAuth.getInstance();
 
     }
@@ -54,6 +68,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
                 String disname = mSignUpNameField.getText().toString();
                 String email = mSignUpEmailField.getText().toString();
                 String pass = mSignUpPassField.getText().toString();
+                mGender = mGenderSpinner.getSelectedItem().toString();
 
                 if (email.isEmpty() || pass.isEmpty() || disname.isEmpty()){
                     Toast.makeText(RegisterActivity.this, R.string.fields_missing,
@@ -79,17 +94,15 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
                                         FirebaseUser user = mAuth.getCurrentUser();
                                             UserProfileChangeRequest profileUpdate = new UserProfileChangeRequest.Builder()
                                                     .setDisplayName(mSignUpNameField.getText().toString()).build();
-                                            user.updateProfile(profileUpdate).addOnCompleteListener(task1 -> {
-                                                updateUI(user);
+                                        assert user != null;
+                                        user.updateProfile(profileUpdate).addOnCompleteListener(task1 -> updateUI(user));
 
-                                            });
 
                                     } else {
                                         // If sign in fails, display a message to the user.
                                         Log.w(TAG, "createUserWithEmail:failure", task.getException());
                                         Toast.makeText(RegisterActivity.this, "Authentication failed.",
                                                 Toast.LENGTH_SHORT).show();
-                                        updateUI(null);
                                     }
 
                                     // ...
@@ -101,8 +114,9 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
     }
 
     private void  updateUI(FirebaseUser user) {
+        FireBaseUsersHelper.getInstance().createUserInDB("", mGender, user);
         if (user != null) {
-            startActivity(new Intent(RegisterActivity.this, HomeActivity.class).putExtra(REGISTER_KEY, "REGISTER"));
+            startActivity(new Intent(RegisterActivity.this, HomeActivity.class));
         }
 
     }

@@ -14,9 +14,13 @@
 
     // Cams
     // Israel
+
     <string name="HiltonA" translatable="false">http://server1.reali-tech.com:1935/live/inter20.stream/playlist.m3u8</string>
     <string name="HiltonB" translatable="false">http://server1.reali-tech.com:1935/live/inter10.stream/playlist.m3u8</string>
     <string name="Gordon" translatable="false">http://server1.reali-tech.com:1935/live/dolphin.stream/playlist.m3u8</string>
+    <string name="Kshatot" translatable="false">https://streaming.virtualbox.co.il/live/kshatot/playlist.m3u8</string>
+    <string name="Gil" translatable="false">https://streaming.virtualbox.co.il/live/gil/playlist.m3u8</string>
+
     <string name="MarinaHerzelia" translatable="false">http://62.219.45.26:140/mjpg/video.mjpg</string>
 
 
@@ -37,15 +41,19 @@
     <string name="hiltonA_cam_title">Hilton Beach 1</string>
     <string name="hiltonB_cam_title">Hilton Beach 2</string>
     <string name="marina_cam_title">Marina</string>
+    <string name="kshatot_cam_title">Kshatot</string>
+
     <string name="ceasearea_camtitle">Caesarea</string>
     <string name="gordon">Gordon</string>
 
     <string name="telaviv_location">Tel-aviv</string>
     <string name="eilat_location">Eilat</string>
     <string name="herzelia_location">Herzelia</string>
+    <string name="ashdod_location">Ashdod</string>
 
     <string name="shfeld_location">Shfela</string>
 
+    <string name="file_provider_authority" translatable="false">com.shaym.leash.logic.utils.GenericFileProvider</string>
 
     // StreamKind
     <string name="web_stream_kind" translatable="false">web</string>
@@ -58,9 +66,9 @@
 
     <string-array name="Forecast_urls" >
         // Dolfinarium
-        <item>http://magicseaweed.com/api/71c5bbcf15146c798cd7a4410613d4cf/forecast/?spot_id=3658&amp;fields=units=eu,localTimestamp,swell.absMinBreakingHeight,swell.absMaxBreakingHeight,wind.speed,wind.direction,wind.chill,condition.temperature</item>
+        <item>https://magicseaweed.com/api/71c5bbcf15146c798cd7a4410613d4cf/forecast/?spot_id=3658&amp;fields=units=eu,localTimestamp,swell.minBreakingHeight,swell.maxBreakingHeight,wind.speed,wind.direction,wind.chill,condition.temperature</item>
        // California
-        <item>http://magicseaweed.com/api/71c5bbcf15146c798cd7a4410613d4cf/forecast/?spot_id=2611&amp;fields=units=eu,localTimestamp,swell.absMinBreakingHeight,swell.absMaxBreakingHeight,wind.speed,wind.direction,wind.chill,condition.temperature</item>
+        <item>https://magicseaweed.com/api/71c5bbcf15146c798cd7a4410613d4cf/forecast/?spot_id=2611&amp;fields=units=eu,localTimestamp,swell.absMinBreakingHeight,swell.absMaxBreakingHeight,wind.speed,wind.direction,wind.chill,condition.temperature</item>
     </string-array>
 
     //Facebook
@@ -169,6 +177,11 @@
     <string name="fins_category">Fins</string>
     <string name="clothing_category">Clothing</string>
     <string name="other_category">Other</string>
+    <string name="cm_unit">ס\"מ</string>
+    <string name="celzius">°C</string>
+    <string name="km_h">KM/h</string>
+    <string name="gender">Gender</string>
+    <string name="pick_image_intent_text">Pick Image</string>
 
 
     <string-array name="forum_categories_array">
@@ -187,6 +200,12 @@
             <item>@string/other_category</item>
         </string-array>
 
+
+    <string-array name="gender_array">
+        <item>Male</item>
+        <item>Female</item>
+
+    </string-array>
 
 
 

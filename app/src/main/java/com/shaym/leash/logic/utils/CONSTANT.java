@@ -8,6 +8,10 @@ public class CONSTANT {
     final static String USER_GEAR_POSTS_AMOUNT = "gearpostsamount";
     final public static String USER_BUNDLE = "user_bundle";
     final public static String USER_OBJ = "user_obj";
+    final public static String PUSH_TOKEN = "pushtoken";
+    final public static String USER_LAT = "currentlatitude";
+    final public static String USER_LNG = "currentlongitude";
+
 
     //FORUM
     final public static String FORUM_POSTS = "forum_posts";
@@ -33,6 +37,10 @@ public class CONSTANT {
     final public static String GEAR_POSTS_PICS = "gear_posts_pics";
     final public static String FORUM_POSTS_PICS = "forum_posts_pics";
 
+    //PROFILE
+    final public static String PROFILE_FORUM_POSTS = "PROFILE_FORUM_POSTS";
+    final public static String PROFILE_GEAR_POSTS = "PROFILE_GEAR_POSTS";
+    final public static String PROFILE_CONVERSATIONS = "PROFILE_CONVERSATIONS";
 
     //FORECAST
     final public static String LOCAL_FORECAST_RESULTS = "local_forecast_results";
@@ -46,6 +54,8 @@ public class CONSTANT {
     //DIRECT MESSAGES
 
     final public static String CHAT_CONVERSATIONS = "chat_conversations";
+    final public static String CONVERSATIONS = "conversations";
+    final public static String USER_CONVERSATIONS = "user_conversations";
 
     final public static String WEB_STREAM = "WEB_STREAM";
     final public static String PLAYER_STREAM = "PLAYER_STREAM";

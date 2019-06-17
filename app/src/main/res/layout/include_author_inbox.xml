@@ -17,7 +17,7 @@
             android:layout_marginStart="7dp"
             android:layout_marginTop="7dp"
 
-            android:src="@mipmap/ic_launcher"/>
+            android:src="@mipmap/leash_launcher_round"/>
         <ProgressBar
             android:id="@+id/message_author_photo_progressbar"
             style="@android:style/Widget.Holo.Light.ProgressBar"
@@ -35,8 +35,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
-        android:gravity="center_vertical"
-        tools:text="someauthor@email.com" />
+        android:gravity="center_vertical" />
 
     <TextView
         android:id="@+id/last_message"
@@ -45,6 +44,6 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
         android:gravity="center_vertical"
-        tools:text="someauthor@email.com" />
+         />
     </LinearLayout>
 </LinearLayout>

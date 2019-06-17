@@ -47,6 +47,7 @@
                     android:src="@drawable/ic_menu"
                     android:layout_alignParentStart="true"
                     android:layout_alignParentBottom="true"
+                    android:visibility="gone"
                     android:id="@+id/menu_icon_toolbar"
                     />
                 <ImageView
@@ -69,39 +70,55 @@
                     android:layout_width="25dp"
                     android:layout_height="25dp"
                     android:layout_marginEnd="10dp"
+
                     android:src="@drawable/ic_aroundme" />
 
 
-                        <RelativeLayout
+                        <FrameLayout
                             android:layout_width="25dp"
                             android:layout_height="25dp"
                             android:layout_marginEnd="10dp"
                             android:id="@+id/profile_layout_toolbar"
-
                             >
-                            <ImageView
-                                android:id="@+id/profile_icon_toolbar"
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:visibility="visible"
-                                android:src="@drawable/ic_profile" />
-                            <ProgressBar
-                                android:id="@+id/profile_icon_progressbar"
-                                style="@android:style/Widget.Holo.Light.ProgressBar"
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:visibility="gone"
-                                android:layout_centerVertical="true"
-                                />
 
-                        </RelativeLayout>
+                            <RelativeLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                >
+                                <ImageView
+                                    android:id="@+id/profile_icon_toolbar"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:visibility="visible"
+                                    android:src="@drawable/ic_profile" />
+                                <ProgressBar
+                                    android:id="@+id/profile_icon_progressbar"
+                                    style="@android:style/Widget.Holo.Light.ProgressBar"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:visibility="gone"
+                                    android:layout_centerVertical="true"
+                                    />
+
+                            </RelativeLayout>
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:id="@+id/profile_icon_unread_counter"
+                                android:textSize="12sp"
+                                android:visibility="gone"
+                                android:textColor="@color/white"
+                                android:background="@color/active_bottommenu"
+                                android:layout_gravity="top|end"/>
+                        </FrameLayout>
+
+
 
                 <ImageView
                     android:id="@+id/back_icon_toolbar"
                     android:layout_width="25dp"
                     android:layout_height="25dp"
                     android:layout_marginEnd="10dp"
-
                     android:src="@drawable/ic_backarrow"
                     android:visibility="gone" />
                     </LinearLayout>
@@ -115,8 +132,8 @@
 
 
             <RelativeLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
                 android:id="@+id/author_pic_layout"
                 android:layout_gravity="bottom|end"
                 android:layout_marginBottom="10dp"
@@ -124,17 +141,17 @@
                 >
                 <ImageView
                     android:id="@+id/profile_pic"
-                    android:layout_width="60dp"
-                    android:layout_height="60dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
                     android:layout_gravity="bottom|end"
                     android:visibility="gone"
-                    android:src="@mipmap/ic_launcher"
+                    android:src="@drawable/ic_profile"
                     android:background="@drawable/circle_shape"/>
                 <ProgressBar
                     android:id="@+id/profilepic_progressbar"
                     style="@android:style/Widget.Holo.Light.ProgressBar"
-                    android:layout_width="60dp"
-                    android:layout_height="60dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
                     android:visibility="gone"
 
                     android:layout_centerVertical="true"
@@ -142,7 +159,38 @@
 
             </RelativeLayout>
 
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/forecast_details_layout"
+                android:visibility="gone"
+                android:layout_gravity="bottom|start"
+                android:layout_marginBottom="10dp"
+                android:layout_marginStart="40dp"
+                >
+                <TextView
+                    android:id="@+id/beach_location"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:textColor="@color/white"
+                    android:text="@string/telaviv_location"
+                    style="@style/TextAppearance.AppCompat.SearchResult.Subtitle"/>
+
+                <TextView
+                    android:id="@+id/beach_name"
+                    style="@style/TextAppearance.AppCompat.Title"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:text="דולפינריום"
+                    android:textColor="@color/white"
+                    android:layout_below="@id/beach_location"
+                    />
+
+            </RelativeLayout>
+
         </com.google.android.material.appbar.CollapsingToolbarLayout>
+
+
     </com.google.android.material.appbar.AppBarLayout>
 
 </merge>

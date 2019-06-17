@@ -1,36 +1,25 @@
 package com.shaym.leash.ui.home.aroundme;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.location.Location;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.core.app.ActivityCompat;
-import androidx.fragment.app.Fragment;
-import androidx.core.content.ContextCompat;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.ProgressBar;
-import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.ViewModelProviders;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -43,48 +32,53 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.Task;
-import com.shaym.leash.MainApplication;
+import com.google.firebase.database.DataSnapshot;
 import com.shaym.leash.R;
 import com.shaym.leash.logic.aroundme.CircleTransform;
 import com.shaym.leash.logic.user.Profile;
+import com.shaym.leash.logic.user.UsersViewModel;
+import com.shaym.leash.logic.utils.FireBasePostsHelper;
 import com.shaym.leash.logic.utils.FireBaseUsersHelper;
-import com.shaym.leash.ui.home.chat.ChatFragment;
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.NetworkPolicy;
+import com.shaym.leash.logic.utils.UsersHelperListener;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import permissions.dispatcher.NeedsPermission;
+import permissions.dispatcher.OnPermissionDenied;
+import permissions.dispatcher.OnShowRationale;
+import permissions.dispatcher.PermissionRequest;
+import permissions.dispatcher.RuntimePermissions;
+
+import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
 import static com.google.android.gms.maps.GoogleMap.OnMarkerClickListener;
 import static com.google.android.gms.maps.GoogleMap.OnMyLocationButtonClickListener;
-import static com.shaym.leash.logic.utils.FireBaseUsersHelper.BROADCAST_ALL_USERS;
-import static com.shaym.leash.ui.home.chat.ChatFragment.getUid;
 
 
 /**
  * Created by shaym on 2/17/18.
  */
 
-
-public class AroundMeFragment extends Fragment implements OnMapReadyCallback, OnMyLocationButtonClickListener,
+@RuntimePermissions
+public class AroundMeFragment extends Fragment implements OnMapReadyCallback, OnMyLocationButtonClickListener, UsersHelperListener,
         OnMarkerClickListener {
-    GoogleMap mGoogleMap;
-    public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
+    private GoogleMap mGoogleMap;
     private FusedLocationProviderClient mFusedLocationClient;
     private static final String TAG = "AroundMeFragment";
     protected Set<PoiTarget> poiTargets = new HashSet<>();
-    HashMap<Profile, LatLng> markerlocation;
+    HashMap<Profile, LatLng> markerlocation = new HashMap<>();
     public static final float COORDINATE_OFFSET = 0.00002f; // You can change this value according to your need
     public int MAX_NUMBER_OF_MARKERS;
     private SupportMapFragment mapFragment;
-    private Dialog mClickedUserDialog;
-    private List<Profile> mAllUsers;
+    private List<Profile> mAllUsers = new ArrayList<>();
+    private Profile mUser;
+    private UsersViewModel mUsersViewModel;
 
     @Nullable
     @Override
@@ -100,91 +94,55 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
         mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.googleMap);
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(Objects.requireNonNull(getActivity()));
-        checkLocationPermission();
 
-        LocalBroadcastManager.getInstance(Objects.requireNonNull(getContext())).registerReceiver(mAllUsersReceiver,
-                new IntentFilter(BROADCAST_ALL_USERS));
-
-        FireBaseUsersHelper.getInstance().loadAllUserProfiles();
+        AroundMeFragmentPermissionsDispatcher.getCurrentLocationWithPermissionCheck(this);
     }
 
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        if (mGoogleMap != null) {
-            addUsersMarkers();
-        }
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        LocalBroadcastManager.getInstance(Objects.requireNonNull(getContext())).unregisterReceiver(mAllUsersReceiver);
-
-    }
-
-    public void checkLocationPermission() {
-        if (ContextCompat.checkSelfPermission(MainApplication.getInstace().getApplicationContext(),
-                Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-
-            // Should we show an explanation?
-            if (ActivityCompat.shouldShowRequestPermissionRationale(Objects.requireNonNull(getActivity()),
-                    Manifest.permission.ACCESS_FINE_LOCATION)) {
-
-                // Show an explanation to the user *asynchronously* -- don't block
-                // this thread waiting for the user's response! After the user
-                // sees the explanation, try again to request the permission.
-                new AlertDialog.Builder(getActivity())
-                        .setTitle(R.string.title_location_permission)
-                        .setMessage(R.string.text_location_permission)
-                        .setPositiveButton(R.string.ok, (dialogInterface, i) -> {
-                            //Prompt the user once explanation has been shown
-                            ActivityCompat.requestPermissions(getActivity(),
-                                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                                    MY_PERMISSIONS_REQUEST_LOCATION);
-                        })
-                        .create()
-                        .show();
-
-
-            } else {
-                // No explanation needed, we can request the permission.
-                ActivityCompat.requestPermissions(getActivity(),
-                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                        MY_PERMISSIONS_REQUEST_LOCATION);
-            }
-        }
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-
-    }
-
-    private BroadcastReceiver mAllUsersReceiver = new BroadcastReceiver() {
-        @SuppressLint("LongLogTag")
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            // Get extra data included in the Intent
-            Log.d(TAG+ "receiver", "Got message: ");
-            try {
-                mAllUsers = FireBaseUsersHelper.getInstance().pullUsers();
-                updateUserLocation();
-
-                if (mapFragment != null) {
+    @SuppressLint("MissingPermission")
+    @NeedsPermission(ACCESS_COARSE_LOCATION)
+    void getCurrentLocation() {
+        mFusedLocationClient.getLastLocation()
+                .addOnSuccessListener(Objects.requireNonNull(getActivity()), location -> {
+                    // Got last known location. In some rare situations this can be null.
+                    if (location != null) {
+                        FireBaseUsersHelper.getInstance().updateUserLocation(new LatLng(location.getLatitude(), location.getLongitude()));
+                    }
                     mapFragment.getMapAsync(AroundMeFragment.this);
-                }
-            }
-            catch (Exception e){
-                e.printStackTrace();
-            }
+
+                });
 
 
-        }
-    };
+    }
+
+    @OnShowRationale(ACCESS_COARSE_LOCATION)
+    void showRationaleForFineLocation(PermissionRequest request) {
+        showRationaleDialog(R.string.text_location_permission, request);
+    }
+
+    private void showRationaleDialog(@StringRes int messageResId, final PermissionRequest request) {
+        new AlertDialog.Builder(getContext())
+                .setPositiveButton(R.string.ok, (dialog, which) -> {
+                    request.proceed();
+                })
+                .setNegativeButton(R.string.cancel, (dialog, which) -> {
+                    request.cancel();
+                })
+                .setCancelable(false)
+                .setMessage(messageResId)
+                .show();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        AroundMeFragmentPermissionsDispatcher.onRequestPermissionsResult(this, requestCode, grantResults);
+    }
+
+
+    @OnPermissionDenied(ACCESS_COARSE_LOCATION)
+    void onLocationDenied() {
+        Toast.makeText(getContext(), "Denied", Toast.LENGTH_SHORT).show();
+    }
 
 
     public static int safeLongToInt(long l) {
@@ -241,53 +199,30 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
         //to fetch all the users of firebase Auth app
         if (mGoogleMap != null && !mAllUsers.isEmpty()) {
 
-            mGoogleMap.setOnMarkerClickListener(this);
-
+            mGoogleMap.clear();
+            markerlocation.clear();
 
             MAX_NUMBER_OF_MARKERS = safeLongToInt(mAllUsers.size());
-            markerlocation = new HashMap<>();
 
             for (int i = 0; i<mAllUsers.size(); i++) {
                 Profile user = mAllUsers.get(i);
-
-                LatLng latLng = new LatLng(user.getcurrentlat(), user.getcurrentlng());
+                LatLng latLng = coordinateForMarker(new LatLng(user.getCurrentlatitude(), user.getCurrentlongitude()), user);
                 markerlocation.put(user, latLng);
 
             }
             for (Profile user : markerlocation.keySet()) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    markerlocation.replace(user, markerlocation.get(user), coordinateForMarker(markerlocation.get(user), user));
-                }
+
                 Marker m = mGoogleMap.addMarker(new MarkerOptions()
                         .position(markerlocation.get(user))
                         .title(user.getDisplayname()));
                 final PoiTarget pt = new PoiTarget(m);
 
                 poiTargets.add(pt);
-                if (!user.getAvatarURL().isEmpty()) {
+                attachImageToTarget(user.getAvatarurl(), pt);
 
-                    if (user.getAvatarURL().charAt(0) == 'p') {
-                        try {
-                            FireBaseUsersHelper.getInstance().getStorageReference().child(user.getAvatarURL()).getDownloadUrl().addOnSuccessListener(uri -> Picasso.get().load(uri).resize(100, 100).centerCrop().transform(new CircleTransform()).into(pt));
-
-                        } catch (Exception e) {
-                            Log.d(TAG, "onDataChange: " + e.toString());
-                        }
-                    } else {
-                        try {
-                            Picasso.get().load(Uri.parse((user.getAvatarURL()))).resize(100, 100).centerCrop().transform(new CircleTransform()).into(pt);
-
-                        } catch (Exception e) {
-                            Log.d(TAG, "onDataChange: " + e.toString());
-                        }
-                    }
-
-                } else {
-                    Picasso.get().load(R.drawable.ic_launcher).resize(100, 100).centerCrop().transform(new CircleTransform()).into(pt);
-
-                }
             }
 
+            moveCameraToCurrentLocation(new LatLng(mUser.getCurrentlatitude(), mUser.getCurrentlongitude()));
 
         }
 
@@ -296,8 +231,36 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
 
     }
 
+    private void attachImageToTarget(String avatarUrl, PoiTarget pt) {
+        if (!avatarUrl.isEmpty()) {
+
+            if (avatarUrl.charAt(0) == 'g') {
+                try {
+                    FireBaseUsersHelper.getInstance().getStorageReference().child(avatarUrl).getDownloadUrl().addOnSuccessListener(uri -> Picasso.get().load(uri).resize(100, 100).centerCrop().transform(new CircleTransform()).into(pt));
+
+                } catch (Exception e) {
+                    Log.d(TAG, "onDataChange: " + e.toString());
+                }
+            } else {
+                try {
+                    Picasso.get().load(Uri.parse((avatarUrl))).resize(100, 100).centerCrop().transform(new CircleTransform()).into(pt);
+
+                } catch (Exception e) {
+                    Log.d(TAG, "onDataChange: " + e.toString());
+                }
+            }
+
+        } else {
+            Picasso.get().load(R.drawable.launcher_leash).resize(100, 100).centerCrop().transform(new CircleTransform()).into(pt);
+
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    @NeedsPermission(ACCESS_COARSE_LOCATION)
     @Override
     public void onMapReady(GoogleMap googleMap) {
+        Log.d(TAG, "onMapReady: ");
         mGoogleMap = googleMap;
         try {
             mGoogleMap.clear();
@@ -308,53 +271,57 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
         }
         mGoogleMap.getUiSettings().setZoomControlsEnabled(true);
 
-
-        if (ActivityCompat.checkSelfPermission(Objects.requireNonNull(this.getContext()), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this.getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            Log.d(TAG, "onMapReady: Permission Denied");
-            return;
-        }
         mGoogleMap.setMyLocationEnabled(true);
+
         mGoogleMap.setOnMyLocationButtonClickListener(this);
-        moveCameraToCurrentLocation();
 
-        addUsersMarkers();
-
+        initUsersViewModel();
     }
 
-    private void moveCameraToCurrentLocation() {
-        if (ActivityCompat.checkSelfPermission(Objects.requireNonNull(this.getContext()), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this.getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }
-        Task<Location> locationResult = mFusedLocationClient.getLastLocation();
-        locationResult.addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                // Set the map's camera position to the current location of the device.
+    private void initUsersViewModel() {
 
-                Location location = task.getResult();
-                if (location != null) {
-                    LatLng currentLatLng = new LatLng(location.getLatitude(),
-                            location.getLongitude());
-                    CameraUpdate update = CameraUpdateFactory.newLatLngZoom(currentLatLng,
-                            19.0f);
-                    mGoogleMap.moveCamera(update);
-                }
+        mUsersViewModel = ViewModelProviders.of(this).get(UsersViewModel.class);
+
+        LiveData<DataSnapshot> currentUserLiveData = mUsersViewModel.getCurrentUserDataSnapshotLiveData();
+
+        currentUserLiveData.observe(this, dataSnapshot -> {
+            if (dataSnapshot != null) {
+                Log.d(TAG, "initUsersViewModel: ");
+                mUser = dataSnapshot.getValue(Profile.class);
             }
         });
+
+        LiveData<DataSnapshot> allUserLiveData = mUsersViewModel.getAllUsersDataSnapshotLiveData();
+        allUserLiveData.observe(this, dataSnapshot -> {
+            if (dataSnapshot != null) {
+                mAllUsers.clear();
+
+                for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                    Profile user = ds.getValue(Profile.class);
+                    mAllUsers.add(user);
+                }
+
+                addUsersMarkers();
+
+            }
+        });
+    }
+
+
+    private void moveCameraToCurrentLocation(LatLng loc) {
+
+        CameraUpdate update = CameraUpdateFactory.newLatLngZoom(loc,
+                19.0f);
+        mGoogleMap.moveCamera(update);
+
     }
 
     @Override
     public boolean onMyLocationButtonClick() {
         // Return false so that we don't consume the event and the default behavior still occurs
         // (the camera animates to the user's current position).
-        moveCameraToCurrentLocation();
-        return false;
+        moveCameraToCurrentLocation(new LatLng(mUser.getCurrentlatitude(), mUser.getCurrentlongitude()));
+        return true;
     }
 
 
@@ -366,145 +333,16 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
         for (int i = 0; i<mAllUsers.size(); i++) {
             Profile user = mAllUsers.get(i);
             if (marker.getTitle().equals(user.getDisplayname())) {
-                showPopup(user);
+                FireBasePostsHelper.getInstance().showProfilePopup(user, this);
             }
         }
 
         return false;
     }
 
+    @Override
+    public void onUserByIDLoaded(Profile userbyID) {
 
-    // The method that displays the popup.
-    private void showPopup(final Profile mClickedUser) {
-        mClickedUserDialog = new Dialog(Objects.requireNonNull(getContext()));
-        mClickedUserDialog.setContentView(R.layout.dialog_profile);
-// ...Irrelevant code for customizing the buttons and title
-
-        ImageView profilepic = mClickedUserDialog.findViewById(R.id.profilepicaroundme);
-        ImageView closedialogpic = mClickedUserDialog.findViewById(R.id.closedialogbtn);
-
-        ProgressBar progressBar = mClickedUserDialog.findViewById(R.id.profilepic_progressbar_aroundme);
-
-        if (!mClickedUser.getAvatarURL().isEmpty()) {
-            if (mClickedUser.getAvatarURL().charAt(0) == 'p') {
-                FireBaseUsersHelper.getInstance().getStorageReference().child(mClickedUser.getAvatarURL()).getDownloadUrl().addOnSuccessListener(uri -> Picasso.get().load(uri).resize(400, 400).networkPolicy(NetworkPolicy.OFFLINE).centerCrop().transform(new CircleTransform()).into(profilepic, new Callback() {
-                    @Override
-                    public void onSuccess() {
-                        progressBar.setVisibility(View.INVISIBLE);
-                    }
-
-                    @Override
-                    public void onError(Exception e) {
-                        Picasso.get().load(uri).resize(400, 400).centerCrop().transform(new CircleTransform()).into(profilepic, new Callback() {
-                            @Override
-                            public void onSuccess() {
-                                progressBar.setVisibility(View.INVISIBLE);
-                            }
-
-                            @Override
-                            public void onError(Exception e) {
-                                //Try again online if cache failed
-
-                                progressBar.setVisibility(View.INVISIBLE);
-
-                            }
-                        });
-
-                    }
-
-                }));
-            } else {
-                Picasso.get().load(Uri.parse(mClickedUser.getAvatarURL())).resize(400, 400).networkPolicy(NetworkPolicy.OFFLINE).centerCrop().transform(new CircleTransform()).into(profilepic, new Callback() {
-                    @Override
-                    public void onSuccess() {
-                        progressBar.setVisibility(View.INVISIBLE);
-                    }
-
-                    @Override
-                    public void onError(Exception e) {
-                        Picasso.get().load(Uri.parse(mClickedUser.getAvatarURL())).resize(400, 400).centerCrop().transform(new CircleTransform()).into(profilepic, new Callback() {
-                            @Override
-                            public void onSuccess() {
-                                progressBar.setVisibility(View.INVISIBLE);
-                            }
-
-                            @Override
-                            public void onError(Exception e) {
-                                //Try again online if cache failed
-
-                                progressBar.setVisibility(View.INVISIBLE);
-
-                            }
-                        });
-
-                    }
-
-                });
-            }
-        }
-        else {
-            progressBar.setVisibility(View.INVISIBLE);
-
-        }
-
-
-        TextView displayname = mClickedUserDialog.findViewById(R.id.displaynamearoundme);
-        displayname.setText(mClickedUser.getDisplayname().trim());
-
-        ImageView mailpic = mClickedUserDialog.findViewById(R.id.mail_aroundme);
-        ImageView phonepic = mClickedUserDialog.findViewById(R.id.phone_aroundme);
-        ImageView dmpic = mClickedUserDialog.findViewById(R.id.dm_aroundme);
-
-        if (mClickedUser.isIsemailhidden()){
-            mailpic.setVisibility(View.INVISIBLE);
-        }
-
-        if (mClickedUser.getUid().equals(getUid())){
-            dmpic.setVisibility(View.INVISIBLE);
-        }
-        else{
-            mailpic.setOnClickListener(view -> {
-                Intent i = new Intent(Intent.ACTION_SEND);
-                i.setType("message/rfc822");
-                i.putExtra(Intent.EXTRA_EMAIL  , new String[]{mClickedUser.getEmail().trim()});
-                try {
-                    startActivity(Intent.createChooser(i, "Send mail..."));
-                } catch (android.content.ActivityNotFoundException ex) {
-                    Toast.makeText(getContext(), "There are no email clients installed.", Toast.LENGTH_SHORT).show();
-                }
-            });
-        }
-
-        if (mClickedUser.isIsphonehidden()){
-            phonepic.setVisibility(View.INVISIBLE);
-        }
-        else{
-            phonepic.setOnClickListener(view -> {
-                Intent intent = new Intent(Intent.ACTION_DIAL, Uri.fromParts("tel", mClickedUser.getPhonenumber().trim(), null));
-                startActivity(intent);
-            });
-        }
-
-        dmpic.setOnClickListener(view -> {
-//            getFragmentManager().beginTransaction().hide(mapFragment).commit();
-
-            ChatFragment cf = ChatFragment.newInstance(mClickedUser.getUid());
-
-
-            assert getFragmentManager() != null;
-            cf.show(getFragmentManager(), "fragment_chat");
-
-            mClickedUserDialog.dismiss();
-
-
-        });
-
-
-        closedialogpic.setOnClickListener(view -> mClickedUserDialog.dismiss());
-
-
-        Objects.requireNonNull(mClickedUserDialog.getWindow()).setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        mClickedUserDialog.show();
     }
 
 
@@ -557,59 +395,9 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
     }
 
 
-    private void updateUserLocation() {
-        // permission was granted, yay! Do the
-        // location-related task you need to do.
-        if (ContextCompat.checkSelfPermission(Objects.requireNonNull(getActivity()),
-                Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED) {
-            mFusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
-                if (location != null) {
-                    FireBaseUsersHelper.getInstance().updateUserLocation(location.getLatitude(), location.getLongitude());
-                }
-
-            });
-        }else {
-
-            Log.d(TAG, "onRequestPermissionsResult: Permission Denied");
-
-        }
-
-    }
 
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           @NonNull String permissions[], @NonNull int[] grantResults) {
-        switch (requestCode) {
-            case MY_PERMISSIONS_REQUEST_LOCATION: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 
-                    // permission was granted, yay! Do the
-                    // location-related task you need to do.
-                    if (ContextCompat.checkSelfPermission(Objects.requireNonNull(getActivity()),
-                            Manifest.permission.ACCESS_FINE_LOCATION)
-                            == PackageManager.PERMISSION_GRANTED) {
-                        try {
-                            mFusedLocationClient.getLastLocation().addOnSuccessListener(location -> FireBaseUsersHelper.getInstance().updateUserLocation(location.getLatitude(), location.getLongitude()));
-                        }
-                        catch (Exception e){
-                            e.printStackTrace();
-                        }
-
-                    }
-
-                } else {
-
-                    Log.d(TAG, "onRequestPermissionsResult: Permission Denied");
-
-                }
-            }
-
-        }
-    }
 
 
 }

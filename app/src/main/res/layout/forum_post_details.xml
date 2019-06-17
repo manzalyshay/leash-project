@@ -27,13 +27,6 @@
 
     </com.google.android.material.textfield.TextInputLayout>
 
-
-
-
-
-
-
-
     <LinearLayout
         android:id="@+id/upload_layout"
         android:layout_margin="10dp"
@@ -54,6 +47,7 @@
             android:text="@string/upload_images"
             android:textColor="@color/white"
             android:layout_gravity="start|bottom"
+            android:id="@+id/upload_label"
             android:textSize="12sp"/>
 
 

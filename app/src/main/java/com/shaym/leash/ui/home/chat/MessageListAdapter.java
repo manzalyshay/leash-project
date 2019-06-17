@@ -1,34 +1,24 @@
 package com.shaym.leash.ui.home.chat;
 
-import android.app.Activity;
-import android.net.Uri;
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.ChildEventListener;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
 import com.shaym.leash.R;
-import com.shaym.leash.logic.aroundme.CircleTransform;
 import com.shaym.leash.logic.chat.ChatMessage;
 import com.shaym.leash.logic.user.Profile;
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.NetworkPolicy;
-import com.squareup.picasso.Picasso;
+import com.shaym.leash.logic.utils.FireBasePostsHelper;
+import com.shaym.leash.logic.utils.FireBaseUsersHelper;
 
-import java.lang.ref.WeakReference;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -38,128 +28,41 @@ public class MessageListAdapter extends RecyclerView.Adapter {
     private static final int VIEW_TYPE_MESSAGE_SENT = 1;
     private static final int VIEW_TYPE_MESSAGE_RECEIVED = 2;
     private static final String TAG = "MessageListAdapter";
-    private StorageReference storageReference;
+
+    public void setConvPartner(Profile mConvPartner) {
+        this.mConvPartner = mConvPartner;
+    }
+
+    public void setUser(Profile mUser) {
+        this.mUser = mUser;
+    }
+
     private Profile mConvPartner;
-    private DatabaseReference mDatabaseReference;
-    private ChildEventListener mChildEventListener;
-
-    private List<String> mChatMessagesIds = new ArrayList<>();
-    private List<ChatMessage> mChatMessages = new ArrayList<>();
-    private WeakReference<Activity> mContext;
-
-    void cleanupListener() {
-        if (mChildEventListener != null) {
-            mDatabaseReference.removeEventListener(mChildEventListener);
-        }
-    }
+    private Profile mUser;
+    private List<ChatMessage> data = new ArrayList<>();
     
-    MessageListAdapter(Activity activity, DatabaseReference ref, Profile convpartner) {
-        storageReference = FirebaseStorage.getInstance().getReference();
-        mContext = new WeakReference<>(activity);
-        mDatabaseReference = ref;
-        mConvPartner = convpartner;
-        initMessagesListener();
+    MessageListAdapter() {
 
     }
 
-    private void initMessagesListener() {
 
-        // Create child event listener
-        // [START child_event_listener_recycler]
+    public void setData(List<ChatMessage> newData) {
+        if (data != null) {
+            PostDiffCallback postDiffCallback = new PostDiffCallback(data, newData);
+            DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(postDiffCallback);
 
-        // Store reference to listener so it can be removed on app stop
-        mChildEventListener = new ChildEventListener() {
-            @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String previousChildName) {
-                Log.d(TAG, "onChildAdded:" + dataSnapshot.getKey());
-
-                // A new message has been added, add it to the displayed list
-                ChatMessage message = dataSnapshot.getValue(ChatMessage.class);
-
-                // [START_EXCLUDE]
-                // Update RecyclerView
-                mChatMessagesIds.add(dataSnapshot.getKey());
-                mChatMessages.add(message);
-                notifyItemInserted(mChatMessages.size() - 1);
-                // [END_EXCLUDE]
-            }
-
-            @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String previousChildName) {
-                Log.d(TAG, "onChildChanged:" + dataSnapshot.getKey());
-
-                // A message has changed, use the key to determine if we are displaying this
-                // message and if so displayed the changed message.
-                ChatMessage newChatMessage = dataSnapshot.getValue(ChatMessage.class);
-                String messageKey = dataSnapshot.getKey();
-
-                // [START_EXCLUDE]
-                int messageIndex = mChatMessagesIds.indexOf(messageKey);
-                if (messageIndex > -1) {
-                    // Replace with the new data
-                    mChatMessages.set(messageIndex, newChatMessage);
-
-                    // Update the RecyclerView
-                    notifyItemChanged(messageIndex);
-                } else {
-                    Log.w(TAG, "onChildChanged:unknown_child:" + messageKey);
-                }
-                // [END_EXCLUDE]
-            }
-
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-                Log.d(TAG, "onChildRemoved:" + dataSnapshot.getKey());
-
-                // A message has changed, use the key to determine if we are displaying this
-                // message and if so remove it.
-                String messageKey = dataSnapshot.getKey();
-
-                // [START_EXCLUDE]
-                int messageIndex = mChatMessagesIds.indexOf(messageKey);
-                if (messageIndex > -1) {
-                    // Remove data from the list
-                    mChatMessagesIds.remove(messageIndex);
-                    mChatMessages.remove(messageIndex);
-
-                    // Update the RecyclerView
-                    notifyItemRemoved(messageIndex);
-                } else {
-                    Log.w(TAG, "onChildRemoved:unknown_child:" + messageKey);
-                }
-                // [END_EXCLUDE]
-            }
-
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String previousChildName) {
-                Log.d(TAG, "onChildMoved:" + dataSnapshot.getKey());
-
-                // A message has changed position, use the key to determine if we are
-                // displaying this message and if so move it.
-                ChatMessage movedChatMessage = dataSnapshot.getValue(ChatMessage.class);
-                String messageKey = dataSnapshot.getKey();
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                Log.w(TAG, "postChatMessages:onCancelled", databaseError.toException());
-                Activity activity = mContext.get();
-                if (activity != null) {
-                    Toast.makeText(activity, "Failed to load messages.",
-                            Toast.LENGTH_SHORT).show();
-                }
-            }
-        };
-
-        mDatabaseReference.addChildEventListener(mChildEventListener);
-        // [END child_event_listener_recycler]
-
+            data.clear();
+            data.addAll(newData);
+            diffResult.dispatchUpdatesTo(this);
+        } else {
+            // first initialization
+            data = newData;
+        }
     }
 
     @Override
     public int getItemCount() {
-        return mChatMessages.size();
+        return data.size();
     }
 
     public String getUid() {
@@ -170,7 +73,7 @@ public class MessageListAdapter extends RecyclerView.Adapter {
     // Determines the appropriate ViewType according to the sender of the message.
     @Override
     public int getItemViewType(int position) {
-        ChatMessage message =  mChatMessages.get(position);
+        ChatMessage message =  data.get(position);
 
         if (message.getUid().equals(getUid())) {
             // If the current user is the sender of the message
@@ -203,14 +106,14 @@ public class MessageListAdapter extends RecyclerView.Adapter {
     // Passes the message object to a ViewHolder so that the contents can be bound to UI.
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        ChatMessage message = mChatMessages.get(position);
+        ChatMessage message = data.get(position);
 
         switch (holder.getItemViewType()) {
             case VIEW_TYPE_MESSAGE_SENT:
                 ((SentMessageHolder) holder).bind(message);
                 break;
             case VIEW_TYPE_MESSAGE_RECEIVED:
-                ((ReceivedMessageHolder) holder).bind(message, position);
+                ((ReceivedMessageHolder) holder).bind(message);
         }
     }
 
@@ -230,7 +133,9 @@ public class MessageListAdapter extends RecyclerView.Adapter {
 
         void bind(ChatMessage message) {
             messageText.setText(message.getText());
-            timeText.setText(message.getTimesent());
+            SimpleDateFormat simpleDate =  new SimpleDateFormat("dd/MM/yyyy");
+
+            timeText.setText(simpleDate.format(message.timesent));
 
             if (message.getIsread()){
                 readIcon.setVisibility(View.VISIBLE);
@@ -259,91 +164,61 @@ public class MessageListAdapter extends RecyclerView.Adapter {
         }
 
 
-        void bind(ChatMessage message, int position) {
+        void bind(ChatMessage message) {
             messageText.setText(message.getText());
-            LoadUserPic();
 
-            timeText.setText(message.getTimesent());
+            SimpleDateFormat simpleDate =  new SimpleDateFormat("dd/MM/yyyy");
 
+            timeText.setText(simpleDate.format(message.timesent));
             nameText.setText(message.getAuthor());
-
-            message.setIsread(true);
-            mDatabaseReference.child(mChatMessagesIds.get(position)).setValue(message);
-
-        }
-
-        private void LoadUserPic() {
-            Log.d(TAG, "LoadUserPic: ");
-            if (!mConvPartner.getAvatarURL().isEmpty()) {
-
-                if (mConvPartner.getAvatarURL().charAt(0) == 'p') {
-                    storageReference.child(mConvPartner.getAvatarURL()).getDownloadUrl().addOnSuccessListener(uri -> Picasso.get().load(uri).resize(400, 400).networkPolicy(NetworkPolicy.OFFLINE).centerCrop().transform(new CircleTransform()).into(profileImage, new Callback() {
-                        @Override
-                        public void onSuccess() {
-                            mProfilePicProgressBar.setVisibility(View.INVISIBLE);
-                        }
-
-                        @Override
-                        public void onError(Exception e) {
-                            Picasso.get().load(uri).resize(400, 400).centerCrop().transform(new CircleTransform()).into(profileImage, new Callback() {
-                                @Override
-                                public void onSuccess() {
-                                    mProfilePicProgressBar.setVisibility(View.INVISIBLE);
-                                }
-
-                                @Override
-                                public void onError(Exception e) {
-                                    //Try again online if cache failed
-
-                                    mProfilePicProgressBar.setVisibility(View.INVISIBLE);
-
-                                }
-                            });
-
-                        }
-
-                    }));
-                }
-                else {
-                    Picasso.get().load(Uri.parse(mConvPartner.getAvatarURL())).resize(400, 400).networkPolicy(NetworkPolicy.OFFLINE).centerCrop().transform(new CircleTransform()).into(profileImage, new Callback() {
-                        @Override
-                        public void onSuccess() {
-                            mProfilePicProgressBar.setVisibility(View.INVISIBLE);
-                        }
-
-                        @Override
-                        public void onError(Exception e) {
-                            Picasso.get().load(Uri.parse(mConvPartner.getAvatarURL())).resize(400, 400).centerCrop().transform(new CircleTransform()).into(profileImage, new Callback() {
-                                @Override
-                                public void onSuccess() {
-                                    mProfilePicProgressBar.setVisibility(View.INVISIBLE);
-                                }
-
-                                @Override
-                                public void onError(Exception e) {
-                                    //Try again online if cache failed
-
-                                    mProfilePicProgressBar.setVisibility(View.INVISIBLE);
-
-                                }
-                            });
-
-                        }
-
-                    });
+            if (!message.isread) {
+                message.setIsread(true);
+                if (mUser != null) {
+                    mUser.setUnreadcounter(mUser.getUnreadcounter() - 1);
+                    FireBaseUsersHelper.getInstance().saveUserByID(mUser.getUid(), mUser);
                 }
             }
-            else {
-                mProfilePicProgressBar.setVisibility(View.INVISIBLE);
 
+            if (mConvPartner != null) {
+                FireBasePostsHelper.getInstance().attachRoundPic(mConvPartner.getAvatarurl(), profileImage, mProfilePicProgressBar, 100, 100);
             }
 
         }
+
+
 
 
     }
 
 
 
+    class PostDiffCallback extends DiffUtil.Callback {
 
+        private final List<ChatMessage> oldPosts, newPosts;
+
+        public PostDiffCallback(List<ChatMessage> oldPosts, List<ChatMessage> newPosts) {
+            this.oldPosts = oldPosts;
+            this.newPosts = newPosts;
+        }
+
+        @Override
+        public int getOldListSize() {
+            return oldPosts.size();
+        }
+
+        @Override
+        public int getNewListSize() {
+            return newPosts.size();
+        }
+
+        @Override
+        public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
+            return oldPosts.get(oldItemPosition).getKey().equals(newPosts.get(newItemPosition).getKey());
+        }
+
+        @Override
+        public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
+            return oldPosts.get(oldItemPosition).equals(newPosts.get(newItemPosition));
+        }
+    }
 }

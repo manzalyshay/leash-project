@@ -1,8 +1,6 @@
 package com.shaym.leash.logic.forecast;
 
-import android.content.Intent;
 import android.os.AsyncTask;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.shaym.leash.MainApplication;
@@ -18,7 +16,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static android.content.ContentValues.TAG;
 import static com.shaym.leash.ui.forecast.ForecastFragment.CALIFORNIA_TAG;
 import static com.shaym.leash.ui.forecast.ForecastFragment.TELAVIV_TAG;
 
@@ -27,11 +24,16 @@ import static com.shaym.leash.ui.forecast.ForecastFragment.TELAVIV_TAG;
  */
 
 
-public class DownloadForecast extends AsyncTask<Integer, Void, ArrayList<ForecastObject>> {
-
-    public DownloadForecast (){
-
+public class DownloadForecast extends AsyncTask<Void, Void, ArrayList<ForecastObject>> {
+    private static final String TAG = "DownloadForecast";
+    private int locationNum;
+    private ForecastListener mListener;
+    public DownloadForecast (int loc, ForecastListener listener){
+        locationNum = loc;
+        mListener = listener;
     }
+
+
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
@@ -39,14 +41,13 @@ public class DownloadForecast extends AsyncTask<Integer, Void, ArrayList<Forecas
     }
 
     @Override
-    protected ArrayList<ForecastObject> doInBackground(Integer... ints) {
+    protected ArrayList<ForecastObject> doInBackground(Void... voids) {
         HttpHandler sh = new HttpHandler();
         // Making a request to url and getting response
         List<String> urls = Arrays.asList(MainApplication.getInstace().getApplicationContext().getResources().getStringArray(R.array.Forecast_urls));
-        int loc = ints[0];
         String url;
         String location;
-        if (loc == 0){
+        if (locationNum == 0){
             location = TELAVIV_TAG;
             url = urls.get(0);
         }
@@ -76,10 +77,10 @@ public class DownloadForecast extends AsyncTask<Integer, Void, ArrayList<Forecas
 
                     JSONObject swell = jsonobj.getJSONObject("swell");
 //                    Log.e(TAG, "swellobject: " + swell);
-                    float mAbsMinBreakingHeight = (float) swell.getDouble("absMinBreakingHeight");
-//                    Log.e(TAG, "absMinBreakingHeight: " + mAbsMinBreakingHeight);
-                    float mAbsMaxBreakingHeight = (float) swell.getDouble("absMaxBreakingHeight");
-//                    Log.e(TAG, "absMaxBreakingHeight: " + mAbsMaxBreakingHeight);
+                    float mAbsMinBreakingHeight = (float) swell.getDouble("minBreakingHeight");
+//                    Log.e(TAG, "absMinBreakingHeight: " + mMinBreakingHeight);
+                    float mAbsMaxBreakingHeight = (float) swell.getDouble("maxBreakingHeight");
+//                    Log.e(TAG, "absMaxBreakingHeight: " + mMaxBreakingHeight);
 
 
                     JSONObject wind = jsonobj.getJSONObject("wind");
@@ -116,13 +117,7 @@ public class DownloadForecast extends AsyncTask<Integer, Void, ArrayList<Forecas
     protected void onPostExecute(ArrayList<ForecastObject> result) {
         super.onPostExecute(result);
         if (result.size() > 0) {
-            new SaveForecast(result).execute();
-
-            Log.d("sender", "Broadcasting Forecast Result");
-            Intent intent = new Intent("forecast");
-            // You can also include some extra data.
-            intent.putExtra("result", result);
-            LocalBroadcastManager.getInstance(MainApplication.getInstace().getApplicationContext()).sendBroadcast(intent);
+            new SaveForecast(result, mListener).execute();
         }
         else {
             Log.d(TAG, "onPostExecute: " + "No Internet Connection");

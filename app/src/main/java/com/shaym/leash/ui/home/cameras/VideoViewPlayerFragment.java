@@ -18,7 +18,7 @@ import static com.shaym.leash.ui.home.cameras.CamerasFragment.CAMERA_PARCE;
 
 public class VideoViewPlayerFragment extends Fragment {
     private TextView mTitleView;
-    private TextView mSponsorView;
+    private TextView mLocationView;
 
     private VideoView mVideoView;
     private ImageView mCoverView;
@@ -30,7 +30,7 @@ public class VideoViewPlayerFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_videoviewplayer, container, false);
         mTitleView = v.findViewById(R.id.title_view);
-        mSponsorView = v.findViewById(R.id.sponsor_view);
+        mLocationView = v.findViewById(R.id.location_view);
 
         mVideoView = v.findViewById(R.id.player_video_view);
         mCoverView = v.findViewById(R.id.camera_cover);
@@ -55,6 +55,6 @@ public class VideoViewPlayerFragment extends Fragment {
         mVideoView.setVideoPath(mCurrentCamera.getUrl());
         mVideoView.getPlayer().start();
         mTitleView.setText(mCurrentCamera.getBeachName());
-        mSponsorView.setText(mCurrentCamera.getLocation());
+        mLocationView.setText(mCurrentCamera.getLocation());
     }
 }

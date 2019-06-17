@@ -20,14 +20,14 @@ public class WebViewPlayerFragment extends Fragment {
     private WebView mWebview;
     private Camera mCurrentCamera;
     private TextView mTitleview;
-    private TextView mSponsorView;
+    private TextView mLocationView;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_webviewplayer, container, false);
         mTitleview = v.findViewById(R.id.title_view);
-        mSponsorView = v.findViewById(R.id.sponsor_view);
+        mLocationView = v.findViewById(R.id.location_view);
         mWebview = v.findViewById(R.id.webview);
 
         mWebview.setWebViewClient(new myWebClient());
@@ -53,7 +53,7 @@ public class WebViewPlayerFragment extends Fragment {
         mCurrentCamera = cam;
         mWebview.loadUrl(mCurrentCamera.getUrl());
         mTitleview.setText(mCurrentCamera.getBeachName());
-        mSponsorView.setText(mCurrentCamera.getLocation());
+        mLocationView.setText(mCurrentCamera.getLocation());
     }
 
 

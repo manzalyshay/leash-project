@@ -2,16 +2,15 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:weightSum="10">
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-
-        android:id="@+id/cameras_menu"
-        android:gravity="center_horizontal"
-        android:layout_marginBottom="10dp">
-
+        android:layout_height="0dp"
+        android:id="@+id/profile_menu"
+        android:layout_weight="0.5"
+        android:gravity="center_horizontal">
 
         <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/forum_activity"
@@ -21,8 +20,7 @@
             android:text="פעילות בפורום"
             android:layout_marginEnd="15dp"
             android:layout_alignParentStart="true"
-            android:background="@drawable/underline_cameras"
-            />
+            android:background="@drawable/underline_cameras" />
 
 
         <androidx.appcompat.widget.AppCompatTextView
@@ -49,6 +47,7 @@
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/profile_list"
+        android:layout_weight="6.5"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="0dp" />
 </LinearLayout>

@@ -6,7 +6,7 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="android:windowAnimationStyle">@null</item>
-        <item name="colorPrimaryDark">@color/newgradStart</item>
+        <item name="colorPrimaryDark">@color/bottom_nav_bg_color</item>
         <item name="colorPrimary">@color/bottom_nav_bg_color</item>
         <item name="colorAccent">@color/bottom_nav_bg_color</item>
         <item name="android:windowBackground">@color/white</item>
@@ -17,9 +17,17 @@
     </style>
 
 
+
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar">
         <item name="colorPrimary">@color/bottom_nav_bg_color</item>
         <item name="colorAccent">@color/bottom_nav_bg_color</item>
+    </style>
+
+    <style name="TextView.InputLabel" parent="TextAppearance.AppCompat.Caption">
+        <item name="android:textColor">?android:textColorHint</item>
+        <item name="android:paddingBottom">8dp</item>
+        <item name="android:paddingLeft">4dp</item>
+        <item name="android:paddingRight">4dp</item>
     </style>
 
 

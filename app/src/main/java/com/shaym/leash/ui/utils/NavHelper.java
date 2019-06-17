@@ -2,7 +2,6 @@ package com.shaym.leash.ui.utils;
 
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -16,13 +15,9 @@ import com.facebook.login.LoginManager;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.shaym.leash.R;
-import com.shaym.leash.logic.aroundme.CircleTransform;
 import com.shaym.leash.logic.user.Profile;
-import com.shaym.leash.logic.utils.FireBaseUsersHelper;
+import com.shaym.leash.logic.utils.FireBasePostsHelper;
 import com.shaym.leash.ui.authentication.LoginActivity;
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.NetworkPolicy;
-import com.squareup.picasso.Picasso;
 
 import java.util.Objects;
 
@@ -212,72 +207,10 @@ public class NavHelper implements View.OnClickListener, NavigationView.OnNavigat
             mNavUsername.setText(mUser.getDisplayname());
         }
 
-        if (!mUser.getAvatarURL().isEmpty()) {
-            if (mUser.getAvatarURL().charAt(0) == 'p') {
-                FireBaseUsersHelper.getInstance().getStorageReference().child(mUser.getAvatarURL()).getDownloadUrl().addOnSuccessListener(uri -> Picasso.get().load(uri).resize(200, 200).networkPolicy(NetworkPolicy.OFFLINE).centerCrop().transform(new CircleTransform()).into(mNavProfilePic, new Callback() {
-                    @Override
-                    public void onSuccess() {
-                        mProfilePicProgressBar.setVisibility(View.INVISIBLE);
-                    }
-
-                    @Override
-                    public void onError(Exception e) {
-                        Picasso.get().load(uri).resize(200, 200).centerCrop().transform(new CircleTransform()).into(mNavProfilePic, new Callback() {
-                            @Override
-                            public void onSuccess() {
-                                mProfilePicProgressBar.setVisibility(View.INVISIBLE);
-                            }
-
-                            @Override
-                            public void onError(Exception e) {
-                                //Try again online if cache failed
-
-                                mProfilePicProgressBar.setVisibility(View.INVISIBLE);
-
-                            }
-                        });
-
-                    }
-
-                }));
-            }
-            else {
-                Picasso.get().load(Uri.parse(mUser.getAvatarURL())).resize(200, 200).networkPolicy(NetworkPolicy.OFFLINE).centerCrop().transform(new CircleTransform()).into(mNavProfilePic, new Callback() {
-                    @Override
-                    public void onSuccess() {
-                        mProfilePicProgressBar.setVisibility(View.INVISIBLE);
-                    }
-
-                    @Override
-                    public void onError(Exception e) {
-                        Picasso.get().load(Uri.parse(mUser.getAvatarURL())).resize(200, 200).centerCrop().transform(new CircleTransform()).into(mNavProfilePic, new Callback() {
-                            @Override
-                            public void onSuccess() {
-                                mProfilePicProgressBar.setVisibility(View.INVISIBLE);
-                            }
-
-                            @Override
-                            public void onError(Exception e) {
-                                //Try again online if cache failed
-
-                                mProfilePicProgressBar.setVisibility(View.INVISIBLE);
-
-                            }
-                        });
-
-                    }
-
-                });
-            }
-        }
-        else {
-
-            mProfilePicProgressBar.setVisibility(View.INVISIBLE);
-
-        }
-
-
+        FireBasePostsHelper.getInstance().attachRoundPic(mUser.getAvatarurl(), mNavProfilePic, mProfilePicProgressBar, 50, 50);
     }
+
+
 
     @Override
     public void onClick(View view) {

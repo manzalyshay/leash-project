@@ -10,6 +10,9 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
 import android.util.Log;
 
 import com.firebase.jobdispatcher.FirebaseJobDispatcher;
@@ -18,15 +21,19 @@ import com.firebase.jobdispatcher.Job;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import com.shaym.leash.R;
+import com.shaym.leash.logic.user.Profile;
 import com.shaym.leash.logic.utils.FireBaseUsersHelper;
+import com.shaym.leash.logic.utils.UsersHelperListener;
 import com.shaym.leash.ui.home.HomeActivity;
 
+import java.util.Map;
 import java.util.Objects;
+
+import static com.shaym.leash.ui.home.HomeActivity.PUSH_RECEIVED;
 
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
     private static final String TAG = "MyFirebaseMsgService";
-
     /**
      * Called when message is received.
      *
@@ -71,7 +78,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         // Also if you intend on generating your own notifications as a result of a received FCM
         // message, here is where that should be initiated. See sendNotification method below.
-        sendNotification(Objects.requireNonNull(remoteMessage.getNotification()).getBody());
+        sendNotification(Objects.requireNonNull(remoteMessage.getData()));
 
     }
     // [END receive_message]
@@ -122,15 +129,14 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
      */
     private void sendRegistrationToServer(String token) {
         // TODO: Implement this method to send token to your app server.
-        FireBaseUsersHelper.getInstance().updateUserPushToken(token);
+        FireBaseUsersHelper.getInstance().saveUserPushToken(token);
     }
 
     /**
      * Create and show a simple notification containing the received FCM message.
      *
-     * @param messageBody FCM message body received.
      */
-    private void sendNotification(String messageBody) {
+    private void sendNotification(Map<String, String> data) {
         Intent intent = new Intent(this, HomeActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
@@ -140,26 +146,40 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder notificationBuilder =
                 new NotificationCompat.Builder(this, channelId)
-                        .setSmallIcon(R.drawable.ic_launcher)
-                        .setContentTitle(getString(R.string.app_name))
-                        .setContentText(messageBody)
+                        .setSmallIcon(R.mipmap.leash_launcher)
+                        .setContentTitle(data.get("author"))
+                        .setContentText(data.get("body"))
                         .setAutoCancel(true)
+                        .setContentInfo("Information")
                         .setSound(defaultSoundUri)
                         .setContentIntent(pendingIntent);
 
-        NotificationManager notificationManager =
-                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        NotificationManagerCompat manager = NotificationManagerCompat.from(getApplicationContext());
+
 
         // Since android Oreo notification channel is needed.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(channelId,
                     "Channel human readable title",
                     NotificationManager.IMPORTANCE_DEFAULT);
-            assert notificationManager != null;
-            notificationManager.createNotificationChannel(channel);
+            assert manager != null;
+            manager.createNotificationChannel(channel);
         }
 
-        assert notificationManager != null;
-        notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
+        assert manager != null;
+        manager.notify(0 /* ID of notification */, notificationBuilder.build());
+
+        sendBroadcast(data);
     }
+
+    private void sendBroadcast(Map<String, String> data) {
+        Log.d("sender", "Broadcasting message");
+        Intent intent = new Intent(PUSH_RECEIVED);
+        // You can also include some extra data.
+        intent.putExtra("body", data.get("body"));
+        intent.putExtra("author", data.get("author"));
+
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+    }
+
 }

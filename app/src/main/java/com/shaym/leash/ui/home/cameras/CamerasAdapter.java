@@ -15,6 +15,11 @@
     public class CamerasAdapter extends RecyclerView.Adapter<CameraItemViewHolder> {
 
         private onCameraSelectedListener mListener;
+
+        public void setCamerasList(List<Camera> camerasList) {
+            this.camerasList = camerasList;
+        }
+
         private List<Camera> camerasList;
 
         private static final String TAG = "CamerasAdapter";

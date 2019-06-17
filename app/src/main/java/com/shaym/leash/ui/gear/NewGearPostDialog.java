@@ -1,8 +1,12 @@
 package com.shaym.leash.ui.gear;
 
+import android.Manifest;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -12,10 +16,14 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.asksira.bsimagepicker.BSImagePicker;
+import com.asksira.bsimagepicker.Utils;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -23,6 +31,8 @@ import com.shaym.leash.R;
 import com.shaym.leash.logic.utils.FireBasePostsHelper;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -31,9 +41,15 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.ThemedSpinnerAdapter;
 import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.FragmentManager;
+
+import permissions.dispatcher.NeedsPermission;
+import permissions.dispatcher.OnShowRationale;
+import permissions.dispatcher.PermissionRequest;
+import permissions.dispatcher.RuntimePermissions;
 
 import static android.app.Activity.RESULT_OK;
 import static com.shaym.leash.logic.utils.CONSTANT.BOARDS_POSTS;
@@ -43,9 +59,11 @@ import static com.shaym.leash.logic.utils.CONSTANT.GEAR_POSTS_PICS;
 import static com.shaym.leash.logic.utils.CONSTANT.LEASHES_POSTS;
 import static com.shaym.leash.logic.utils.CONSTANT.OTHER_POSTS;
 
-
-public class NewGearPostDialog extends DialogFragment {
+@RuntimePermissions
+public class NewGearPostDialog extends DialogFragment implements BSImagePicker.OnSingleImageSelectedListener, BSImagePicker.ImageLoaderDelegate {
     public static final String TAG = "NewGearPostDialog";
+    public static final String CATEGORY_KEY = "CATEGORY_KEY";
+
     public static final int GEAR_PICK_IMAGE_REQUEST = 71;
     private Spinner mCategorySpinner;
     private Spinner mCitySpinner;
@@ -60,7 +78,8 @@ public class NewGearPostDialog extends DialogFragment {
     private EditText mPhoneInput;
     private LinearLayout mUploadLayout;
     private LinearLayout mSubmitLayout;
-
+    private TextView mUploadLabel;
+    private boolean mImagePicked;
     private StorageReference mStorage;
     private String mNewPostCategory;
 
@@ -71,17 +90,21 @@ public class NewGearPostDialog extends DialogFragment {
         // Use `newInstance` instead as shown below
     }
 
-    public static NewGearPostDialog newInstance() {
+    public static NewGearPostDialog newInstance(String currentCategory) {
         NewGearPostDialog frag = new NewGearPostDialog();
-//        Bundle args = new Bundle();
-//        args.putString("title", title);
-//        frag.setArguments(args);
+
+        Bundle args = new Bundle();
+        args.putString(CATEGORY_KEY, currentCategory);
+        frag.setArguments(args);
         return frag;
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
+        Bundle args = getArguments();
+        mNewPostCategory = args.getString(CATEGORY_KEY);
         storage = FirebaseStorage.getInstance();
         storageReference = storage.getReference();
         return inflater.inflate(R.layout.dialog_newgearpost, container);
@@ -100,11 +123,9 @@ public class NewGearPostDialog extends DialogFragment {
             e.printStackTrace();
         }
 
-        try {
+
             initViews();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
     }
 
     private void initBodyLayout() {
@@ -113,14 +134,15 @@ public class NewGearPostDialog extends DialogFragment {
                 R.layout.spinner_item, citieslist);
         citiesadapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mCitySpinner.setAdapter(citiesadapter);
-
-        Spinner categorySpinner = getView().findViewById(R.id.category_spinner);
+        mUploadLabel = getView().findViewById(R.id.add_picture_label);
+        mCategorySpinner = getView().findViewById(R.id.category_spinner);
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(getContext(),
                 R.array.gear_categories_array, R.layout.spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        categorySpinner.setAdapter(adapter);
+        mCategorySpinner.setAdapter(adapter);
+            setCurrentCategory();
 
-        categorySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        mCategorySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                                                       @Override
                                                       public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                                                           Log.d(TAG, "onItemSelected: " + id);
@@ -158,7 +180,32 @@ public class NewGearPostDialog extends DialogFragment {
 
     }
 
-    private void initViews() throws IOException {
+    private void setCurrentCategory() {
+        switch (mNewPostCategory){
+            case BOARDS_POSTS:
+                mCategorySpinner.setSelection(0);
+                break;
+
+            case LEASHES_POSTS:
+                mCategorySpinner.setSelection(1);
+                break;
+
+            case FINS_POSTS:
+                mCategorySpinner.setSelection(2);
+                break;
+
+            case CLOTHING_POSTS:
+                mCategorySpinner.setSelection(3);
+                break;
+
+            case OTHER_POSTS:
+                mCategorySpinner.setSelection(4);
+                break;
+
+        }
+    }
+
+    private void initViews() {
         initBodyLayout();
         initUploadLayout();
         initSubmitLayout();
@@ -168,38 +215,51 @@ public class NewGearPostDialog extends DialogFragment {
         mUploadLayout = Objects.requireNonNull(getView()).findViewById(R.id.upload_layout);
         mPostImagepaths = new ArrayList<>();
         mUploadLayout.setOnClickListener(view -> {
-            // Clear all back stack.
-            int backStackCount = getActivity().getSupportFragmentManager().getBackStackEntryCount();
-            for (int i = 0; i < backStackCount; i++) {
-
-                // Get the back stack fragment id.
-                int backStackId = getActivity().getSupportFragmentManager().getBackStackEntryAt(i).getId();
-
-                getActivity().getSupportFragmentManager().popBackStack(backStackId, FragmentManager.POP_BACK_STACK_INCLUSIVE);
-
-            }
-            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-            intent.addCategory(Intent.CATEGORY_OPENABLE);
-            intent.setType("image/*");
-            startActivityForResult(Intent.createChooser(intent, "Select Picture"),GEAR_PICK_IMAGE_REQUEST);
+            NewGearPostDialogPermissionsDispatcher.pickImageWithPermissionCheck(NewGearPostDialog.this);
         });
 
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        Log.d(TAG, "onActivityResult: ");
 
-        if(requestCode == GEAR_PICK_IMAGE_REQUEST && resultCode == RESULT_OK
-                && data != null && data.getData() != null )
-        {
-            filePath = data.getData();
-            uploadImage();
-        }
+    @NeedsPermission({Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA})
+    public void pickImage(){
+        BSImagePicker singleSelectionPicker = new BSImagePicker.Builder("com.shaym.leash.fileprovider")
+                .setSpanCount(3) //Default: 3. This is the number of columns
+                .setGridSpacing(Utils.dp2px(2)) //Default: 2dp. Remember to pass in a value in pixel.
+                .setPeekHeight(Utils.dp2px(360)) //Default: 360dp. This is the initial height of the dialog.
+                .build();
+
+        singleSelectionPicker.show(getChildFragmentManager(), "picker");
+
     }
 
-    private void initSubmitLayout() throws IOException {
+
+
+    @OnShowRationale({Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA})
+    void showRationaleForExtStorage(final PermissionRequest request){
+        new AlertDialog.Builder(getContext())
+                .setTitle("Permission Needed")
+                .setMessage("This permission is needed in order to upload image")
+                .setPositiveButton("OK", (dialog, which) -> request.proceed())
+                .setNegativeButton("Cancel", (dialog, which) -> request.cancel())
+                .show();
+    }
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        NewGearPostDialogPermissionsDispatcher.onRequestPermissionsResult(this, requestCode, grantResults);
+    }
+
+
+
+
+
+
+
+
+    private void initSubmitLayout() {
         mSubmitLayout = Objects.requireNonNull(getView()).findViewById(R.id.postdialog_submit);
 
         mSubmitLayout.setOnClickListener(view -> {
@@ -241,10 +301,19 @@ public class NewGearPostDialog extends DialogFragment {
 
     private void submitPost() {
             //get the two inputs
-            FireBasePostsHelper.getInstance().writeNewGearPost(getUid(), mNewPostCategory, citieslist.get(mCitySpinner.getSelectedItemPosition()), parseValue(mPriceInput.getText().toString().trim()), mPhoneInput.getText().toString().trim(), mBodyInput.getText().toString().trim(), mPostImagepaths);
+            if (!mImagePicked) {
+                publishPost();
 
-            Toast.makeText(getContext(), "Post Published.", Toast.LENGTH_SHORT).show();
-            dismiss();
+            }
+            else{
+                uploadImage();
+            }
+    }
+
+    private void publishPost() {
+        FireBasePostsHelper.getInstance().writeNewGearPost(getUid(), mNewPostCategory, citieslist.get(mCitySpinner.getSelectedItemPosition()), parseValue(mPriceInput.getText().toString().trim()), mPhoneInput.getText().toString().trim(), mBodyInput.getText().toString().trim(), mPostImagepaths);
+        Toast.makeText(getContext(), "Post Published.", Toast.LENGTH_SHORT).show();
+        dismiss();
     }
 
     private int parseValue(String str) {
@@ -255,6 +324,23 @@ public class NewGearPostDialog extends DialogFragment {
     private String getUid() {
         return Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
 
+    }
+    public byte[] convertBitmapToByteArray(Bitmap bitmap) {
+        ByteArrayOutputStream stream = null;
+        try {
+            stream = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+
+            return stream.toByteArray();
+        }finally {
+            if (stream != null) {
+                try {
+                    stream.close();
+                } catch (IOException e) {
+                    Log.e(ThemedSpinnerAdapter.Helper.class.getSimpleName(), "ByteArrayOutputStream was not closed");
+                }
+            }
+        }
     }
 
     private void uploadImage() {
@@ -267,11 +353,13 @@ public class NewGearPostDialog extends DialogFragment {
 
             String uploadPath = GEAR_POSTS_PICS + "/" + getUid() + "/" + UUID.randomUUID().toString();
             StorageReference ref = storageReference.child(uploadPath);
+
             ref.putFile(filePath)
                     .addOnSuccessListener(taskSnapshot -> {
                         progressDialog.dismiss();
                         Toast.makeText(getContext(), "Uploaded", Toast.LENGTH_SHORT).show();
                         mPostImagepaths.add(uploadPath);
+                        publishPost();
                     })
                     .addOnFailureListener(e -> {
                         progressDialog.dismiss();
@@ -285,6 +373,21 @@ public class NewGearPostDialog extends DialogFragment {
         }
     }
 
+    @Override
+    public void onSingleImageSelected(Uri uri, String tag) {
+            filePath = uri;
+
+        if ( filePath != null) {
+            mImagePicked = true;
+            mUploadLabel.setText("Image Picked!");
+            mUploadLabel.setTextColor(Color.RED);
+        }
+    }
+
+    @Override
+    public void loadImage(File imageFile, ImageView ivImage) {
+
+    }
 }
 
 

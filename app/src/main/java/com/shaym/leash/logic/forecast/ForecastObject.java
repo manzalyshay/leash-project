@@ -15,18 +15,18 @@ public class ForecastObject implements Serializable {
     @PrimaryKey
     @ColumnInfo(name = "timestamp")
     public long mLocalTimeStamp;
-    public float mAbsMinBreakingHeight;
-    public float mAbsMaxBreakingHeight;
+    public float mMinBreakingHeight;
+    public float mMaxBreakingHeight;
     public int mWindSpeed;
     public int mWindDirection;
     public int mTempChill;
     public int mTemp;
 
-    public ForecastObject(String mLocation, long mLocalTimeStamp, float absMinBreakingHeight,float absMaxBreakingHeight, int mWindSpeed, int mWindDirection, int mTempChill, int mTemp) {
+    public ForecastObject(String mLocation, long mLocalTimeStamp, float mMinBreakingHeight,float mMaxBreakingHeight, int mWindSpeed, int mWindDirection, int mTempChill, int mTemp) {
         this.mLocation = mLocation;
         this.mLocalTimeStamp = mLocalTimeStamp;
-        this.mAbsMinBreakingHeight = absMinBreakingHeight;
-        this.mAbsMaxBreakingHeight = absMaxBreakingHeight;
+        this.mMinBreakingHeight = mMinBreakingHeight;
+        this.mMaxBreakingHeight = mMaxBreakingHeight;
         this.mWindSpeed = mWindSpeed;
         this.mWindDirection = mWindDirection;
         this.mTempChill = mTempChill;
@@ -42,11 +42,11 @@ public class ForecastObject implements Serializable {
     }
 
     public float getAbsMinBreakingHeight() {
-        return mAbsMinBreakingHeight;
+        return mMinBreakingHeight;
     }
 
     public float getAbsMaxBreakingHeight() {
-        return mAbsMaxBreakingHeight;
+        return mMaxBreakingHeight;
     }
 
     public int getWindSpeed() {
@@ -70,8 +70,8 @@ public class ForecastObject implements Serializable {
         return "ForecastObject{" +
                 ", mLocation='" + mLocation + '\'' +
                 ", mLocalTimeStamp=" + mLocalTimeStamp +
-                ", mAbsMinBreakingHeight=" + mAbsMinBreakingHeight +
-                ", mAbsMaxBreakingHeight=" + mAbsMaxBreakingHeight +
+                ", mMinBreakingHeight=" + mMinBreakingHeight +
+                ", mMaxBreakingHeight=" + mMaxBreakingHeight +
                 ", mWindSpeed=" + mWindSpeed +
                 ", mWindDirection=" + mWindDirection +
                 ", mTempChill=" + mTempChill +

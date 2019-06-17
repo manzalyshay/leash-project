@@ -4,5 +4,5 @@ import com.shaym.leash.logic.user.Profile;
 
 public interface UsersHelperListener {
 
-    void onCurrentProfileLoaded(Profile mCurrentUser);
+    void onUserByIDLoaded(Profile userbyID);
 }

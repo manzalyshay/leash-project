@@ -2,14 +2,22 @@
 
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
+    android:weightSum="10"
     >
 
     <LinearLayout
         android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1.7"
+        android:orientation="vertical"
+
+        >
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
+        android:id="@+id/gear_menu"
         android:weightSum="2">
         <Button
             android:id="@+id/secondhand_button"
@@ -41,11 +49,14 @@
         android:layout_gravity="end"
         android:layout_height="wrap_content"/>
 
+    </LinearLayout>
+
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/posts_list"
+            android:layout_weight="7.3"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="0dp" />
 
 
 

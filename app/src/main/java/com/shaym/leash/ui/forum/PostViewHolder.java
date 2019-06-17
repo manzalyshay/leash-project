@@ -1,70 +1,85 @@
 package com.shaym.leash.ui.forum;
 
-import android.net.Uri;
-
-import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
-import android.util.Log;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.PopupMenu;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.shaym.leash.R;
-import com.shaym.leash.logic.aroundme.CircleTransform;
 import com.shaym.leash.logic.forum.Post;
 import com.shaym.leash.logic.user.Profile;
 import com.shaym.leash.logic.utils.FireBasePostsHelper;
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.NetworkPolicy;
-import com.squareup.picasso.Picasso;
+import com.shaym.leash.logic.utils.FireBaseUsersHelper;
+import com.shaym.leash.ui.gear.GearPostActivity;
 
+import java.util.List;
 import java.util.Objects;
 
-import static com.shaym.leash.logic.utils.CONSTANT.USERS_TABLE;
-import static tcking.github.com.giraffeplayer2.GiraffePlayer.TAG;
+import static com.shaym.leash.ui.gear.GearPostActivity.EXTRA_POST_KEY;
 
-public class PostViewHolder extends RecyclerView.ViewHolder {
+public class PostViewHolder extends RecyclerView.ViewHolder implements PopupMenu.OnMenuItemClickListener, View.OnClickListener {
 
     private TextView authorView;
     private TextView publishdate;
-
     private ImageView authorPic;
-    private ProgressBar progressBar;
+    private ProgressBar authorPicProgressBar;
     public ImageView starView;
-    private ImageView deleteView;
+    private ImageView settingsView;
+    private RelativeLayout attachLayout;
+    private ImageView postImage;
+    private ProgressBar postImageProgressBar;
     private TextView numStarsView;
     private TextView bodyView;
     private Profile postProfile;
-    private DatabaseReference mDatabase;
-    private StorageReference storageReference;
+    private Post currentPost;
+    private Fragment mFragment;
+    private boolean isExpanded;
 
     public PostViewHolder(View itemView) {
         super(itemView);
         FirebaseStorage storage = FirebaseStorage.getInstance();
-        storageReference = storage.getReference();
-        mDatabase = FirebaseDatabase.getInstance().getReference();
-        progressBar = itemView.findViewById(R.id.post_author_photo_progressbar);
+        StorageReference storageReference = storage.getReference();
+        DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference();
+        authorPicProgressBar = itemView.findViewById(R.id.post_author_photo_progressbar);
         authorPic = itemView.findViewById(R.id.post_author_photo);
+        attachLayout = itemView.findViewById(R.id.attach_layout);
+        postImage = itemView.findViewById(R.id.post_attached_image);
+        postImageProgressBar = itemView.findViewById(R.id.post_attached_progressbar);
         publishdate = itemView.findViewById(R.id.publish_date);
         authorView = itemView.findViewById(R.id.post_author);
         starView = itemView.findViewById(R.id.star);
-        deleteView = itemView.findViewById(R.id.delete);
+        settingsView = itemView.findViewById(R.id.settings);
         numStarsView = itemView.findViewById(R.id.post_num_stars);
         bodyView = itemView.findViewById(R.id.post_body);
+        itemView.setOnClickListener(this);
     }
 
 
-    public void bindToPost(Post post, View.OnClickListener starClickListener, View.OnClickListener deleteClickListener) {
+    public void bindToPost(Post post, Fragment fragment, Profile postprofile) {
+        mFragment = fragment;
+        postProfile = postprofile;
+
+        currentPost = post;
+
+        settingsView.setOnClickListener(this::showPopup);
+
+
         int dayspast = FireBasePostsHelper.getInstance().getDaysDifference(post.date);
+
         if (dayspast != 0) {
             publishdate.setText("לפני " + dayspast + " ימים");
         }
@@ -75,101 +90,23 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
 
         numStarsView.setText(String.valueOf(post.starCount));
         bodyView.setText(post.body);
-        if (post.uid.equals(getUid())){
-            deleteView.setVisibility(View.VISIBLE);
+
+        if (post.images != null){
+            attachLayout.setVisibility(View.VISIBLE);
+            FireBasePostsHelper.getInstance().attachPic(post.images.get(0), postImage, postImageProgressBar, 200, 200);
         }
-//        deleteView.setOnClickListener(deleteClickListener);
-//        starView.setOnClickListener(starClickListener);
+
+        if (postprofile != null) {
+            FireBasePostsHelper.getInstance().attachRoundPic(postProfile.getAvatarurl(), authorPic, authorPicProgressBar, 100, 100);
+            authorPic.setOnClickListener(v -> FireBasePostsHelper.getInstance().showProfilePopup(postProfile, mFragment));
+            authorView.setText(postProfile.getDisplayname());
+        }
 
 
-        mDatabase.child(USERS_TABLE).child(post.uid).addListenerForSingleValueEvent(
-                new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        // Get user value
-                        postProfile = dataSnapshot.getValue(Profile.class);
-                        assert postProfile != null;
-                        attachPic(postProfile.getAvatarURL());
-                        authorView.setText(postProfile.getDisplayname());
-
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
-                        Log.w(TAG, "getUser:onCancelled", databaseError.toException());
-                    }
-                });
-        // [END single_value_read]
     }
 
 
 
-
-
-
-    private void attachPic(String url){
-        if (!url.isEmpty()) {
-            if (url.charAt(0) == 'g') {
-                        storageReference.child(url).getDownloadUrl().addOnSuccessListener(uri -> Picasso.get().load(uri).resize(100, 100).networkPolicy(NetworkPolicy.OFFLINE).centerCrop().transform(new CircleTransform()).into(authorPic, new Callback() {
-                    @Override
-                    public void onSuccess() {
-                        progressBar.setVisibility(View.INVISIBLE);
-                    }
-
-                    @Override
-                    public void onError(Exception e) {
-                        Picasso.get().load(uri).resize(100, 100).centerCrop().transform(new CircleTransform()).into(authorPic, new Callback() {
-                            @Override
-                            public void onSuccess() {
-                                progressBar.setVisibility(View.INVISIBLE);
-                            }
-
-                            @Override
-                            public void onError(Exception e) {
-                                //Try again online if cache failed
-
-                                progressBar.setVisibility(View.INVISIBLE);
-
-                            }
-                        });
-
-                    }
-
-                }));
-            } else {
-                Picasso.get().load(Uri.parse(url)).resize(100, 100).networkPolicy(NetworkPolicy.OFFLINE).centerCrop().transform(new CircleTransform()).into(authorPic, new Callback() {
-                    @Override
-                    public void onSuccess() {
-                        progressBar.setVisibility(View.INVISIBLE);
-                    }
-
-                    @Override
-                    public void onError(Exception e) {
-                        Picasso.get().load(Uri.parse(url)).resize(100, 100).centerCrop().transform(new CircleTransform()).into(authorPic, new Callback() {
-                            @Override
-                            public void onSuccess() {
-                                progressBar.setVisibility(View.INVISIBLE);
-                            }
-
-                            @Override
-                            public void onError(Exception e) {
-                                //Try again online if cache failed
-                                e.printStackTrace();
-                                progressBar.setVisibility(View.INVISIBLE);
-
-                            }
-                        });
-
-                    }
-
-                });
-            }
-        }
-        else {
-            progressBar.setVisibility(View.INVISIBLE);
-
-        }
-    }
 
     public String getUid() {
         return Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
@@ -177,6 +114,38 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
 
 
 
+    public void showPopup(View v) {
+        PopupMenu popup = new PopupMenu(v.getContext(), v);
+        popup.setOnMenuItemClickListener(this);
+        MenuInflater inflater = popup.getMenuInflater();
+        inflater.inflate(R.menu.forumpost_settings_menu, popup.getMenu());
+        if (getUid().equals(currentPost.uid)){
+            popup.getMenu().findItem(R.id.delete).setVisible(true);
+        }
+        popup.show();
+    }
+
+    @Override
+    public boolean onMenuItemClick(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.delete:
+                FireBasePostsHelper.getInstance().deleteForumPost(currentPost);
+                return true;
+            case R.id.share:
+
+                return true;
+            default:
+                return false;
+        }
+    }
 
 
+    @Override
+    public void onClick(View v) {
+        Intent intent = new Intent(mFragment.getActivity(), ForumPostActivity.class);
+        Bundle b = new Bundle();
+        b.putString(EXTRA_POST_KEY, currentPost.key);
+        intent.putExtras(b); //Put your id to your next Intent
+        Objects.requireNonNull(mFragment.getActivity()).startActivity(intent);
+    }
 }

@@ -1,37 +1,240 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout android:orientation="vertical"
+    android:layout_height="wrap_content"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
     android:background="@color/white"
-    android:clipChildren="false"
-    android:clipToPadding="false"
-    android:gravity="center"
-    android:orientation="vertical">
+    android:orientation="horizontal"
+    android:layout_marginBottom="30dp"
+    android:weightSum="2">
 
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="match_parent"
+        android:layout_marginEnd="10dp"
+        android:orientation="vertical">
 
-    <FrameLayout
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_marginEnd="10dp"
+        android:layout_height="wrap_content">
 
-        <ProgressBar
-            android:id="@+id/vpprogressbar"
+        <RelativeLayout
+            android:layout_width="100dp"
+            android:id="@+id/wave_measure"
+
+            android:layout_height="wrap_content">
+            <TextView
+                android:id="@+id/min_wave_height"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="@style/TextAppearance.AppCompat.Widget.ActionBar.Title" />
+
+            <View
+                android:id="@+id/sepearator_waveheight"
+                android:layout_toEndOf="@id/min_wave_height"
+                android:layout_width="5dp"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="2dp"
+                android:layout_marginEnd="2dp"
+                android:layout_height="2dp"
+                android:background="@color/black"/>
+            <TextView
+                android:layout_toEndOf="@id/sepearator_waveheight"
+                android:id="@+id/max_wave_height"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="@style/TextAppearance.AppCompat.Widget.ActionBar.Title" />
+
+            <TextView
+                android:layout_toEndOf="@id/max_wave_height"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="5dp"
+                style="@style/TextAppearance.AppCompat.Widget.ActionBar.Title"
+
+
+                android:text="@string/cm_unit"/>
+
+
+        </RelativeLayout>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:layout_below="@id/wave_measure"
+            android:id="@+id/date_picker"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:visibility="visible"/>
+            android:layout_height="wrap_content"
+            android:nestedScrollingEnabled="true"
+            android:layoutDirection="inherit"
+            />
 
-        <com.shaym.leash.ui.forecast.infinitecycleviewpager.HorizontalInfiniteCycleViewPager
-            android:id="@+id/hicvp"
+        <RelativeLayout
+            android:layout_toEndOf="@id/wave_measure"
+            android:layout_width="100dp"
+            android:layout_marginStart="10dp"
+            android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:id="@+id/stars_view"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:icvp_interpolator="@android:anim/accelerate_decelerate_interpolator"
-            app:icvp_scroll_duration="250"
-            app:icvp_center_page_scale_offset="30dp"
-            app:icvp_min_page_scale_offset="5dp"
-            app:icvp_max_page_scale="0.8"
-            app:icvp_min_page_scale="0.55"
-            app:icvp_medium_scaled="false"/>
+            android:layout_height="30dp"
+            android:orientation="horizontal"
+            android:weightSum="5">
 
-    </FrameLayout>
+            <ImageView
+                android:layout_gravity="top"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:src="@drawable/star"/>
+            <ImageView
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:src="@drawable/star"/>
+            <ImageView
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:src="@drawable/star"/>
+            <ImageView
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:src="@drawable/star"/>
+            <ImageView
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:src="@drawable/star"/>
+
+        </LinearLayout>
+
+            <TextView
+                android:layout_centerHorizontal="true"
+                android:layout_centerVertical="true"
+                android:id="@+id/rate_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAlignment="center"
+                android:text="גלשת היום?\n דרג את גובה הגל!"
+                style="@style/TextAppearance.Compat.Notification.Title"/>
+
+            <Button
+                android:layout_centerHorizontal="true"
+                android:layout_alignParentBottom="true"
+
+                android:id="@+id/rate_button"
+                android:layout_width="60dp"
+                android:layout_height="35dp"
+                android:background="@drawable/rounded_button_checked"
+
+                android:textSize="12sp"
+                android:text="דרג"
+                android:textColor="@color/white"
+
+                android:textStyle="bold" />
+        </RelativeLayout>
+
+
+    </RelativeLayout>
+
+
+
+    </LinearLayout>
+    <RelativeLayout
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="200dp">
+
+        <LinearLayout
+            android:id="@+id/forecast_values"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:weightSum="2">
+            <RelativeLayout
+                android:id="@+id/wind_values"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:gravity="center"
+
+                android:layout_height="wrap_content">
+                <ImageView
+                    android:id="@+id/wind_direction_icon"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_marginEnd="5dp"
+
+                    android:src="@drawable/wind_arrow"/>
+                <TextView
+                    android:layout_toEndOf="@id/wind_direction_icon"
+                    android:id="@+id/wind_measure"
+                    android:layout_marginEnd="5dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/TextAppearance.AppCompat.SearchResult.Subtitle"
+
+                    android:text="@string/km_h"/>
+            <TextView
+                android:layout_toEndOf="@id/wind_measure"
+                android:id="@+id/wind_speed"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="@style/TextAppearance.AppCompat.Widget.ActionBar.Title"
+                />
+
+
+            </RelativeLayout>
+            <RelativeLayout
+                android:id="@+id/temp_values"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:layout_height="wrap_content">
+                <ImageView
+                    android:id="@+id/temp_icon"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_marginEnd="5dp"
+                    android:src="@drawable/temp_sun"/>
+                <TextView
+                    android:layout_toEndOf="@id/temp_icon"
+                    android:id="@+id/temp_measure"
+                    android:layout_marginEnd="5dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/TextAppearance.AppCompat.SearchResult.Subtitle"
+                    android:text="@string/celzius"/>
+                <TextView
+                    android:layout_toEndOf="@id/temp_measure"
+                    android:id="@+id/temp_value"
+                    style="@style/TextAppearance.AppCompat.Widget.ActionBar.Title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </RelativeLayout>
+        </LinearLayout>
+        <ImageView
+            android:layout_below="@id/forecast_values"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/israelmap"
+            android:background="@drawable/round_corner"/>
+
+    </RelativeLayout>
+
+</LinearLayout>
+
+    <com.github.mikephil.charting.charts.LineChart
+        android:id="@+id/forecast_chart"
+        android:layout_width="match_parent"
+        android:layout_height="170dp"
+        />
+
 
 </LinearLayout>

@@ -14,6 +14,7 @@ import java.util.Map;
 public class GearPost extends Post {
 
     public String uid;
+    public String key;
     public String location;
     public int price;
     public String phonenumber;
@@ -28,8 +29,9 @@ public class GearPost extends Post {
         // Default constructor required for calls to DataSnapshot.getValue(Post.class)
     }
 
-    public GearPost(String uid, String category, String location, int price, String phonenumber, String body, Date publishdate, List<String> images) {
+    public GearPost(String uid, String key, String category, String location, int price, String phonenumber, String body, Date publishdate, List<String> images) {
         this.uid = uid;
+        this.key = key;
         this.category = category;
         this.location = location;
         this.price = price;
@@ -44,6 +46,8 @@ public class GearPost extends Post {
     public Map<String, Object> toMap() {
         HashMap<String, Object> result = new HashMap<>();
         result.put("uid", uid);
+        result.put("key", key);
+
         result.put("category", category);
         result.put("location", location);
         result.put("price", price);

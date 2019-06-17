@@ -34,8 +34,8 @@ public class CamerasFragment extends Fragment implements onCameraSelectedListene
     private static final String TAG = "CamerasFragment";
     public static final String CAMERA_PARCE = "CAMERA_PARCE";
     private boolean mIsraelSelected = true;
-    private TextView mIsraelCamerasButton;
-    private TextView mCaliforniaCamerasButton;
+    private TextView mTelavivCamerasButton;
+    private TextView mHerzeliaCamerasButton;
     private RecyclerView mRecyclerView;
 
     @Nullable
@@ -98,6 +98,9 @@ public class CamerasFragment extends Fragment implements onCameraSelectedListene
         mIsraelCamerasList.clear();
         mCaliforniaCamerasList.clear();
 
+        Camera U = new Camera(getString(R.string.kshatot_cam_title), getString(R.string.ashdod_location), getString(R.string.Kshatot), PLAYER_STREAM, R.drawable.herzelia_cover);
+        mIsraelCamerasList.add(U);
+
         Camera c = new Camera(getString(R.string.hiltonB_cam_title), getString(R.string.telaviv_location), getString(R.string.HiltonB), PLAYER_STREAM, R.drawable.hilton_cover);
         mIsraelCamerasList.add(c);
 
@@ -112,7 +115,6 @@ public class CamerasFragment extends Fragment implements onCameraSelectedListene
 
         Camera g = new Camera(getString(R.string.marina_cam_title), getString(R.string.herzelia_location), getString(R.string.MarinaHerzelia), WEB_STREAM, R.drawable.herzelia_cover);
         mIsraelCamerasList.add(g);
-
 
         Camera t = new Camera(getString(R.string.santa_monica_title), getString(R.string.cameras_title_california), getString(R.string.Santa_Monica), WEB_STREAM, R.drawable.herzelia_cover);
         mCaliforniaCamerasList.add(t);
@@ -175,16 +177,16 @@ public class CamerasFragment extends Fragment implements onCameraSelectedListene
         mCaliforniaCamerasButton.setBackground(Objects.requireNonNull(getActivity()).getDrawable(R.drawable.underline_cameras));
         mIsraelCamerasButton.setBackgroundResource(R.color.transparent);
 
-        mAdapter = new CamerasAdapter(this, mCaliforniaCamerasList);
-        mRecyclerView.swapAdapter(mAdapter, true);
+        mAdapter.setCamerasList(mCaliforniaCamerasList);
+        mAdapter.notifyDataSetChanged();
     }
 
     private void setIsraelCameras() {
         mIsraelSelected = true;
         mIsraelCamerasButton.setBackground(Objects.requireNonNull(getActivity()).getDrawable(R.drawable.underline_cameras));
         mCaliforniaCamerasButton.setBackgroundResource(R.color.transparent);
-        mAdapter = new CamerasAdapter(this, mIsraelCamerasList);
-        mRecyclerView.swapAdapter(mAdapter, true);
+        mAdapter.setCamerasList(mIsraelCamerasList);
+        mAdapter.notifyDataSetChanged();
     }
 }
 

@@ -1,5 +1,6 @@
 package com.shaym.leash.logic.forecast.localdb.dbhandlers;
 
+import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
@@ -20,7 +21,7 @@ public interface DaoAccess {
     void saveForecast(ForecastObject forecastObject);
 
     @Query("SELECT * FROM Forecasts")
-    List<ForecastObject> getForecasts();
+    LiveData<List<ForecastObject>> getForecasts();
 
     @Query("SELECT * FROM Forecasts WHERE timestamp =:time_stamp")
     ForecastObject getForecast(long time_stamp);

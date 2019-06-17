@@ -31,6 +31,7 @@ import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.shaym.leash.R;
+import com.shaym.leash.logic.utils.FireBaseUsersHelper;
 import com.shaym.leash.ui.home.HomeActivity;
 
 import org.json.JSONException;
@@ -46,6 +47,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private static final String EMAIL = "email";
     private static final String TAG = "LoginActivity";
     public static final String PROFILE_PIC_KEY = "PROFILE_PIC_KEY";
+    public static final String GENDER_KEY = "GENDER_KEY";
 
     RelativeLayout rellay1, rellay2;
     private FirebaseAuth mAuth;
@@ -62,6 +64,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private EditText mResetPassEmailInput;
     private ProgressBar mLoginProgressBar;
     private String mDisplayName;
+    private String mGender;
+
     private String mFBProfilePic = "";
     private String mFromUID= "";
 
@@ -208,7 +212,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
             Bundle b = new Bundle();
             if (!mFBProfilePic.isEmpty()) {
-                b.putString(PROFILE_PIC_KEY, mFBProfilePic); //Your id
+                FireBaseUsersHelper.getInstance().createUserInDB(mFBProfilePic, mGender, currentUser);
+
             }
 
             if (mFromUID != null && !mFromUID.isEmpty()) {
@@ -302,6 +307,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                         String userId = loginResult.getAccessToken().getUserId();
                         mFBProfilePic = "https://graph.facebook.com/" + userId+ "/picture?type=large";
                         mDisplayName = firstName + " " + lastName;
+//                        mGender = response.getJSONObject().getString("gender");
 
 
                         handleFacebookAccessToken(loginResult.getAccessToken());
@@ -312,7 +318,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                     }
                 });
         Bundle parameters = new Bundle();
-        parameters.putString("fields", "id,first_name,last_name, picture");
+        parameters.putString("fields", "id,first_name,last_name,picture");
         request.setParameters(parameters);
         request.executeAsync();
     }

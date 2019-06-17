@@ -23,22 +23,14 @@ public class ForecastHelper {
 
     }
 
-    private Date formatTimeStamp(long timestamp){
+    public Date formatTimeStamp(long timestamp){
         return new java.util.Date(timestamp*1000L);
     }
 
     public String formatDay(Date date){
-// the format of your date
-        @SuppressLint("SimpleDateFormat") SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd");
-// give a timezone reference for formatting (see comment at the bottom)
+        SimpleDateFormat sdf = new SimpleDateFormat("EEEE");
         return sdf.format(date);
     }
-
-
-
-
-
-
 
 
 
@@ -46,10 +38,37 @@ public class ForecastHelper {
         ArrayList<ForecastObject> list = new ArrayList<>();
         for (int i=0; i<mData.size(); i++){
             String timestamp2date = formatDay(formatTimeStamp(mData.get(i).getLocalTimeStamp()));
-            if (timestamp2date.equals(day))
+            if (timestamp2date.equals(day)) {
                 list.add(mData.get(i));
+            }
         }
-        return list;
+
+            float mAVGAbsMinBreakingHeight = 0f;
+            float mAVGAbsMaxBreakingHeight = 0f;
+            int mAVGWindSpeed = 0;
+            int mAVGWindDirection = 0;
+            int mAVGTempChill = 0;
+            int mAVGTemp = 0;
+
+            for (int i=0; i<list.size(); i++) {
+                mAVGAbsMaxBreakingHeight += list.get(i).getAbsMaxBreakingHeight();
+                mAVGAbsMinBreakingHeight += list.get(i).getAbsMinBreakingHeight();
+                mAVGWindSpeed += list.get(i).getWindSpeed();
+                mAVGWindDirection += list.get(i).getWindDirection();
+                mAVGTempChill += list.get(i).getTempChill();
+                mAVGTemp += list.get(i).getTemp();
+            }
+
+            mAVGAbsMaxBreakingHeight = mAVGAbsMaxBreakingHeight/list.size();
+            mAVGAbsMinBreakingHeight = mAVGAbsMinBreakingHeight/list.size();
+            mAVGWindSpeed = mAVGWindSpeed/list.size();
+            mAVGWindDirection = mAVGWindDirection/list.size();
+            mAVGTempChill = mAVGTempChill/list.size();
+            mAVGTemp = mAVGTemp/list.size();
+
+
+            list.add(new ForecastAVGObject(mAVGAbsMinBreakingHeight, mAVGAbsMaxBreakingHeight, mAVGWindSpeed, mAVGWindDirection, mAVGTempChill, mAVGTemp, day));
+            return list;
     }
 
     public static ForecastHelper getInstance(){
