@@ -2,6 +2,8 @@ package com.shaym.leash.logic.forecast;
 
 import android.annotation.SuppressLint;
 
+import com.shaym.leash.logic.forecast.localdb.dbutils.ForecastObject;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;

@@ -5,8 +5,9 @@ import android.util.Log;
 
 import com.shaym.leash.MainApplication;
 import com.shaym.leash.R;
-import com.shaym.leash.logic.forecast.http.HttpHandler;
-import com.shaym.leash.logic.forecast.localdb.SaveForecast;
+import com.shaym.leash.logic.forecast.localdb.dbutils.ForecastObject;
+import com.shaym.leash.logic.forecast.utils.HttpHandler;
+import com.shaym.leash.logic.forecast.localdb.dbutils.SaveForecast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -28,9 +29,8 @@ public class DownloadForecast extends AsyncTask<Void, Void, ArrayList<ForecastOb
     private static final String TAG = "DownloadForecast";
     private int locationNum;
     private ForecastListener mListener;
-    public DownloadForecast (int loc, ForecastListener listener){
+    public DownloadForecast (int loc){
         locationNum = loc;
-        mListener = listener;
     }
 
 
@@ -117,7 +117,7 @@ public class DownloadForecast extends AsyncTask<Void, Void, ArrayList<ForecastOb
     protected void onPostExecute(ArrayList<ForecastObject> result) {
         super.onPostExecute(result);
         if (result.size() > 0) {
-            new SaveForecast(result, mListener).execute();
+            new SaveForecast(result).execute();
         }
         else {
             Log.d(TAG, "onPostExecute: " + "No Internet Connection");

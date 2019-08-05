@@ -29,11 +29,12 @@ import static com.shaym.leash.logic.utils.CONSTANT.PROFILE_GEAR_POSTS;
 public class ProfileAdapter extends RecyclerView.Adapter {
     private static final String TAG = "ProfileAdapter";
 
-    private String mViewType;
-    private List<Profile> mAllUsers;
-    private List<Post> mAllPosts;
-    private List<GearPost> mAllGearPosts;
-    private List<Conversation> mAllConversations;
+    public String mViewType = PROFILE_FORUM_POSTS;
+
+    private List<Profile> mAllUsers = new ArrayList<>();
+    private List<Post> mAllPosts = new ArrayList<>();
+    private List<GearPost> mAllGearPosts = new ArrayList<>();
+    private List<Conversation> mAllConversations = new ArrayList<>();
     private Profile mUser;
     private ProfileViewModel mProfileViewModel;
     private int selected_position = 0; // You have to set this globally in the Adapter class
@@ -44,16 +45,23 @@ public class ProfileAdapter extends RecyclerView.Adapter {
     private static final int VIEW_TYPE_CONVERSATION = 3;
 
 
-    ProfileAdapter(List<Profile> allUsers, Profile user, String viewType, ProfileViewModel profileViewModel, Fragment fragment) {
+    ProfileAdapter( ProfileViewModel profileViewModel, Fragment fragment) {
         mFragment = fragment;
-        mAllUsers = allUsers;
-        mUser = user;
-        mViewType = viewType;
         mProfileViewModel = profileViewModel;
+    }
 
-        mAllPosts = new ArrayList<>();
-        mAllGearPosts = new ArrayList<>();
-        mAllConversations = new ArrayList<>();
+
+
+    public void setAllUsers(List<Profile> mAllUsers) {
+        this.mAllUsers = mAllUsers;
+        notifyDataSetChanged();
+
+    }
+
+
+    public void setUser(Profile mUser) {
+        this.mUser = mUser;
+        notifyDataSetChanged();
     }
 
 
@@ -102,9 +110,10 @@ public class ProfileAdapter extends RecyclerView.Adapter {
                 ((ProfileGearPostViewHolder)(holder)).bindToPost(mAllGearPosts.get(position), mFragment);
                 break;
             case PROFILE_CONVERSATIONS:
+                if (!mAllUsers.isEmpty() && mUser !=null){
                 Profile conversationPartner = getConversationPartnerProfile(mAllUsers, mAllConversations.get(position));
                 ProfileConversationViewHolder viewholder = (ProfileConversationViewHolder)holder;
-                viewholder.bindToPost(mAllConversations.get(position), conversationPartner, mProfileViewModel, mFragment);
+                viewholder.bindToPost(mAllConversations.get(position), conversationPartner, mProfileViewModel, mFragment);}
                 break;
 
         }
@@ -156,8 +165,6 @@ public class ProfileAdapter extends RecyclerView.Adapter {
 
 
     public void updateForumData(List<Post> AllPosts) {
-        mViewType = PROFILE_FORUM_POSTS;
-
         if (mAllPosts != null) {
             PostDiffCallback postDiffCallback = new PostDiffCallback(mAllPosts, AllPosts);
             DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(postDiffCallback);
@@ -174,8 +181,6 @@ public class ProfileAdapter extends RecyclerView.Adapter {
     }
 
     public void updateGearData(List<GearPost> AllGearPosts) {
-        mViewType = PROFILE_GEAR_POSTS;
-
         if (mAllGearPosts != null) {
             GearPostDiffCallback postDiffCallback = new GearPostDiffCallback(mAllGearPosts, AllGearPosts);
             DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(postDiffCallback);
@@ -192,7 +197,6 @@ public class ProfileAdapter extends RecyclerView.Adapter {
     }
 
     public void updateConversationsData(List<Conversation> AllConversations) {
-        mViewType = PROFILE_CONVERSATIONS;
         if (mAllConversations != null) {
             ConversationPostDiffCallback postDiffCallback = new ConversationPostDiffCallback(mAllConversations, AllConversations);
             DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(postDiffCallback);

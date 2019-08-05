@@ -1,4 +1,4 @@
-package com.shaym.leash.logic.forecast;
+package com.shaym.leash.logic.forecast.localdb.dbutils;
 
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
@@ -8,7 +8,7 @@ import java.io.Serializable;
 
 @SuppressWarnings("serial")
 @Entity (tableName = "Forecasts")
-public class ForecastObject implements Serializable {
+public class ForecastObject   {
 
     public static final String TAG = "ForecastObject";
     public String mLocation;

@@ -19,12 +19,9 @@ import com.shaym.leash.R;
 import com.shaym.leash.logic.gear.GearPost;
 import com.shaym.leash.logic.user.Profile;
 import com.shaym.leash.logic.utils.FireBasePostsHelper;
-import com.shaym.leash.ui.forum.ForumPostActivity;
-import com.shaym.leash.ui.gear.GearPostActivity;
 
 import java.util.Objects;
 
-import static com.shaym.leash.ui.gear.GearPostActivity.EXTRA_POST_KEY;
 
 public class ProfileGearPostViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
@@ -100,10 +97,6 @@ public class ProfileGearPostViewHolder extends RecyclerView.ViewHolder implement
 
     @Override
     public void onClick(View v) {
-        Intent intent = new Intent(mFragment.getActivity(), GearPostActivity.class);
-        Bundle b = new Bundle();
-        b.putString(EXTRA_POST_KEY, mCurrentPost.key);
-        intent.putExtras(b); //Put your id to your next Intent
-        Objects.requireNonNull(mFragment.getActivity()).startActivity(intent);
+
     }
 }

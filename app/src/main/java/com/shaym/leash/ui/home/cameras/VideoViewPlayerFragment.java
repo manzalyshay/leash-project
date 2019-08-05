@@ -8,9 +8,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.shaym.leash.R;
+import com.shaym.leash.logic.cameras.CameraObject;
+import com.shaym.leash.logic.utils.FireBasePostsHelper;
 
 import tcking.github.com.giraffeplayer2.VideoView;
 
@@ -22,7 +25,9 @@ public class VideoViewPlayerFragment extends Fragment {
 
     private VideoView mVideoView;
     private ImageView mCoverView;
-    private Camera mCurrentCamera;
+    private CameraObject mCurrentCameraObject;
+    private ImageView mSponserLogo;
+    private ProgressBar mSponserLogoPbar;
 
 
     @Nullable
@@ -34,13 +39,14 @@ public class VideoViewPlayerFragment extends Fragment {
 
         mVideoView = v.findViewById(R.id.player_video_view);
         mCoverView = v.findViewById(R.id.camera_cover);
-
+        mSponserLogo = v.findViewById(R.id.sponsor_logo);
+        mSponserLogoPbar = v.findViewById(R.id.sponsor_logo_pbar);
         mVideoView.getVideoInfo().setPortraitWhenFullScreen(false);
 
         // 1. Get the object in onCreate();
         if (getArguments() != null) {
-            mCurrentCamera = getArguments().getParcelable(CAMERA_PARCE);
-            updateCamera(mCurrentCamera);
+            mCurrentCameraObject = getArguments().getParcelable(CAMERA_PARCE);
+            updateCamera(mCurrentCameraObject);
         }
 
         return v;
@@ -50,11 +56,12 @@ public class VideoViewPlayerFragment extends Fragment {
         return mVideoView;
     }
 
-    public void updateCamera(Camera cam){
-        mCurrentCamera = cam;
-        mVideoView.setVideoPath(mCurrentCamera.getUrl());
+    public void updateCamera(CameraObject cam){
+        mCurrentCameraObject = cam;
+        mVideoView.setVideoPath(mCurrentCameraObject.getUrl());
         mVideoView.getPlayer().start();
-        mTitleView.setText(mCurrentCamera.getBeachName());
-        mLocationView.setText(mCurrentCamera.getLocation());
+        mTitleView.setText(mCurrentCameraObject.getLocation());
+        mLocationView.setText(mCurrentCameraObject.getCity());
+        FireBasePostsHelper.getInstance().attachPic(mCurrentCameraObject.mSponsorPicRef, mSponserLogo, mSponserLogoPbar, 30, 30);
     }
 }

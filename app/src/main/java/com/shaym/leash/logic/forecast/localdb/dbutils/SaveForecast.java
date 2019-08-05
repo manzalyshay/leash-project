@@ -1,4 +1,4 @@
-package com.shaym.leash.logic.forecast.localdb;
+package com.shaym.leash.logic.forecast.localdb.dbutils;
 
 
 import android.os.AsyncTask;
@@ -6,19 +6,15 @@ import android.util.Log;
 
 import com.shaym.leash.MainApplication;
 import com.shaym.leash.logic.forecast.ForecastListener;
-import com.shaym.leash.logic.forecast.ForecastObject;
-import com.shaym.leash.logic.forecast.localdb.dbhandlers.ForecastDB;
 
 import java.util.ArrayList;
 
 public class SaveForecast extends AsyncTask<Void, Void, Void> {
     private static final String TAG = "SaveForecast";
     private ArrayList<ForecastObject> forecasts;
-    private ForecastListener mListener;
 
-    public SaveForecast(ArrayList<ForecastObject> data, ForecastListener listener){
+    public SaveForecast(ArrayList<ForecastObject> data){
         forecasts = data;
-        mListener = listener;
     }
 
     @Override
@@ -41,6 +37,5 @@ public class SaveForecast extends AsyncTask<Void, Void, Void> {
 
     @Override
     protected void onPostExecute(Void v) {
-            mListener.onForecastsUpdated();
     }
 }

@@ -13,6 +13,7 @@ import android.view.View;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.shaym.leash.R;
@@ -22,7 +23,7 @@ public class CameraItemViewHolder extends RecyclerView.ViewHolder implements Vie
     private TextView title;
     private ImageView mCameraCover;
     private ImageView mPlayCover;
-
+    private ProgressBar mProgressbar;
     private static final String TAG = "CameraItemViewHolder";
     private CamerasAdapter mCamerasAdapter;
 
@@ -34,6 +35,7 @@ public class CameraItemViewHolder extends RecyclerView.ViewHolder implements Vie
 //        overflow = view.findViewById(R.id.overflow1);
         mCameraCover = view.findViewById(R.id.camera_cover);
         mPlayCover = view.findViewById(R.id.play_cover);
+        mProgressbar = view.findViewById(R.id.camera_cover_pbar);
 //        mWebView.setWebViewClient(new myWebClient());
 //        mWebView.getSettings().setJavaScriptEnabled(true);
 //        mWebView.setInitialScale(1);
@@ -96,6 +98,9 @@ public class CameraItemViewHolder extends RecyclerView.ViewHolder implements Vie
         return mCameraCover;
     }
 
+    public ProgressBar getProgressbar() {
+        return mProgressbar;
+    }
 
 
 

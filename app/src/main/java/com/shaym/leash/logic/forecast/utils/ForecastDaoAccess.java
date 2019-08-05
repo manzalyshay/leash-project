@@ -1,4 +1,4 @@
-package com.shaym.leash.logic.forecast.localdb.dbhandlers;
+package com.shaym.leash.logic.forecast.utils;
 
 import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
@@ -7,12 +7,13 @@ import androidx.room.Insert;
 import androidx.room.Query;
 import androidx.room.Update;
 
-import com.shaym.leash.logic.forecast.ForecastObject;
+import com.shaym.leash.logic.cameras.CameraObject;
+import com.shaym.leash.logic.forecast.localdb.dbutils.ForecastObject;
 
 import java.util.List;
 
 @Dao
-public interface DaoAccess {
+public interface ForecastDaoAccess {
 
     @Insert
     void saveForecasts(List<ForecastObject> forecastObject);
@@ -27,11 +28,12 @@ public interface DaoAccess {
     ForecastObject getForecast(long time_stamp);
 
     @Update
-    void updateRecord(ForecastObject forecastObject);
+    void updateForecastRecord(ForecastObject forecastObject);
 
     @Delete
     void deleteForecast(ForecastObject forecastObject);
 
     @Query("DELETE FROM Forecasts")
     void deleteAllForecasts();
+
 }

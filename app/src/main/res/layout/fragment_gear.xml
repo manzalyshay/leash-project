@@ -1,23 +1,19 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:weightSum="10"
+    android:fitsSystemWindows="true"
     >
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1.7"
-        android:orientation="vertical"
-
-        >
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:id="@+id/gear_btns"
+        android:orientation="vertical">
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:id="@+id/gear_menu"
         android:weightSum="2">
         <Button
             android:id="@+id/secondhand_button"
@@ -54,10 +50,11 @@
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/posts_list"
-            android:layout_weight="7.3"
             android:layout_width="match_parent"
-            android:layout_height="0dp" />
+            android:layout_marginBottom="40dp"
+            android:layout_below="@id/gear_btns"
+            android:layout_height="wrap_content" />
 
 
 
-</LinearLayout>
+</RelativeLayout>

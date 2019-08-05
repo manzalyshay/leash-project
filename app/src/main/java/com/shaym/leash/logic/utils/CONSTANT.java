@@ -2,6 +2,12 @@ package com.shaym.leash.logic.utils;
 
 public class CONSTANT {
 
+    //CAMERAS
+    final public static String telaviv_location = "Tel-Aviv";
+    final public static String herzelia_location = "Herzelia";
+    final public static String caesarea_location = "Caesarea";
+    final public static String ashdod_location = "Ashdod";
+
     //USERS
     final public static String USERS_TABLE = "users";
     final static String USER_POSTS_AMOUNT = "forumpostsamount";
@@ -57,6 +63,11 @@ public class CONSTANT {
     final public static String CONVERSATIONS = "conversations";
     final public static String USER_CONVERSATIONS = "user_conversations";
 
-    final public static String WEB_STREAM = "WEB_STREAM";
-    final public static String PLAYER_STREAM = "PLAYER_STREAM";
+    final public static String WEB_STREAM = "Web";
+    final public static String PLAYER_STREAM = "Player";
+
+    final public static String TELAVIV = "TELAVIV";
+    final public static String ASHDOD = "ASHDOD";
+    final public static String HERZELIA = "HERZELIA";
+    final public static String CAESAREA = "CAESAREA";
 }

@@ -2,9 +2,11 @@ package com.shaym.leash;
 
 import android.app.Application;
 import android.content.Context;
+import android.os.StrictMode;
 import android.util.Log;
 
 import com.facebook.FacebookSdk;
+import com.github.dhaval2404.imagepicker.ImagePicker;
 import com.google.firebase.database.FirebaseDatabase;
 import com.shaym.leash.logic.user.Profile;
 import com.squareup.picasso.OkHttp3Downloader;
@@ -46,6 +48,7 @@ public class MainApplication extends Application {
         built.setIndicatorsEnabled(false);
         built.setLoggingEnabled(true);
         Picasso.setSingletonInstance(built);
+
     }
 
     public static MainApplication getInstace(){

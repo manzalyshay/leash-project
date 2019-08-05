@@ -65,8 +65,6 @@ import static com.shaym.leash.logic.utils.CONSTANT.USED_GEAR_POSTS;
 
 public class GearFragment extends Fragment implements View.OnClickListener, FabClickedListener, AdapterView.OnItemSelectedListener {
     private static final String TAG = "GearFragment";
-    private FloatingActionButton mGearFab;
-    private DatabaseReference mDatabase;
     private RecyclerView mRecyclerView;
     private GearAdapter mAdapter;
     private Button mSecondHandButton;
@@ -84,26 +82,19 @@ public class GearFragment extends Fragment implements View.OnClickListener, FabC
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         Log.d(TAG, "onCreateView: ");
         View v = inflater.inflate(R.layout.fragment_gear, container, false);
-        mDatabase = FirebaseDatabase.getInstance().getReference();
-        initUI(v);
-
         return v;
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
-        Log.d(TAG, "onStart: ");
-            initAdapter();
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        Log.d(TAG, "onActivityCreated: ");
+        super.onActivityCreated(savedInstanceState);
+        initUI(Objects.requireNonNull(getView()));
+        initAdapter();
         setGearViewModel();
         initUsersViewModel();
     }
+
 
     private void initUI(View v)  {
         Log.d(TAG, "initUI: ");
@@ -140,7 +131,7 @@ public class GearFragment extends Fragment implements View.OnClickListener, FabC
 
         currentUserLiveData.observe(this, dataSnapshot -> {
             if (dataSnapshot != null) {
-                Log.d(TAG, "initUsersViewModel: ");
+                Log.d(TAG, "Current User Observer Triggered ");
                 mUser = dataSnapshot.getValue(Profile.class);
                 mAdapter.setViewerProfile(mUser);
             }
@@ -151,6 +142,8 @@ public class GearFragment extends Fragment implements View.OnClickListener, FabC
 
         allUserLiveData.observe(this, dataSnapshot -> {
             if (dataSnapshot != null) {
+                Log.d(TAG, "All users Observer Triggered ");
+
                 List<Profile> allusers = new ArrayList<>();
 
                 for (DataSnapshot ds : dataSnapshot.getChildren()) {
@@ -190,7 +183,7 @@ public class GearFragment extends Fragment implements View.OnClickListener, FabC
         mBoardsPostsLiveData.observe(this, dataSnapshot -> {
             if (dataSnapshot != null) {
                 List<GearPost> boardposts = new ArrayList<>();
-
+                Log.d(TAG, "Board Posts Observer Triggered ");
                 for (DataSnapshot ds : dataSnapshot.getChildren()) {
                     GearPost post = ds.getValue(GearPost.class);
                     boardposts.add(post);
@@ -202,6 +195,7 @@ public class GearFragment extends Fragment implements View.OnClickListener, FabC
         mLeashesPostsLiveData.observe(this, dataSnapshot -> {
             if (dataSnapshot != null) {
                 List<GearPost> leashposts = new ArrayList<>();
+                Log.d(TAG, "Leash Posts Observer Triggered ");
 
                 for (DataSnapshot ds : dataSnapshot.getChildren()) {
                     GearPost post = ds.getValue(GearPost.class);
@@ -214,6 +208,7 @@ public class GearFragment extends Fragment implements View.OnClickListener, FabC
         mFinsPostsLiveData.observe(this, dataSnapshot -> {
             if (dataSnapshot != null) {
                 List<GearPost> finsposts = new ArrayList<>();
+                Log.d(TAG, "Fins Posts Observer Triggered ");
 
                 for (DataSnapshot ds : dataSnapshot.getChildren()) {
                     GearPost post = ds.getValue(GearPost.class);
@@ -226,6 +221,7 @@ public class GearFragment extends Fragment implements View.OnClickListener, FabC
         mClothingPostsLiveData.observe(this, dataSnapshot -> {
             if (dataSnapshot != null) {
                 List<GearPost> clothingposts = new ArrayList<>();
+                Log.d(TAG, "Clothing Posts Observer Triggered ");
 
                 for (DataSnapshot ds : dataSnapshot.getChildren()) {
                     GearPost post = ds.getValue(GearPost.class);
@@ -238,6 +234,7 @@ public class GearFragment extends Fragment implements View.OnClickListener, FabC
         mOtherPostsLiveData.observe(this, dataSnapshot -> {
             if (dataSnapshot != null) {
                 List<GearPost> otherposts = new ArrayList<>();
+                Log.d(TAG, "Other Posts Observer Triggered ");
 
 
                 for (DataSnapshot ds : dataSnapshot.getChildren()) {

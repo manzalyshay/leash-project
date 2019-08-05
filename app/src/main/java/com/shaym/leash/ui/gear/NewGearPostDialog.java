@@ -1,11 +1,13 @@
 package com.shaym.leash.ui.gear;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
@@ -16,23 +18,26 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.asksira.bsimagepicker.BSImagePicker;
-import com.asksira.bsimagepicker.Utils;
-import com.google.firebase.auth.FirebaseAuth;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.DialogFragment;
+
+import com.github.dhaval2404.imagepicker.ImagePicker;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.shaym.leash.R;
 import com.shaym.leash.logic.utils.FireBasePostsHelper;
+import com.shaym.leash.logic.utils.FireBaseUsersHelper;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -41,17 +46,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.widget.ThemedSpinnerAdapter;
-import androidx.fragment.app.DialogFragment;
-
 import permissions.dispatcher.NeedsPermission;
 import permissions.dispatcher.OnShowRationale;
 import permissions.dispatcher.PermissionRequest;
 import permissions.dispatcher.RuntimePermissions;
 
-import static android.app.Activity.RESULT_OK;
 import static com.shaym.leash.logic.utils.CONSTANT.BOARDS_POSTS;
 import static com.shaym.leash.logic.utils.CONSTANT.CLOTHING_POSTS;
 import static com.shaym.leash.logic.utils.CONSTANT.FINS_POSTS;
@@ -60,7 +59,7 @@ import static com.shaym.leash.logic.utils.CONSTANT.LEASHES_POSTS;
 import static com.shaym.leash.logic.utils.CONSTANT.OTHER_POSTS;
 
 @RuntimePermissions
-public class NewGearPostDialog extends DialogFragment implements BSImagePicker.OnSingleImageSelectedListener, BSImagePicker.ImageLoaderDelegate {
+public class NewGearPostDialog extends DialogFragment{
     public static final String TAG = "NewGearPostDialog";
     public static final String CATEGORY_KEY = "CATEGORY_KEY";
 
@@ -69,7 +68,7 @@ public class NewGearPostDialog extends DialogFragment implements BSImagePicker.O
     private Spinner mCitySpinner;
     private List<String> citieslist;
     private List<String> mPostImagepaths;
-    private Uri filePath;
+    private Bitmap selectedBitmap;
     //Firebase
     FirebaseStorage storage;
     StorageReference storageReference;
@@ -122,8 +121,6 @@ public class NewGearPostDialog extends DialogFragment implements BSImagePicker.O
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-
             initViews();
 
     }
@@ -223,13 +220,15 @@ public class NewGearPostDialog extends DialogFragment implements BSImagePicker.O
 
     @NeedsPermission({Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA})
     public void pickImage(){
-        BSImagePicker singleSelectionPicker = new BSImagePicker.Builder("com.shaym.leash.fileprovider")
-                .setSpanCount(3) //Default: 3. This is the number of columns
-                .setGridSpacing(Utils.dp2px(2)) //Default: 2dp. Remember to pass in a value in pixel.
-                .setPeekHeight(Utils.dp2px(360)) //Default: 360dp. This is the initial height of the dialog.
-                .build();
 
-        singleSelectionPicker.show(getChildFragmentManager(), "picker");
+        ImagePicker.Companion.with(this)
+                .crop(1f, 1f)	    		//Crop Square image(Optional)
+                .compress(1024)			//Final image size will be less than 1 MB(Optional)
+                .maxResultSize(1080, 1080)	//Final image resolution will be less than 1080 x 1080(Optional)
+                .start(GEAR_PICK_IMAGE_REQUEST);
+
+
+
 
     }
 
@@ -255,7 +254,30 @@ public class NewGearPostDialog extends DialogFragment implements BSImagePicker.O
 
 
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        Log.d(TAG, "onActivityResult: ");
 
+        if (resultCode == Activity.RESULT_OK) {
+            // File object will not be null for RESULT_OK
+            File file = ImagePicker.Companion.getFile(data);
+            FileInputStream fis = null;
+            try {
+                fis = new FileInputStream(file);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+
+            selectedBitmap = BitmapFactory.decodeStream(fis);
+
+            if (selectedBitmap != null) {
+                mImagePicked = true;
+                mUploadLabel.setText("Image Picked!");
+                mUploadLabel.setTextColor(Color.RED);
+            }
+        }
+    }
 
 
 
@@ -311,7 +333,7 @@ public class NewGearPostDialog extends DialogFragment implements BSImagePicker.O
     }
 
     private void publishPost() {
-        FireBasePostsHelper.getInstance().writeNewGearPost(getUid(), mNewPostCategory, citieslist.get(mCitySpinner.getSelectedItemPosition()), parseValue(mPriceInput.getText().toString().trim()), mPhoneInput.getText().toString().trim(), mBodyInput.getText().toString().trim(), mPostImagepaths);
+        FireBasePostsHelper.getInstance().writeNewGearPost(FireBaseUsersHelper.getInstance().getUid(), mNewPostCategory, citieslist.get(mCitySpinner.getSelectedItemPosition()), parseValue(mPriceInput.getText().toString().trim()), mPhoneInput.getText().toString().trim(), mBodyInput.getText().toString().trim(), mPostImagepaths);
         Toast.makeText(getContext(), "Post Published.", Toast.LENGTH_SHORT).show();
         dismiss();
     }
@@ -321,40 +343,21 @@ public class NewGearPostDialog extends DialogFragment implements BSImagePicker.O
     }
 
 
-    private String getUid() {
-        return Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
 
-    }
-    public byte[] convertBitmapToByteArray(Bitmap bitmap) {
-        ByteArrayOutputStream stream = null;
-        try {
-            stream = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
-
-            return stream.toByteArray();
-        }finally {
-            if (stream != null) {
-                try {
-                    stream.close();
-                } catch (IOException e) {
-                    Log.e(ThemedSpinnerAdapter.Helper.class.getSimpleName(), "ByteArrayOutputStream was not closed");
-                }
-            }
-        }
-    }
 
     private void uploadImage() {
 
-        if(filePath != null)
+        if(selectedBitmap != null)
         {
             final ProgressDialog progressDialog = new ProgressDialog(getContext());
             progressDialog.setTitle("Uploading...");
             progressDialog.show();
 
-            String uploadPath = GEAR_POSTS_PICS + "/" + getUid() + "/" + UUID.randomUUID().toString();
+            String uploadPath = GEAR_POSTS_PICS + "/" + FireBaseUsersHelper.getInstance().getUid() + "/" + UUID.randomUUID().toString();
             StorageReference ref = storageReference.child(uploadPath);
+            byte[] data = FireBasePostsHelper.getInstance().convertBitmapToByteArray(selectedBitmap);
 
-            ref.putFile(filePath)
+            ref.putBytes(data)
                     .addOnSuccessListener(taskSnapshot -> {
                         progressDialog.dismiss();
                         Toast.makeText(getContext(), "Uploaded", Toast.LENGTH_SHORT).show();
@@ -373,21 +376,7 @@ public class NewGearPostDialog extends DialogFragment implements BSImagePicker.O
         }
     }
 
-    @Override
-    public void onSingleImageSelected(Uri uri, String tag) {
-            filePath = uri;
 
-        if ( filePath != null) {
-            mImagePicked = true;
-            mUploadLabel.setText("Image Picked!");
-            mUploadLabel.setTextColor(Color.RED);
-        }
-    }
-
-    @Override
-    public void loadImage(File imageFile, ImageView ivImage) {
-
-    }
 }
 
 

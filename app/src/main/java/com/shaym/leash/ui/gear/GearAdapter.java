@@ -51,6 +51,8 @@ public class GearAdapter extends RecyclerView.Adapter<GearPostViewHolder> {
     GearAdapter( Fragment fragment) {
         Log.d(TAG, "GearAdapter: ");
         mFragment = fragment;
+        setHasStableIds(true);
+
     }
 
     public void setViewerProfile(Profile viewerProfile) {
@@ -211,7 +213,15 @@ public class GearAdapter extends RecyclerView.Adapter<GearPostViewHolder> {
     }
 
 
+    @Override
+    public int getItemViewType(int position) {
+        return position;
+    }
 
+    @Override
+    public long getItemId(int position) {
+        return position;
+    }
 
 
 

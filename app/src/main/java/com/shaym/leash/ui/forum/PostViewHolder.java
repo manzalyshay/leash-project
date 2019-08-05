@@ -1,10 +1,5 @@
 package com.shaym.leash.ui.forum;
 
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.RecyclerView;
-
-import android.content.Intent;
-import android.os.Bundle;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -13,6 +8,9 @@ import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
@@ -23,13 +21,8 @@ import com.shaym.leash.R;
 import com.shaym.leash.logic.forum.Post;
 import com.shaym.leash.logic.user.Profile;
 import com.shaym.leash.logic.utils.FireBasePostsHelper;
-import com.shaym.leash.logic.utils.FireBaseUsersHelper;
-import com.shaym.leash.ui.gear.GearPostActivity;
 
-import java.util.List;
 import java.util.Objects;
-
-import static com.shaym.leash.ui.gear.GearPostActivity.EXTRA_POST_KEY;
 
 public class PostViewHolder extends RecyclerView.ViewHolder implements PopupMenu.OnMenuItemClickListener, View.OnClickListener {
 
@@ -142,10 +135,6 @@ public class PostViewHolder extends RecyclerView.ViewHolder implements PopupMenu
 
     @Override
     public void onClick(View v) {
-        Intent intent = new Intent(mFragment.getActivity(), ForumPostActivity.class);
-        Bundle b = new Bundle();
-        b.putString(EXTRA_POST_KEY, currentPost.key);
-        intent.putExtras(b); //Put your id to your next Intent
-        Objects.requireNonNull(mFragment.getActivity()).startActivity(intent);
+
     }
 }

@@ -1,10 +1,31 @@
 <RelativeLayout android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:background="@color/bottom_nav_bg_color"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:paddingBottom="25dp"
-    xmlns:android="http://schemas.android.com/apk/res/android">
 
+    >
+
+
+    <View android:layout_width="match_parent"
+        android:layout_height="170dp"
+        android:background="@color/bottom_nav_bg_color"/>
+
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_marginTop="100dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        app:cardCornerRadius="30dp"
+        android:layout_marginBottom="25dp"
+        android:layout_height="wrap_content">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_marginBottom="25dp"
+            android:paddingBottom="25dp"
+            android:layout_height="match_parent">
     <RelativeLayout
         android:layout_width="30dp"
         android:layout_height="30dp"
@@ -42,7 +63,7 @@
             android:layout_height="wrap_content"
             style="@style/TextAppearance.MaterialComponents.Subtitle2"
             android:layout_alignParentTop="true"
-            android:textColor="@color/white"
+            android:textColor="@color/bottom_nav_bg_color"
             android:id="@+id/display_name"/>
 
         <TextView
@@ -52,9 +73,7 @@
             android:layout_below="@id/display_name"
             style="@style/Base.TextAppearance.AppCompat.Small"
             android:textSize="12sp"
-            android:textColor="@color/white"
-
-            android:text="publish"
+            android:textColor="@color/bottom_nav_bg_color"
             />
 
     </RelativeLayout>
@@ -93,8 +112,8 @@
             android:layout_height="wrap_content"
             android:maxLines="2"
             android:ellipsize="end"
-            android:textColor="@color/white"
-            tools:text="dadas" />
+            android:textColor="@color/bottom_nav_bg_color"
+             />
 
 
     </LinearLayout>
@@ -107,4 +126,7 @@
         android:layout_alignParentTop="true"
         android:layout_marginEnd="10dp"
         android:src="@drawable/ic_backarrow" />
+        </RelativeLayout>
+</androidx.cardview.widget.CardView>
 </RelativeLayout>
+

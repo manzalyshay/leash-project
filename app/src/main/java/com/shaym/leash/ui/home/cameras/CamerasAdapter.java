@@ -8,6 +8,8 @@
     import android.view.ViewGroup;
 
     import com.shaym.leash.R;
+    import com.shaym.leash.logic.cameras.CameraObject;
+    import com.shaym.leash.logic.utils.FireBasePostsHelper;
     import com.squareup.picasso.Picasso;
 
     import java.util.List;
@@ -16,17 +18,18 @@
 
         private onCameraSelectedListener mListener;
 
-        public void setCamerasList(List<Camera> camerasList) {
+        public void setCamerasList(List<CameraObject> camerasList) {
             this.camerasList = camerasList;
+            notifyDataSetChanged();
         }
 
-        private List<Camera> camerasList;
+        private List<CameraObject> camerasList;
 
         private static final String TAG = "CamerasAdapter";
         int selected_position = 0; // You have to set this globally in the Adapter class
 
 
-        CamerasAdapter(onCameraSelectedListener listener, List<Camera> cameralist) {
+        CamerasAdapter(onCameraSelectedListener listener, List<CameraObject> cameralist) {
             Log.d(TAG, "CamerasAdapter: ");
             this.mListener = listener;
             this.camerasList = cameralist;
@@ -46,9 +49,9 @@
 
         @Override
         public void onBindViewHolder(@NonNull final CameraItemViewHolder holder, final int position) {
-            final Camera cam = camerasList.get(position);
-            Picasso.get().load(cam.getPicRef()).into(holder.getCover());
-            holder.getTitle().setText(cam.getBeachName());
+            final CameraObject cam = camerasList.get(position);
+            FireBasePostsHelper.getInstance().attachPic(cam.mPicRef, holder.getCover(), holder.getProgressbar(), 150, 150);
+            holder.getTitle().setText(cam.getLocation());
 
 
             if (selected_position == position){

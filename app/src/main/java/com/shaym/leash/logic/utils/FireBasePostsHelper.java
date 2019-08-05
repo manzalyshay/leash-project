@@ -2,6 +2,7 @@ package com.shaym.leash.logic.utils;
 
 import android.app.Dialog;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
@@ -13,6 +14,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.widget.ThemedSpinnerAdapter;
 import androidx.fragment.app.Fragment;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -32,6 +34,8 @@ import com.squareup.picasso.Callback;
 import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.Date;
 import java.util.HashMap;
@@ -196,41 +200,22 @@ public class FireBasePostsHelper {
         TextView displayname = mClickedUserDialog.findViewById(R.id.displaynamearoundme);
         displayname.setText(mClickedUser.getDisplayname().trim());
 
-        ImageView mailpic = mClickedUserDialog.findViewById(R.id.mail_aroundme);
-        ImageView phonepic = mClickedUserDialog.findViewById(R.id.phone_aroundme);
         ImageView dmpic = mClickedUserDialog.findViewById(R.id.dm_aroundme);
 
         if (mClickedUser.getUid().equals(getUid())){
             dmpic.setVisibility(View.INVISIBLE);
         }
-        else{
-            mailpic.setOnClickListener(view -> {
-                Intent i = new Intent(Intent.ACTION_SEND);
-                i.setType("message/rfc822");
-                i.putExtra(Intent.EXTRA_EMAIL  , new String[]{mClickedUser.getEmail().trim()});
-                try {
-                    fragment1.startActivity(Intent.createChooser(i, "Send mail..."));
-                } catch (android.content.ActivityNotFoundException ex) {
-                    Toast.makeText(fragment1.getContext(), "There are no email clients installed.", Toast.LENGTH_SHORT).show();
-                }
+        else {
+            dmpic.setOnClickListener(view -> {
+                Intent intent = new Intent(fragment.getActivity(), ChatActivity.class);
+                Bundle b = new Bundle();
+                b.putString(ChatActivity.EXTRA_PARTNER_KEY, mClickedUser.getUid());
+                intent.putExtras(b); //Put your id to your next Intent
+                Objects.requireNonNull(fragment.getActivity()).startActivity(intent);
+                mClickedUserDialog.dismiss();
+
             });
         }
-
-
-        phonepic.setOnClickListener(view -> {
-            Log.d(TAG, "showProfilePopup: Phone Clicked");
-
-        });
-
-        dmpic.setOnClickListener(view -> {
-            Intent intent = new Intent(fragment.getActivity(), ChatActivity.class);
-            Bundle b = new Bundle();
-            b.putString(ChatActivity.EXTRA_PARTNER_KEY, mClickedUser.getUid());
-            intent.putExtras(b); //Put your id to your next Intent
-            Objects.requireNonNull(fragment.getActivity()).startActivity(intent);
-            mClickedUserDialog.dismiss();
-
-        });
 
 
         closedialogpic.setOnClickListener(view -> mClickedUserDialog.dismiss());
@@ -324,7 +309,7 @@ public class FireBasePostsHelper {
         if (!url.isEmpty()) {
             progressBar.setVisibility(View.VISIBLE);
             if (url.charAt(0) == 'h') {
-                Picasso.get().load(Uri.parse(url)).resize(width, height).networkPolicy(NetworkPolicy.OFFLINE).centerCrop().transform(new RoundedCornersTransform()).into(imageView, new Callback() {
+                Picasso.get().load(Uri.parse(url)).resize(width, height).networkPolicy(NetworkPolicy.OFFLINE).transform(new RoundedCornersTransform()).into(imageView, new Callback() {
                     @Override
                     public void onSuccess() {
                         progressBar.setVisibility(View.GONE);
@@ -334,7 +319,7 @@ public class FireBasePostsHelper {
                     public void onError(Exception e) {
                         e.printStackTrace();
 
-                        Picasso.get().load(Uri.parse(url)).resize(width, height).centerCrop().transform(new RoundedCornersTransform()).into(imageView, new Callback() {
+                        Picasso.get().load(Uri.parse(url)).resize(width, height).transform(new RoundedCornersTransform()).into(imageView, new Callback() {
                             @Override
                             public void onSuccess() {
                                 progressBar.setVisibility(View.GONE);
@@ -353,7 +338,7 @@ public class FireBasePostsHelper {
 
                 });
             } else {
-                storageReference.child(url).getDownloadUrl().addOnSuccessListener(uri -> Picasso.get().load(uri).resize(width, height).networkPolicy(NetworkPolicy.OFFLINE).centerCrop().transform(new RoundedCornersTransform()).into(imageView, new Callback() {
+                storageReference.child(url).getDownloadUrl().addOnSuccessListener(uri -> Picasso.get().load(uri).resize(width, height).networkPolicy(NetworkPolicy.OFFLINE).transform(new RoundedCornersTransform()).into(imageView, new Callback() {
                     @Override
                     public void onSuccess() {
                         progressBar.setVisibility(View.GONE);
@@ -362,7 +347,7 @@ public class FireBasePostsHelper {
                     @Override
                     public void onError(Exception e) {
                         e.printStackTrace();
-                        Picasso.get().load(uri).resize(width, height).centerCrop().transform(new RoundedCornersTransform()).into(imageView, new Callback() {
+                        Picasso.get().load(uri).resize(width, height).transform(new RoundedCornersTransform()).into(imageView, new Callback() {
                             @Override
                             public void onSuccess() {
                                 progressBar.setVisibility(View.GONE);
@@ -390,5 +375,22 @@ public class FireBasePostsHelper {
         }
     }
 
+    public byte[] convertBitmapToByteArray(Bitmap bitmap) {
+        ByteArrayOutputStream stream = null;
+        try {
+            stream = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+
+            return stream.toByteArray();
+        }finally {
+            if (stream != null) {
+                try {
+                    stream.close();
+                } catch (IOException e) {
+                    Log.e(ThemedSpinnerAdapter.Helper.class.getSimpleName(), "ByteArrayOutputStream was not closed");
+                }
+            }
+        }
+    }
 
 }

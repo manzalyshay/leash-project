@@ -1,4 +1,4 @@
-package com.shaym.leash.logic.forecast.localdb;
+package com.shaym.leash.logic.forecast.localdb.dbutils;
 
 import android.os.AsyncTask;
 import android.util.Log;
@@ -6,7 +6,6 @@ import android.util.Log;
 import com.shaym.leash.logic.forecast.ForecastAVGObject;
 import com.shaym.leash.logic.forecast.ForecastHelper;
 import com.shaym.leash.logic.forecast.ForecastListener;
-import com.shaym.leash.logic.forecast.ForecastObject;
 
 import java.util.ArrayList;
 import java.util.List;

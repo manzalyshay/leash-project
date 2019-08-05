@@ -132,4 +132,14 @@ public class UIHelper {
         menuItemSelectedView.setVisibility(View.VISIBLE);
     }
 
+    public void setCaSelected(View menuItemSelectedView, Activity context){
+
+        context.findViewById(R.id.bottom_nav_cameras_selectedindicator).setVisibility(View.GONE);
+        context.findViewById(R.id.bottom_nav_forecast_selectedindicator).setVisibility(View.GONE);
+        context.findViewById(R.id.bottom_nav_forum_selectedindicator).setVisibility(View.GONE);
+        context.findViewById(R.id.bottom_nav_gear_selectedindicator).setVisibility(View.GONE);
+
+        menuItemSelectedView.setVisibility(View.VISIBLE);
+    }
+
 }

@@ -9,11 +9,12 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.WindowManager;
+import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -21,6 +22,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
@@ -92,16 +94,13 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
     private boolean uiSet;
     private UsersViewModel mUserViewModel;
     private SectionPagerAdapter mSectionPagerAdapter;
-
+    private boolean mFabPage;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate: ");
         super.onCreate(savedInstanceState);
         // In Activity's onCreate() for instance
-        getWindow().setFlags(
-                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
-                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
-        );
+
 
         setContentView(R.layout.activity_home);
 
@@ -120,7 +119,6 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
                FireBaseUsersHelper.getInstance().saveUserByID(mUser.getUid(), mUser);
            }
 
-           UIHelper.getInstance().showSnackBar(findViewById(R.id.drawer_layout_home));
         }
     };
 
@@ -132,11 +130,6 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
 
     }
 
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-        Log.d(TAG, "onBackPressed: ");
-    }
 
     @Override
     protected void onStart() {
@@ -158,7 +151,6 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
 
     private void updateUI() {
         Log.d(TAG, "updateUI: ");
-        mNavHelper.setCurrentUser(mUser);
         FireBasePostsHelper.getInstance().attachRoundPic(mUser.getAvatarurl(),mToolbarProfilePicture, mToolbarProfileProgressBar, 100, 100);
         uiSet = true;
 
@@ -213,9 +205,6 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
     private void initUI() {
 //        new KeyboardUtil(this, findViewById(R.id.container_home));
 
-        mDrawerLayout = findViewById(R.id.drawer_layout_home);
-        mNavigationView = findViewById(R.id.nav_view);
-
         mAppBar = findViewById(R.id.app_bar);
 
         CoordinatorLayout.LayoutParams params = (CoordinatorLayout.LayoutParams) mAppBar.getLayoutParams();
@@ -253,6 +242,8 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
         mGearMenuItem = findViewById(R.id.bottom_nav_gear);
         mGearMenuItem.setOnClickListener(this);
         mBottomAppBar = findViewById(R.id.bottom_bar);
+
+
         UIHelper.getInstance().setMenuItemSelected(findViewById(R.id.bottom_nav_cameras_selectedindicator), this);
         mHeaderView = findViewById(R.id.header);
 
@@ -280,8 +271,31 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
         actionbar.setDisplayShowHomeEnabled(false);
         actionbar.setDisplayShowTitleEnabled(false);
 
-        mNavHelper = new NavHelper(mNavigationView, vp, ACTIVITY_NUM);
+        View rootView = findViewById(R.id.general_layout);
+        rootView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                Rect r = new Rect();
+                rootView.getWindowVisibleDisplayFrame(r);
+                int heightDiff = rootView.getRootView().getHeight() - (r.bottom - r.top);
+
+                if (heightDiff > 100) { // if more than 100 pixels, its probably a keyboard...
+                    //ok now we know the keyboard is up...
+                    mBottomAppBar.setVisibility(View.GONE);
+                    mFab.setVisibility(View.GONE);
+
+                }else{
+                    //ok now we know the keyboard is down...
+                    mBottomAppBar.setVisibility(View.VISIBLE);
+                    if (mFabPage)
+                    mFab.setVisibility(View.VISIBLE);
+
+                }
+            }
+        });
+
         uiSet = true;
+
     }
 
     private void setupViewPager() {
@@ -302,6 +316,17 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
 
     }
 
+    @Override
+    public void onBackPressed() {
+        new AlertDialog.Builder(this)
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setTitle("Closing Activity")
+                .setMessage("Are you sure you want to leave this app?")
+                .setPositiveButton("Yes", (dialog, which) -> HomeActivity.super.onBackPressed())
+                .setNegativeButton("No", null)
+                .show();
+    }
+
 
 
     @Override
@@ -318,6 +343,7 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
                 UIHelper.getInstance().setMenuItemSelected(findViewById(R.id.bottom_nav_cameras_selectedindicator), this);
                 mSepearatorMenuItem.setVisibility(View.GONE);
                 mFab.hide();
+                mFabPage = false;
                 break;
 
             case 1:
@@ -325,6 +351,8 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
                 UIHelper.getInstance().setMenuItemSelected(findViewById(R.id.bottom_nav_forecast_selectedindicator), this);
                 mSepearatorMenuItem.setVisibility(View.GONE);
                 mFab.hide();
+                mFabPage = false;
+
 //                mNavHelper.onNavigationItemSelected(mNavigationView.getMenu().findItem(FORECAST_ITEM_ID));
                 break;
 
@@ -335,6 +363,8 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
                 mSepearatorMenuItem.setVisibility(View.VISIBLE);
                 mFabClickedListener = mForumFragment;
                 mFab.show();
+                mFabPage = true;
+
 //                mNavHelper.onNavigationItemSelected(mNavigationView.getMenu().findItem(AROUNDME_FRAGMENT_ITEM_ID));
                 break;
 
@@ -344,6 +374,8 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
                 UIHelper.getInstance().setMenuItemSelected(findViewById(R.id.bottom_nav_gear_selectedindicator), this);
                 mSepearatorMenuItem.setVisibility(View.VISIBLE);
                 mFabClickedListener = mGearFragment;
+                mFabPage = true;
+
                 mFab.show();
 //                mNavHelper.onNavigationItemSelected(mNavigationView.getMenu().findItem(GEAR_ITEM_ID));
                 break;
@@ -352,6 +384,8 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
                 UIHelper.getInstance().updateToolBar(UIHelper.PROFILE_SELECTED, this, mAppBar, mHeaderView );
                 mSepearatorMenuItem.setVisibility(View.GONE);
                 mFab.hide();
+                mFabPage = false;
+
 //                mNavHelper.onNavigationItemSelected(mNavigationView.getMenu().findItem(PROFILE_FRAGMENT_ITEM_ID));
                 break;
 
@@ -359,6 +393,8 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
                 UIHelper.getInstance().updateToolBar(UIHelper.AROUNDME_SELECTED, this, mAppBar, mHeaderView );
                 mSepearatorMenuItem.setVisibility(View.GONE);
                 mFab.hide();
+                mFabPage = false;
+
 //                mNavHelper.onNavigationItemSelected(mNavigationView.getMenu().findItem(PROFILE_FRAGMENT_ITEM_ID));
                 break;
 
@@ -366,6 +402,8 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
                 UIHelper.getInstance().updateToolBar(UIHelper.CHAT_SELECTED, this, mAppBar, mHeaderView );
                 mSepearatorMenuItem.setVisibility(View.GONE);
                 mFab.hide();
+                mFabPage = false;
+
 //                mNavHelper.onNavigationItemSelected(mNavigationView.getMenu().findItem(PROFILE_FRAGMENT_ITEM_ID));
                 break;
 

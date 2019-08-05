@@ -61,24 +61,38 @@
                 android:text="בחסות:"/>
 
             <TextView
-                android:layout_toStartOf="@id/sponsor_logo"
+                android:layout_toStartOf="@id/sponsor_logo_layout"
 
                 android:id="@+id/sponsor_brand"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textStyle="bold"
-                android:layout_margin="5dp"
-                android:text="InterSurf"/>
+                android:layout_margin="5dp" />
 
-            <ImageView
-                android:layout_alignParentEnd="true"
 
-                android:id="@+id/sponsor_logo"
+            <RelativeLayout
+                android:id="@+id/sponsor_logo_layout"
                 android:layout_width="30dp"
                 android:layout_height="30dp"
                 android:layout_marginEnd="5dp"
-                android:src="@drawable/intersurf_logo"
-                />
+                android:layout_alignParentEnd="true">
+
+            <ImageView
+                android:id="@+id/sponsor_logo"
+                android:layout_width="match_parent"
+                android:adjustViewBounds="true"
+                android:scaleType="fitXY"
+
+                android:layout_height="match_parent" />
+                <ProgressBar
+                    android:id="@+id/sponsor_logo_pbar"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+              />
+
+            </RelativeLayout>
+
+
         </RelativeLayout>
 
         <View

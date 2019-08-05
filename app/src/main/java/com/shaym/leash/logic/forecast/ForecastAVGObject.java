@@ -1,12 +1,8 @@
 package com.shaym.leash.logic.forecast;
 
-import androidx.room.ColumnInfo;
-import androidx.room.Entity;
-import androidx.room.PrimaryKey;
+import com.shaym.leash.logic.forecast.localdb.dbutils.ForecastObject;
 
-import java.io.Serializable;
-
-public class ForecastAVGObject extends ForecastObject  {
+public class ForecastAVGObject extends ForecastObject {
     public float mAVGAbsMinBreakingHeight;
     public float mAVGAbsMaxBreakingHeight;
     public int mAVGWindSpeed;

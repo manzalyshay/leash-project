@@ -1,13 +1,10 @@
-package com.shaym.leash.logic.forecast.localdb;
+package com.shaym.leash.logic.forecast.localdb.dbutils;
 
 import android.app.Application;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
-
-import com.shaym.leash.logic.forecast.ForecastObject;
-import com.shaym.leash.logic.forecast.localdb.dbhandlers.ForecastDB;
 
 import java.util.List;
 

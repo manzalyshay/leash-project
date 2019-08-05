@@ -8,25 +8,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.firebase.ui.database.FirebaseRecyclerOptions;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
-import com.shaym.leash.R;
-import com.shaym.leash.logic.chat.Conversation;
-import com.shaym.leash.logic.forum.Post;
-import com.shaym.leash.logic.gear.GearPost;
-import com.shaym.leash.logic.user.Profile;
-import com.shaym.leash.logic.user.UsersViewModel;
-import com.shaym.leash.logic.utils.UsersHelperListener;
-import com.shaym.leash.ui.utils.NpaGridLayoutManager;
-
-import java.util.ArrayList;
-import java.util.ConcurrentModificationException;
-import java.util.List;
-import java.util.Objects;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.view.ViewCompat;
@@ -35,6 +16,22 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.shaym.leash.R;
+import com.shaym.leash.logic.chat.Conversation;
+import com.shaym.leash.logic.forum.Post;
+import com.shaym.leash.logic.gear.GearPost;
+import com.shaym.leash.logic.user.Profile;
+import com.shaym.leash.logic.user.UsersViewModel;
+import com.shaym.leash.logic.utils.FireBaseUsersHelper;
+import com.shaym.leash.logic.utils.UsersHelperListener;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 import static com.shaym.leash.logic.utils.CONSTANT.CHAT_CONVERSATIONS;
 import static com.shaym.leash.logic.utils.CONSTANT.FORUM_POSTS;
@@ -63,7 +60,7 @@ public class ProfileFragment extends Fragment implements  View.OnClickListener, 
     private ProfileAdapter mAdapter;
     private DatabaseReference mDatabase;
     private Profile mUser;
-    private List<Profile> mAllUsers;
+    private List<Profile> mAllUsers = new ArrayList<>();
     private List<Post> mAllPosts = new ArrayList<>();
     private List<GearPost> mAllGearPosts = new ArrayList<>();
     private List<Conversation> mAllConversations = new ArrayList<>();
@@ -84,17 +81,21 @@ public class ProfileFragment extends Fragment implements  View.OnClickListener, 
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
         initUI();
 
+        initUsersViewModel();
+        initProfileViewModel();
+        setAdapter();
     }
+
 
     private void initProfileViewModel() {
         mProfileViewModel = ViewModelProviders.of(this).get(ProfileViewModel.class);
-        mProfileViewModel.setALL_USER_POSTS_LIVE_DATA(mDatabase.child(FORUM_POSTS).child(USER_POSTS).child(mUser.getUid()));
-        mProfileViewModel.setALL_USER_CONVERSATIONS_LIVE_DATA(mDatabase.child(CHAT_CONVERSATIONS).child(USER_CONVERSATIONS).child(mUser.getUid()));
-        mProfileViewModel.setALL_USER_GEARPOSTS_LIVE_DATA(mDatabase.child(GEAR_POSTS).child(USED_GEAR_POSTS).child(USER_POSTS).child(mUser.getUid()));
+        mProfileViewModel.setALL_USER_POSTS_LIVE_DATA(mDatabase.child(FORUM_POSTS).child(USER_POSTS).child(FireBaseUsersHelper.getInstance().getUid()));
+        mProfileViewModel.setALL_USER_CONVERSATIONS_LIVE_DATA(mDatabase.child(CHAT_CONVERSATIONS).child(USER_CONVERSATIONS).child(FireBaseUsersHelper.getInstance().getUid()));
+        mProfileViewModel.setALL_USER_GEARPOSTS_LIVE_DATA(mDatabase.child(GEAR_POSTS).child(USED_GEAR_POSTS).child(USER_POSTS).child(FireBaseUsersHelper.getInstance().getUid()));
         LiveData<DataSnapshot> mAllPostsLiveData = mProfileViewModel.getAllUserPostsLiveData();
         LiveData<DataSnapshot> mAllGearPostsLiveData = mProfileViewModel.getAllUserGearPostsLiveData();
         LiveData<DataSnapshot> mAllConversationsLiveData = mProfileViewModel.getAllUserConversationsLiveData();
@@ -107,7 +108,7 @@ public class ProfileFragment extends Fragment implements  View.OnClickListener, 
                     Post post = ds.getValue(Post.class);
                     mAllPosts.add(post);
                 }
-                updateData();
+                mAdapter.updateForumData(mAllPosts);
             }
         });
 
@@ -119,8 +120,7 @@ public class ProfileFragment extends Fragment implements  View.OnClickListener, 
                     GearPost gearPost = ds.getValue(GearPost.class);
                     mAllGearPosts.add(gearPost);
                 }
-                updateData();
-
+                mAdapter.updateGearData(mAllGearPosts);
             }
         });
 
@@ -132,12 +132,10 @@ public class ProfileFragment extends Fragment implements  View.OnClickListener, 
                     Conversation conversation = ds.getValue(Conversation.class);
                     mAllConversations.add(conversation);
                 }
-
-                updateData();
+                mAdapter.updateConversationsData(mAllConversations);
 
             }
         });
-        setAdapter();
 
     }
 
@@ -145,22 +143,15 @@ public class ProfileFragment extends Fragment implements  View.OnClickListener, 
         mUsersViewModel = ViewModelProviders.of(this).get(UsersViewModel.class);
 
         LiveData<DataSnapshot> currentUserLiveData = mUsersViewModel.getCurrentUserDataSnapshotLiveData();
+        LiveData<DataSnapshot> allUserLiveData = mUsersViewModel.getAllUsersDataSnapshotLiveData();
 
         currentUserLiveData.observe(this, dataSnapshot -> {
             if (dataSnapshot != null) {
                 Log.d(TAG, "initUsersViewModel: ");
                 mUser = dataSnapshot.getValue(Profile.class);
-                initAllUsersObserver();
-
+                mAdapter.setUser(mUser);
             }
         });
-
-
-    }
-
-    private void initAllUsersObserver() {
-        LiveData<DataSnapshot> allUserLiveData = mUsersViewModel.getAllUsersDataSnapshotLiveData();
-        mAllUsers = new ArrayList<>();
 
         allUserLiveData.observe(this, dataSnapshot -> {
             if (dataSnapshot != null) {
@@ -170,14 +161,15 @@ public class ProfileFragment extends Fragment implements  View.OnClickListener, 
                     Profile user = ds.getValue(Profile.class);
                     mAllUsers.add(user);
                 }
-
-                initProfileViewModel();
+                mAdapter.setAllUsers(mAllUsers);
 
 
             }
         });
 
+
     }
+
 
     private void initUI() {
         mForumTab = Objects.requireNonNull(getView()).findViewById(R.id.forum_activity);
@@ -199,11 +191,11 @@ public class ProfileFragment extends Fragment implements  View.OnClickListener, 
 
         ViewCompat.setNestedScrollingEnabled(mRecyclerView, false);
 
-        initUsersViewModel();
+
     }
 
     private void setAdapter() {
-        mAdapter= new ProfileAdapter(  mAllUsers, mUser, mViewType, mProfileViewModel, this);
+        mAdapter= new ProfileAdapter( mProfileViewModel, this);
         mRecyclerView.setAdapter(mAdapter);
     }
 
@@ -213,40 +205,26 @@ public class ProfileFragment extends Fragment implements  View.OnClickListener, 
         switch (v.getId()){
             case R.id.forum_activity:
                 setButtonChecked(mForumTab);
-                mViewType = PROFILE_FORUM_POSTS;
-                updateData();
+                mAdapter.mViewType = PROFILE_FORUM_POSTS;
+                mAdapter.notifyDataSetChanged();
                 break;
 
             case R.id.store_activity:
                 setButtonChecked(mStoreTab);
-                mViewType = PROFILE_GEAR_POSTS;
-                updateData();
+                mAdapter.mViewType = PROFILE_GEAR_POSTS;
+                mAdapter.notifyDataSetChanged();
+
                 break;
 
             case R.id.inbox:
                 setButtonChecked(mInboxTab);
-                mViewType = PROFILE_CONVERSATIONS;
-                updateData();
+                mAdapter.mViewType = PROFILE_CONVERSATIONS;
+                mAdapter.notifyDataSetChanged();
                 break;
         }
     }
 
-    private void updateData() {
 
-        switch (mViewType){
-            case PROFILE_FORUM_POSTS:
-                mAdapter.updateForumData(mAllPosts);
-                break;
-
-            case PROFILE_GEAR_POSTS:
-                mAdapter.updateGearData(mAllGearPosts);
-                break;
-
-            case PROFILE_CONVERSATIONS:
-                mAdapter.updateConversationsData(mAllConversations);
-                break;
-        }
-    }
 
     private void setButtonChecked(TextView mCurrentForum) {
         mForumTab.setBackgroundResource(R.color.transparent);

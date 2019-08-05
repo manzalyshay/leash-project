@@ -1,5 +1,6 @@
 package com.shaym.leash.ui.forecast;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.graphics.Typeface;
@@ -35,9 +36,9 @@ import com.shaym.leash.logic.forecast.DownloadForecast;
 import com.shaym.leash.logic.forecast.ForecastAVGObject;
 import com.shaym.leash.logic.forecast.ForecastHelper;
 import com.shaym.leash.logic.forecast.ForecastListener;
-import com.shaym.leash.logic.forecast.ForecastObject;
-import com.shaym.leash.logic.forecast.localdb.ForecastViewModel;
-import com.shaym.leash.logic.forecast.localdb.GetForecastsByDays;
+import com.shaym.leash.logic.forecast.localdb.dbutils.ForecastObject;
+import com.shaym.leash.logic.forecast.localdb.dbutils.ForecastViewModel;
+import com.shaym.leash.logic.forecast.localdb.dbutils.GetForecastsByDays;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -74,26 +75,16 @@ public class ForecastFragment extends Fragment implements  ForecastListener, onD
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_forecast, container, false);
         Log.d(TAG, "onCreateView: ");
-
         return v;
     }
 
     @Override
-    public void onStart() {
-        Log.d(TAG, "onStart: ");
-        super.onStart();
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        Log.d(TAG, "onActivityCreated: ");
+        new DownloadForecast(0).execute();
         initUI();
-
     }
-
-    @Override
-    public void onResume() {
-        Log.d(TAG, "onResume: ");
-        super.onResume();
-        new DownloadForecast(0, this).execute();
-    }
-
-
 
     private void initUI() {
         mMinWaveHeight = Objects.requireNonNull(getView()).findViewById(R.id.min_wave_height);
@@ -105,15 +96,13 @@ public class ForecastFragment extends Fragment implements  ForecastListener, onD
         initChart();
         initForecastViewModel();
         initPicker();
-
-
     }
 
     private void initForecastViewModel() {
         mForecastViewModel = ViewModelProviders.of(this).get(ForecastViewModel.class);
         mForecastViewModel.getAllForecasts().observe(this, forecasts -> {
             // Update the cached copy of the words in the adapter.
-            Log.d(TAG, "onCreateView: Observer Triggered");
+            Log.d(TAG, "Forecast Observer Triggered");
             new GetForecastsByDays(ForecastFragment.this, forecasts).execute();
 
         });
@@ -236,11 +225,6 @@ public class ForecastFragment extends Fragment implements  ForecastListener, onD
         mDays = days;
 
         mPickerAdapter.setDays(mDays);
-    }
-
-    @Override
-    public void onForecastsUpdated() {
-        Log.d(TAG, "onForecastsUpdated: ");
     }
 
     @Override

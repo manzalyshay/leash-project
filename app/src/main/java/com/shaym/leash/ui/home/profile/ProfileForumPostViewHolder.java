@@ -1,7 +1,5 @@
 package com.shaym.leash.ui.home.profile;
 
-import android.content.Intent;
-import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -18,11 +16,9 @@ import com.google.firebase.storage.StorageReference;
 import com.shaym.leash.R;
 import com.shaym.leash.logic.forum.Post;
 import com.shaym.leash.logic.utils.FireBasePostsHelper;
-import com.shaym.leash.ui.forum.ForumPostActivity;
 
 import java.util.Objects;
 
-import static com.shaym.leash.ui.gear.GearPostActivity.EXTRA_POST_KEY;
 
 public class ProfileForumPostViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
@@ -94,10 +90,6 @@ public class ProfileForumPostViewHolder extends RecyclerView.ViewHolder implemen
 
     @Override
     public void onClick(View v) {
-        Intent intent = new Intent(mFragment.getActivity(), ForumPostActivity.class);
-        Bundle b = new Bundle();
-        b.putString(EXTRA_POST_KEY, mCurrentPost.key);
-        intent.putExtras(b); //Put your id to your next Intent
-        Objects.requireNonNull(mFragment.getActivity()).startActivity(intent);
+
     }
 }

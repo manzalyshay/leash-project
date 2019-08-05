@@ -1,9 +1,6 @@
 package com.shaym.leash.ui.gear;
 
 import android.annotation.SuppressLint;
-import android.content.Intent;
-import android.os.Bundle;
-import android.util.Log;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -12,28 +9,18 @@ import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.shaym.leash.R;
 import com.shaym.leash.logic.gear.GearPost;
 import com.shaym.leash.logic.user.Profile;
 import com.shaym.leash.logic.utils.FireBasePostsHelper;
-import com.shaym.leash.logic.utils.FireBaseUsersHelper;
 
-import java.util.List;
-import java.util.Objects;
-
-import static com.shaym.leash.logic.utils.CONSTANT.USERS_TABLE;
-import static com.shaym.leash.ui.gear.GearPostActivity.EXTRA_POST_KEY;
 import static com.shaym.leash.ui.home.chat.ChatActivity.getUid;
 
 class GearPostViewHolder extends RecyclerView.ViewHolder implements PopupMenu.OnMenuItemClickListener, View.OnClickListener {
@@ -146,11 +133,7 @@ class GearPostViewHolder extends RecyclerView.ViewHolder implements PopupMenu.On
 
     @Override
     public void onClick(View v) {
-        Intent intent = new Intent(mFragment.getActivity(), GearPostActivity.class);
-        Bundle b = new Bundle();
-        b.putString(EXTRA_POST_KEY, currentPost.key);
-        intent.putExtras(b); //Put your id to your next Intent
-        Objects.requireNonNull(mFragment.getActivity()).startActivity(intent);
+
     }
 }
 

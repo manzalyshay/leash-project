@@ -63,40 +63,43 @@ public class ForumFragment extends Fragment implements  View.OnClickListener, Fa
     private String mCurrentForum = GENERAL_POSTS;
     private RecyclerView mRecyclerView;
     private ForumAdapter mAdapter;
-    private DatabaseReference mDatabase;
     private Button mGeneralButton;
     private Button mTripsButton;
     private Button mSpotsButton;
     private Profile mUser;
     private UsersViewModel mUsersViewModel;
     private ForumViewModel mForumViewModel;
-    private List<Post> mGeneralPosts = new ArrayList<>();
-    private List<Post> mTripsPosts = new ArrayList<>();
-    private List<Post> mSpotsPosts = new ArrayList<>();
+
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        Log.d(TAG, "onCreateView: ");
         View v = inflater.inflate(R.layout.fragment_forum, container, false);
-        mDatabase = FirebaseDatabase.getInstance().getReference();
-        initUi(v);
-
         return v;
     }
 
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        Log.d(TAG, "onActivityCreated: ");
+        super.onActivityCreated(savedInstanceState);
+        initUi(Objects.requireNonNull(getView()));
+        initAdapter();
+
+        initUsersViewModel();
+        setForumViewModel();
+    }
 
     @Override
     public void onStart() {
         super.onStart();
-            initAdapter();
+        Log.d(TAG, "onStart: ");
     }
 
     @Override
     public void onResume() {
         super.onResume();
-
-        initUsersViewModel();
-        setForumViewModel();
+        Log.d(TAG, "onResume: ");
     }
 
     private void initUi(View v) {
@@ -117,13 +120,16 @@ public class ForumFragment extends Fragment implements  View.OnClickListener, Fa
     }
 
     private void initUsersViewModel() {
+        Log.d(TAG, "initUsersViewModel: ");
+
         mUsersViewModel = ViewModelProviders.of(this).get(UsersViewModel.class);
 
         LiveData<DataSnapshot> currentUserLiveData = mUsersViewModel.getCurrentUserDataSnapshotLiveData();
 
         currentUserLiveData.observe(this, dataSnapshot -> {
             if (dataSnapshot != null) {
-                Log.d(TAG, "initUsersViewModel: ");
+                Log.d(TAG, "Users View Model Observer Triggered ");
+
                 mUser = dataSnapshot.getValue(Profile.class);
                 mAdapter.setViewerProfile(mUser);
             }

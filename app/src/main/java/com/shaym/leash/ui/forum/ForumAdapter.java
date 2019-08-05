@@ -59,6 +59,7 @@ public class ForumAdapter extends RecyclerView.Adapter<PostViewHolder>{
     ForumAdapter( Fragment fragment) {
         Log.d(TAG, "ForumAdapter: ");
         mFragment = fragment;
+        setHasStableIds(true);
     }
 
     @NonNull
@@ -153,11 +154,13 @@ public class ForumAdapter extends RecyclerView.Adapter<PostViewHolder>{
     }
 
 
+    @Override
+    public int getItemViewType(int position) {
+        return position;
+    }
 
-
-
-
-
-
-
+    @Override
+    public long getItemId(int position) {
+        return position;
+    }
 }

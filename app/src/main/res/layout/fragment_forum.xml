@@ -1,55 +1,55 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-
-    android:layout_width="match_parent"
+<RelativeLayout android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:weightSum="10"
-    >
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:orientation="horizontal"
-        android:layout_weight="1"
-        android:weightSum="3">
-        <Button
-            android:id="@+id/general_forum_button"
-            android:layout_width="0dp"
-            android:layout_weight="1"
+    android:fitsSystemWindows="true"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/rounded_button_unchecked"
-            android:text="@string/general_menu_title"
-            android:textColor="@color/bottom_nav_bg_color"
-            android:textStyle="bold"
-            android:layout_marginEnd="2dp" />
+            android:id="@+id/forum_buttons"
+            android:layout_marginTop="10dp"
 
-        <Button
-            android:id="@+id/spots_forum_button"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:background="@drawable/rounded_button_unchecked"
-            android:text="@string/spots_menu_title"
-            android:textColor="@color/bottom_nav_bg_color"
-            android:layout_marginEnd="2dp"
-            android:textStyle="bold" />
+            android:orientation="horizontal"
+            android:gravity="top"
+            android:weightSum="3">
+            <Button
+                android:id="@+id/general_forum_button"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:background="@drawable/rounded_button_unchecked"
+                android:text="@string/general_menu_title"
+                android:textColor="@color/bottom_nav_bg_color"
+                android:textStyle="bold"
+                android:layout_marginEnd="2dp" />
 
-        <Button
-            android:id="@+id/trips_forum_button"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:background="@drawable/rounded_button_unchecked"
-            android:text="@string/trips_menu_title"
-            android:textColor="@color/bottom_nav_bg_color"
-            android:textStyle="bold" />
+            <Button
+                android:id="@+id/spots_forum_button"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:background="@drawable/rounded_button_unchecked"
+                android:text="@string/spots_menu_title"
+                android:textColor="@color/bottom_nav_bg_color"
+                android:layout_marginEnd="2dp"
+                android:textStyle="bold" />
 
-    </LinearLayout>
+            <Button
+                android:id="@+id/trips_forum_button"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:background="@drawable/rounded_button_unchecked"
+                android:text="@string/trips_menu_title"
+                android:textColor="@color/bottom_nav_bg_color"
+                android:textStyle="bold" />
+
+        </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/posts_list"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="8"/>
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="40dp"
 
-</LinearLayout>
+            android:layout_below="@id/forum_buttons"/>
+    </RelativeLayout>

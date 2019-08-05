@@ -10,17 +10,23 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.shaym.leash.R;
+import com.shaym.leash.logic.cameras.CameraObject;
+import com.shaym.leash.logic.utils.FireBasePostsHelper;
 
 import static com.shaym.leash.ui.home.cameras.CamerasFragment.CAMERA_PARCE;
 
 public class WebViewPlayerFragment extends Fragment {
     private WebView mWebview;
-    private Camera mCurrentCamera;
+    private CameraObject mCurrentCameraObject;
     private TextView mTitleview;
     private TextView mLocationView;
+    private ImageView mSponserLogo;
+    private ProgressBar mSponserLogoPbar;
 
     @Nullable
     @Override
@@ -29,6 +35,8 @@ public class WebViewPlayerFragment extends Fragment {
         mTitleview = v.findViewById(R.id.title_view);
         mLocationView = v.findViewById(R.id.location_view);
         mWebview = v.findViewById(R.id.webview);
+        mSponserLogo = v.findViewById(R.id.sponsor_logo);
+        mSponserLogoPbar = v.findViewById(R.id.sponsor_logo_pbar);
 
         mWebview.setWebViewClient(new myWebClient());
         mWebview.getSettings().setJavaScriptEnabled(true);
@@ -38,8 +46,8 @@ public class WebViewPlayerFragment extends Fragment {
 
         // 1. Get the object in onCreate();
         if (getArguments() != null) {
-            mCurrentCamera = getArguments().getParcelable(CAMERA_PARCE);
-            updateCamera(mCurrentCamera);
+            mCurrentCameraObject = getArguments().getParcelable(CAMERA_PARCE);
+            updateCamera(mCurrentCameraObject);
         }
 
         return v;
@@ -49,11 +57,13 @@ public class WebViewPlayerFragment extends Fragment {
         return mWebview;
     }
 
-    public void updateCamera(Camera cam){
-        mCurrentCamera = cam;
-        mWebview.loadUrl(mCurrentCamera.getUrl());
-        mTitleview.setText(mCurrentCamera.getBeachName());
-        mLocationView.setText(mCurrentCamera.getLocation());
+    public void updateCamera(CameraObject cam){
+        mCurrentCameraObject = cam;
+        mWebview.loadUrl(mCurrentCameraObject.getUrl());
+        mTitleview.setText(mCurrentCameraObject.getLocation());
+        mLocationView.setText(mCurrentCameraObject.getCity());
+        FireBasePostsHelper.getInstance().attachPic(mCurrentCameraObject.mSponsorPicRef, mSponserLogo, mSponserLogoPbar, 30, 30);
+
     }
 
 

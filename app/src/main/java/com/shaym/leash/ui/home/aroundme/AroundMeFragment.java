@@ -66,7 +66,7 @@ import static com.google.android.gms.maps.GoogleMap.OnMyLocationButtonClickListe
  */
 
 @RuntimePermissions
-public class AroundMeFragment extends Fragment implements OnMapReadyCallback, OnMyLocationButtonClickListener, UsersHelperListener,
+public class AroundMeFragment extends Fragment implements OnMapReadyCallback, OnMyLocationButtonClickListener,
         OnMarkerClickListener {
     private GoogleMap mGoogleMap;
     private FusedLocationProviderClient mFusedLocationClient;
@@ -89,14 +89,17 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        Log.d(TAG, "onActivityCreated: ");
         mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.googleMap);
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(Objects.requireNonNull(getActivity()));
 
         AroundMeFragmentPermissionsDispatcher.getCurrentLocationWithPermissionCheck(this);
     }
+
+
 
     @SuppressLint("MissingPermission")
     @NeedsPermission(ACCESS_COARSE_LOCATION)
@@ -214,7 +217,7 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
 
                 Marker m = mGoogleMap.addMarker(new MarkerOptions()
                         .position(markerlocation.get(user))
-                        .title(user.getDisplayname()));
+                        .snippet(user.getUid()));
                 final PoiTarget pt = new PoiTarget(m);
 
                 poiTargets.add(pt);
@@ -274,6 +277,7 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
         mGoogleMap.setMyLocationEnabled(true);
 
         mGoogleMap.setOnMyLocationButtonClickListener(this);
+        googleMap.setOnMarkerClickListener(this);
 
         initUsersViewModel();
     }
@@ -332,7 +336,7 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
 
         for (int i = 0; i<mAllUsers.size(); i++) {
             Profile user = mAllUsers.get(i);
-            if (marker.getTitle().equals(user.getDisplayname())) {
+            if (marker.getSnippet().equals(user.getUid())) {
                 FireBasePostsHelper.getInstance().showProfilePopup(user, this);
             }
         }
@@ -340,10 +344,7 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
         return false;
     }
 
-    @Override
-    public void onUserByIDLoaded(Profile userbyID) {
 
-    }
 
 
     class PoiTarget implements Target {

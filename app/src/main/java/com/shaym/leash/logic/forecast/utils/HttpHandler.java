@@ -1,4 +1,4 @@
-package com.shaym.leash.logic.forecast.http;
+package com.shaym.leash.logic.forecast.utils;
 
 import android.util.Log;
 

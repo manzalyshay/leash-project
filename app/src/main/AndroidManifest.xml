@@ -27,15 +27,6 @@
         android:hardwareAccelerated="true"
         android:networkSecurityConfig="@xml/network_secuirty_config">
 
-        <provider
-            android:name="androidx.core.content.FileProvider"
-            android:authorities="com.shaym.leash.fileprovider"
-            android:exported="false"
-            android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/provider_paths"/>
-        </provider>
 
 
 
@@ -73,9 +64,8 @@
 
         </activity>
         <activity android:name="com.shaym.leash.ui.home.HomeActivity"
-            android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
-            android:alwaysRetainTaskState="true"
-            android:windowSoftInputMode="adjustResize">
+            android:windowSoftInputMode="stateHidden|adjustPan"
+            >
 
         </activity>
         <activity android:name="com.shaym.leash.ui.home.chat.ChatActivity"
@@ -86,20 +76,8 @@
 
         </activity>
 
-        <activity android:name="com.shaym.leash.ui.gear.GearPostActivity"
-            android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
-            android:alwaysRetainTaskState="true"
-            android:noHistory="true"
-            android:windowSoftInputMode="adjustPan">
-        </activity>
 
-        <activity android:name="com.shaym.leash.ui.forum.ForumPostActivity"
-            android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
-            android:alwaysRetainTaskState="true"
-            android:noHistory="true"
-            android:windowSoftInputMode="adjustPan">
 
-        </activity>
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_channel_id"
             android:value="@string/default_notification_channel_id" />
