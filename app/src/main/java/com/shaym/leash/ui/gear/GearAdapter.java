@@ -99,11 +99,11 @@ public class GearAdapter extends RecyclerView.Adapter<GearPostViewHolder> {
             case LEASHES_POSTS:
                 return mLeashPosts.size();
             case FINS_POSTS:
-                mFinsPosts.size();
+                return mFinsPosts.size();
             case CLOTHING_POSTS:
-                mClothingPosts.size();
+                return mClothingPosts.size();
             case OTHER_POSTS:
-                mOtherPosts.size();
+                return mOtherPosts.size();
         }
 
         return 0;

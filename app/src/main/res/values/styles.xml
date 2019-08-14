@@ -16,7 +16,11 @@
 
     </style>
 
-
+    <style name="sendbuttonStyle" parent="@android:style/Widget.Button">
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/send_btn_colors</item>
+        <item name="android:textSize">18sp</item>
+    </style>
 
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar">
         <item name="colorPrimary">@color/bottom_nav_bg_color</item>

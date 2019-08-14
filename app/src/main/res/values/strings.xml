@@ -182,6 +182,7 @@
     <string name="km_h">KM/h</string>
     <string name="gender">Gender</string>
     <string name="pick_image_intent_text">Pick Image</string>
+    <string name="comments_postfix">תגובות</string>
 
 
     <string-array name="forum_categories_array">

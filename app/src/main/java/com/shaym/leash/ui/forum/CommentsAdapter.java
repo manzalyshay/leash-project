@@ -32,7 +32,6 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.Commen
     }
 
 
-
     public void setComments(List<Comment> newComments) {
         if (!mComments.isEmpty()) {
             CommentDiffCallback commentDiffCallback = new CommentDiffCallback(mComments, newComments);

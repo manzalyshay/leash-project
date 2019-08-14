@@ -18,6 +18,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProviders;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -34,6 +35,8 @@ import com.shaym.leash.logic.gear.GearPost;
 import com.shaym.leash.logic.user.Profile;
 import com.shaym.leash.logic.user.UsersViewModel;
 import com.shaym.leash.logic.utils.FireBasePostsHelper;
+import com.shaym.leash.logic.utils.PostDiffCallback;
+import com.shaym.leash.logic.utils.UserDiffCallback;
 import com.shaym.leash.ui.home.profile.ProfileViewModel;
 import com.shaym.leash.ui.utils.FabClickedListener;
 
@@ -59,18 +62,17 @@ import static com.shaym.leash.logic.utils.CONSTANT.USER_POSTS;
 
 public class ForumFragment extends Fragment implements  View.OnClickListener, FabClickedListener {
     private static final String TAG = "ForumFragment";
-    // 0 - General, 1 - Spots, 2 - Trips, 3- All
     private String mCurrentForum = GENERAL_POSTS;
     private RecyclerView mRecyclerView;
     private ForumAdapter mAdapter;
     private Button mGeneralButton;
     private Button mTripsButton;
     private Button mSpotsButton;
-    private Profile mUser;
-    private UsersViewModel mUsersViewModel;
-    private ForumViewModel mForumViewModel;
-
-
+    private List<Profile> mAllUsers = new ArrayList<>();
+    private List<Post> mGeneralPosts = new ArrayList<>();
+    private List<Post> mTripsPosts = new ArrayList<>();
+    private List<Post> mSpotsPosts = new ArrayList<>();
+    private int lastPos = -1;
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -84,7 +86,6 @@ public class ForumFragment extends Fragment implements  View.OnClickListener, Fa
         Log.d(TAG, "onActivityCreated: ");
         super.onActivityCreated(savedInstanceState);
         initUi(Objects.requireNonNull(getView()));
-        initAdapter();
 
         initUsersViewModel();
         setForumViewModel();
@@ -100,6 +101,7 @@ public class ForumFragment extends Fragment implements  View.OnClickListener, Fa
     public void onResume() {
         super.onResume();
         Log.d(TAG, "onResume: ");
+        mRecyclerView.scrollToPosition(0);
     }
 
     private void initUi(View v) {
@@ -112,29 +114,20 @@ public class ForumFragment extends Fragment implements  View.OnClickListener, Fa
         mSpotsButton.setOnClickListener(this);
         mTripsButton.setOnClickListener(this);
 
-        mRecyclerView = v.findViewById(R.id.posts_list);
+        mRecyclerView = v.findViewById(R.id.forum_posts_list);
 
         mRecyclerView.setHasFixedSize(true);
         ViewCompat.setNestedScrollingEnabled(mRecyclerView, false);
+
+        initAdapter();
 
     }
 
     private void initUsersViewModel() {
         Log.d(TAG, "initUsersViewModel: ");
 
-        mUsersViewModel = ViewModelProviders.of(this).get(UsersViewModel.class);
+        UsersViewModel mUsersViewModel = ViewModelProviders.of(this).get(UsersViewModel.class);
 
-        LiveData<DataSnapshot> currentUserLiveData = mUsersViewModel.getCurrentUserDataSnapshotLiveData();
-
-        currentUserLiveData.observe(this, dataSnapshot -> {
-            if (dataSnapshot != null) {
-                Log.d(TAG, "Users View Model Observer Triggered ");
-
-                mUser = dataSnapshot.getValue(Profile.class);
-                mAdapter.setViewerProfile(mUser);
-            }
-
-        });
 
         LiveData<DataSnapshot> allUserLiveData = mUsersViewModel.getAllUsersDataSnapshotLiveData();
 
@@ -146,7 +139,9 @@ public class ForumFragment extends Fragment implements  View.OnClickListener, Fa
                     Profile user = ds.getValue(Profile.class);
                     allusers.add(user);
                 }
-                mAdapter.updateUsers(allusers);
+                mAllUsers.clear();
+                mAllUsers.addAll(allusers);
+                mAdapter.updateUsers(mAllUsers);
             }
         });
 
@@ -160,41 +155,71 @@ public class ForumFragment extends Fragment implements  View.OnClickListener, Fa
             case R.id.general_forum_button:
                 setButtonChecked(mGeneralButton);
                 mCurrentForum = GENERAL_POSTS;
-                mAdapter.mPostType = mCurrentForum;
-                mAdapter.notifyDataSetChanged();
+
+                swapAdapter();
+                mAdapter.updateCurrentData(mGeneralPosts);
                 break;
 
             case R.id.spots_forum_button:
                 setButtonChecked(mSpotsButton);
                 mCurrentForum = SPOTS_POSTS;
-                mAdapter.mPostType = mCurrentForum;
-                mAdapter.notifyDataSetChanged();
+
+                swapAdapter();
+                mAdapter.updateCurrentData(mSpotsPosts);
 
                 break;
 
             case R.id.trips_forum_button:
                 setButtonChecked(mTripsButton);
                 mCurrentForum = TRIPS_POSTS;
-                mAdapter.mPostType = mCurrentForum;
-                mAdapter.notifyDataSetChanged();
+
+                swapAdapter();
+                mAdapter.updateCurrentData(mTripsPosts);
 
                 break;
         }
     }
 
-    private void initAdapter() {
-        // Set up Layout Manager, reverse layout
-        LinearLayoutManager mManager = new LinearLayoutManager(getActivity());
-        mManager.setReverseLayout(true);
-        mManager.setStackFromEnd(true);
-        mRecyclerView.setLayoutManager(mManager);
-
+    private void swapAdapter() {
         mAdapter = new ForumAdapter(this);
+        mAdapter.mPostType = mCurrentForum;
+        mAdapter.updateUsers(mAllUsers);
         mRecyclerView.setAdapter(mAdapter);
     }
 
+    private void initAdapter() {
+        Log.d(TAG, "initAdapter: ");
+        // Set up Layout Manager, reverse layout
+        mAdapter = new ForumAdapter(this);
+        mRecyclerView.setAdapter(mAdapter);
+
+        LinearLayoutManager mManager = new LinearLayoutManager(getActivity());
+        mManager.setReverseLayout(true);
+        mManager.setStackFromEnd(true);
+
+        mRecyclerView.setLayoutManager(mManager);
+
+        mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+
+                int pos = mManager.findFirstCompletelyVisibleItemPosition();
+                Log.d(TAG, "onScrollStateChanged: " + pos);
+                if (pos != -1 && pos != lastPos) {
+
+                    if (lastPos != -1){
+                        mAdapter.notifyItemChanged(lastPos, false);
+                    }
+                    mAdapter.notifyItemChanged(pos, true);
+                    lastPos = pos;
+                }
+            }
+        });
+    }
+
     private void setForumViewModel() {
-            mForumViewModel = ViewModelProviders.of(this).get(ForumViewModel.class);
+        ForumViewModel mForumViewModel = ViewModelProviders.of(this).get(ForumViewModel.class);
 
             LiveData<DataSnapshot> mGeneralPostsLiveData = mForumViewModel.getGeneralPostsLiveData();
             LiveData<DataSnapshot> mSpotsPostsLiveData = mForumViewModel.getSpotsPostsLiveData();
@@ -203,12 +228,18 @@ public class ForumFragment extends Fragment implements  View.OnClickListener, Fa
         mGeneralPostsLiveData.observe(this, dataSnapshot -> {
                 if (dataSnapshot != null) {
                     List<Post> generalposts = new ArrayList<>();
-
+                    Log.d(TAG, "setForumViewModel: Observer Triggered");
                     for (DataSnapshot ds : dataSnapshot.getChildren()) {
                         Post post = ds.getValue(Post.class);
                         generalposts.add(post);
                     }
-                    mAdapter.updateGeneralPostsData(generalposts);
+                    mGeneralPosts.clear();
+                    mGeneralPosts.addAll(generalposts);
+
+                    if (mCurrentForum.equals(GENERAL_POSTS)){
+                        mAdapter.updateCurrentData(mGeneralPosts);
+                    }
+
                 }
             });
 
@@ -220,9 +251,13 @@ public class ForumFragment extends Fragment implements  View.OnClickListener, Fa
                         Post post = ds.getValue(Post.class);
                         spotsposts.add(post);
                     }
-                    mAdapter.updateSpotsPostsData(spotsposts);
-
+                    mSpotsPosts.clear();
+                    mSpotsPosts.addAll(spotsposts);
                 }
+
+            if (mCurrentForum.equals(SPOTS_POSTS)){
+                mAdapter.updateCurrentData(mSpotsPosts);
+            }
             });
 
             mTripsPostsLiveData.observe(this, dataSnapshot -> {
@@ -234,8 +269,12 @@ public class ForumFragment extends Fragment implements  View.OnClickListener, Fa
                         tripsposts.add(post);
                     }
 
-                    mAdapter.updateTripsPostsData(tripsposts);
+                    mTripsPosts.clear();
+                    mTripsPosts.addAll(tripsposts);
 
+                    if (mCurrentForum.equals(TRIPS_POSTS)){
+                        mAdapter.updateCurrentData(mTripsPosts);
+                    }
                 }
             });
 
@@ -270,6 +309,15 @@ public class ForumFragment extends Fragment implements  View.OnClickListener, Fa
             e.printStackTrace();
         }
     }
+
+
+
+
+
+
+
+
+
 }
 
 

@@ -34,7 +34,7 @@
                                           <PersistentState>
                                             <option name="values">
                                               <map>
-                                                <entry key="url" value="jar:file:/Applications/Android%20Studio.app/Contents/plugins/android/lib/android.jar!/images/material_design_icons/navigation/ic_more_vert_black_24dp.xml" />
+                                                <entry key="url" value="jar:file:/Applications/Android%20Studio.app/Contents/plugins/android/lib/android.jar!/images/material_design_icons/navigation/ic_arrow_drop_up_black_24dp.xml" />
                                               </map>
                                             </option>
                                           </PersistentState>
@@ -56,9 +56,9 @@
                                   <option name="values">
                                     <map>
                                       <entry key="imageAsset" value="$PROJECT_DIR$/app/src/main/res/drawable/logo_toolbar.png" />
-                                      <entry key="outputName" value="ic_more_vert" />
+                                      <entry key="outputName" value="ic_expand" />
                                       <entry key="theme" value="CUSTOM" />
-                                      <entry key="themeColor" value="3a9298" />
+                                      <entry key="themeColor" value="75b4b9" />
                                     </map>
                                   </option>
                                 </PersistentState>
@@ -86,7 +86,7 @@
                                   <option name="values">
                                     <map>
                                       <entry key="backgroundLayerName" value="ic_launcher_background" />
-                                      <entry key="foregroundImage" value="$PROJECT_DIR$/../launcher_leash.png" />
+                                      <entry key="foregroundImage" value="$PROJECT_DIR$/../Screen Shot 2019-08-13 at 9.01.56 AM.png" />
                                       <entry key="foregroundLayerName" value="ic_launcher_foreground" />
                                       <entry key="outputName" value="leash_launcher" />
                                     </map>
@@ -136,6 +136,11 @@
                                 </PersistentState>
                               </value>
                             </entry>
+                          </map>
+                        </option>
+                        <option name="values">
+                          <map>
+                            <entry key="outputIconType" value="ACTIONBAR" />
                           </map>
                         </option>
                       </PersistentState>

@@ -13,8 +13,7 @@ public class PostViewModel extends ViewModel {
 
     private DatabaseReference POST_LIVE_DATA;
     private FirebaseQueryLiveData PostLiveData;
-    private DatabaseReference COMMENTS_LIVE_DATA;
-    private FirebaseQueryLiveData CommentsLiveData;
+
 
 
     @NonNull
@@ -27,15 +26,7 @@ public class PostViewModel extends ViewModel {
         PostLiveData = new FirebaseQueryLiveData(POST_LIVE_DATA);
     }
 
-    @NonNull
-    public FirebaseQueryLiveData getCommentsLiveData() {
-        return CommentsLiveData;
-    }
 
-    public void setCOMMENTS_LIVE_DATA(DatabaseReference COMMENTS_LIVE_DATA) {
-        this.COMMENTS_LIVE_DATA = COMMENTS_LIVE_DATA;
-        CommentsLiveData = new FirebaseQueryLiveData(COMMENTS_LIVE_DATA);
-    }
 
 
 

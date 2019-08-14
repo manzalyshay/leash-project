@@ -1,5 +1,6 @@
 package com.shaym.leash.logic.forum;
 
+import androidx.annotation.NonNull;
 import androidx.lifecycle.ViewModel;
 
 import com.google.firebase.database.DatabaseReference;
@@ -19,10 +20,13 @@ public class ForumViewModel extends ViewModel {
             FirebaseDatabase.getInstance().getReference().child(CONSTANT.FORUM_POSTS).child(SPOTS_POSTS);
     private static final DatabaseReference TRIPS_POSTS_REF =
             FirebaseDatabase.getInstance().getReference().child(CONSTANT.FORUM_POSTS).child(TRIPS_POSTS);
+    private DatabaseReference COMMENTS_LIVE_DATA;
 
     private final FirebaseQueryLiveData generalPostsLiveData = new FirebaseQueryLiveData(GENERAL_POSTS_REF);
     private final FirebaseQueryLiveData spotsPostsLiveData = new FirebaseQueryLiveData(SPOTS_POSTS_REF);
     private final FirebaseQueryLiveData tripsPostsLiveData = new FirebaseQueryLiveData(TRIPS_POSTS_REF);
+    private FirebaseQueryLiveData CommentsLiveData;
+
 
     public FirebaseQueryLiveData getGeneralPostsLiveData() {
         return generalPostsLiveData;
@@ -36,7 +40,15 @@ public class ForumViewModel extends ViewModel {
         return tripsPostsLiveData;
     }
 
+    @NonNull
+    public FirebaseQueryLiveData getCommentsLiveData() {
+        return CommentsLiveData;
+    }
 
+    public void setCOMMENTS_LIVE_DATA(DatabaseReference COMMENTS_LIVE_DATA) {
+        this.COMMENTS_LIVE_DATA = COMMENTS_LIVE_DATA;
+        CommentsLiveData = new FirebaseQueryLiveData(COMMENTS_LIVE_DATA);
+    }
 
 
 
