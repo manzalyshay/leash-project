@@ -7,12 +7,9 @@ import androidx.lifecycle.ViewModel;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.shaym.leash.logic.utils.FirebaseQueryLiveData;
 
 import java.util.Objects;
-
-import static com.shaym.leash.logic.utils.CONSTANT.USERS_TABLE;
 
 public class ProfileViewModel extends ViewModel {
 

@@ -6,7 +6,7 @@
 
         <TextView
             android:layout_alignParentTop="true"
-            android:id="@+id/gear_post_body"
+            android:id="@+id/gear_post_body_dialog"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="@color/bottom_nav_bg_color"

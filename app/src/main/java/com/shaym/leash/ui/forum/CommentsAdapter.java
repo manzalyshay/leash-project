@@ -1,9 +1,12 @@
 package com.shaym.leash.ui.forum;
 
 import android.view.LayoutInflater;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -13,8 +16,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.shaym.leash.R;
 import com.shaym.leash.logic.forum.Comment;
+import com.shaym.leash.logic.forum.Post;
+import com.shaym.leash.logic.gear.GearPost;
 import com.shaym.leash.logic.user.Profile;
 import com.shaym.leash.logic.utils.FireBasePostsHelper;
+import com.shaym.leash.logic.utils.FireBaseUsersHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +31,7 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.Commen
     private static final String TAG = "CommentsAdapter";
     private List<Comment> mComments = new ArrayList<>();
     private List<Profile> mAllUsers = new ArrayList<>();
+    private Post mCurrentPost;
 
     public void setAllUsers(List<Profile> AllUsers) {
         mAllUsers = AllUsers;
@@ -51,7 +58,8 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.Commen
     }
 
 
-    public CommentsAdapter() {
+    public CommentsAdapter(Post post) {
+        mCurrentPost = post;
     }
 
 
@@ -78,13 +86,15 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.Commen
     }
 
 
-    class CommentViewHolder extends RecyclerView.ViewHolder {
+    class CommentViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, PopupMenu.OnMenuItemClickListener {
 
         TextView authorView;
         TextView dateView;
         ImageView authorPic;
         ProgressBar progressBar;
         TextView bodyView;
+        ImageView settings;
+        Comment currentComment;
 
         CommentViewHolder(View itemView) {
             super(itemView);
@@ -94,10 +104,13 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.Commen
             bodyView = itemView.findViewById(R.id.comment_body);
             authorPic = itemView.findViewById(R.id.comment_photo);
             progressBar = itemView.findViewById(R.id.comment_photo_progressbar);
+            settings = itemView.findViewById(R.id.settings);
+            settings.setOnClickListener(this);
 
         }
 
         void bind(Comment comment, int position) {
+            currentComment = comment;
             bodyView.setText(comment.text);
 
 
@@ -117,6 +130,40 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.Commen
                 FireBasePostsHelper.getInstance().attachRoundPic(profile.getAvatarurl(), authorPic, progressBar, 100, 100);
             }
 
+        }
+
+        @Override
+        public void onClick(View v) {
+            showPopup(v);
+        }
+
+        public void showPopup(View v) {
+            PopupMenu popup = new PopupMenu(v.getContext(), v);
+            popup.setOnMenuItemClickListener(this);
+            MenuInflater inflater = popup.getMenuInflater();
+            inflater.inflate(R.menu.forumpost_settings_menu, popup.getMenu());
+            if (FireBaseUsersHelper.getInstance().getUid().equals(currentComment.uid)){
+                popup.getMenu().findItem(R.id.delete).setVisible(true);
+            }
+            popup.show();
+        }
+
+        @Override
+        public boolean onMenuItemClick(MenuItem item) {
+            switch (item.getItemId()) {
+                case R.id.delete:
+                    if (mCurrentPost instanceof GearPost) {
+                        FireBasePostsHelper.getInstance().deleteGearComment(currentComment, (GearPost)mCurrentPost);
+                    }
+                    else {
+                        FireBasePostsHelper.getInstance().deleteForumComment(currentComment, mCurrentPost);
+
+                    }
+                    return true;
+
+                default:
+                    return false;
+            }
         }
     }
 

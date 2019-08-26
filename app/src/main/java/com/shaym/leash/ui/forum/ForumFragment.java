@@ -23,6 +23,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.firebase.ui.database.FirebaseRecyclerOptions;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -35,15 +36,21 @@ import com.shaym.leash.logic.gear.GearPost;
 import com.shaym.leash.logic.user.Profile;
 import com.shaym.leash.logic.user.UsersViewModel;
 import com.shaym.leash.logic.utils.FireBasePostsHelper;
+import com.shaym.leash.logic.utils.FireBaseUsersHelper;
 import com.shaym.leash.logic.utils.PostDiffCallback;
 import com.shaym.leash.logic.utils.UserDiffCallback;
+import com.shaym.leash.ui.gear.NewGearPostDialog;
 import com.shaym.leash.ui.home.profile.ProfileViewModel;
 import com.shaym.leash.ui.utils.FabClickedListener;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
+import static com.facebook.Profile.getCurrentProfile;
 import static com.shaym.leash.logic.utils.CONSTANT.ALL_POSTS;
 import static com.shaym.leash.logic.utils.CONSTANT.BOARDS_POSTS;
 import static com.shaym.leash.logic.utils.CONSTANT.CHAT_CONVERSATIONS;
@@ -60,7 +67,7 @@ import static com.shaym.leash.logic.utils.CONSTANT.USER_POSTS;
  * Created by shaym on 2/14/18.
  */
 
-public class ForumFragment extends Fragment implements  View.OnClickListener, FabClickedListener {
+public class ForumFragment extends Fragment implements  View.OnClickListener {
     private static final String TAG = "ForumFragment";
     private String mCurrentForum = GENERAL_POSTS;
     private RecyclerView mRecyclerView;
@@ -72,7 +79,9 @@ public class ForumFragment extends Fragment implements  View.OnClickListener, Fa
     private List<Post> mGeneralPosts = new ArrayList<>();
     private List<Post> mTripsPosts = new ArrayList<>();
     private List<Post> mSpotsPosts = new ArrayList<>();
+    private FloatingActionButton mFab;
     private int lastPos = -1;
+    private Profile mUser;
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -91,6 +100,96 @@ public class ForumFragment extends Fragment implements  View.OnClickListener, Fa
         setForumViewModel();
     }
 
+    public void setCurrentPost(String postid){
+        Map<String, Integer> map = searchForPost(postid);
+        String category = "";
+        int pos = -1;
+        Iterator it = map.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry)it.next();
+            System.out.println(pair.getKey() + " = " + pair.getValue());
+            category = (String) pair.getKey();
+            pos = (int) pair.getValue();
+            it.remove(); // avoids a ConcurrentModificationException
+        }
+
+        switch (category){
+            case GENERAL_POSTS:
+                setButtonChecked(mGeneralButton);
+                mCurrentForum = GENERAL_POSTS;
+
+                swapAdapter();
+                mAdapter.updateCurrentData(mGeneralPosts);
+
+                break;
+
+            case SPOTS_POSTS:
+                setButtonChecked(mSpotsButton);
+                mCurrentForum = SPOTS_POSTS;
+
+                swapAdapter();
+                mAdapter.updateCurrentData(mSpotsPosts);
+
+                break;
+
+            case TRIPS_POSTS:
+                setButtonChecked(mTripsButton);
+                mCurrentForum = TRIPS_POSTS;
+
+                swapAdapter();
+                mAdapter.updateCurrentData(mTripsPosts);
+
+                break;
+
+        }
+
+        mRecyclerView.scrollToPosition(pos);
+    }
+
+
+    private  Map<String, Integer> searchForPost(String postid) {
+        Map<String, Integer> map = new HashMap<>();
+        String category = "";
+        int pos = -1;
+        List<Post> allPosts = new ArrayList<>();
+        allPosts.addAll(mGeneralPosts);
+        allPosts.addAll(mTripsPosts);
+        allPosts.addAll(mSpotsPosts);
+
+        for (int i=0; i<allPosts.size(); i++){
+            if (allPosts.get(i).key.equals(postid)){
+                category = allPosts.get(i).forum;
+                switch (category){
+                    case GENERAL_POSTS:
+                        for (int j=0; j<mGeneralPosts.size(); j++) {
+                            if (mGeneralPosts.get(j).key.equals(postid)) {
+                                pos = j;
+                            }
+                        }
+                        break;
+                    case TRIPS_POSTS:
+                        for (int j=0; j<mTripsPosts.size(); j++) {
+                            if (mTripsPosts.get(j).key.equals(postid)) {
+                                pos = j;
+                            }
+                        }
+                        break;
+                    case SPOTS_POSTS:
+                        for (int j=0; j<mSpotsPosts.size(); j++) {
+                            if (mSpotsPosts.get(j).key.equals(postid)) {
+                                pos = j;
+                            }
+                        }
+                        break;
+                }
+                break;
+
+            }
+        }
+        map.put(category, pos);
+        return map;
+    }
+
     @Override
     public void onStart() {
         super.onStart();
@@ -105,6 +204,8 @@ public class ForumFragment extends Fragment implements  View.OnClickListener, Fa
     }
 
     private void initUi(View v) {
+        mFab = v.findViewById(R.id.fab_new_post);
+        mFab.setOnClickListener(this);
         mGeneralButton = v.findViewById(R.id.general_forum_button);
         mSpotsButton = v.findViewById(R.id.spots_forum_button);
         mTripsButton = v.findViewById(R.id.trips_forum_button);
@@ -128,7 +229,6 @@ public class ForumFragment extends Fragment implements  View.OnClickListener, Fa
 
         UsersViewModel mUsersViewModel = ViewModelProviders.of(this).get(UsersViewModel.class);
 
-
         LiveData<DataSnapshot> allUserLiveData = mUsersViewModel.getAllUsersDataSnapshotLiveData();
 
         allUserLiveData.observe(this, dataSnapshot -> {
@@ -141,13 +241,13 @@ public class ForumFragment extends Fragment implements  View.OnClickListener, Fa
                 }
                 mAllUsers.clear();
                 mAllUsers.addAll(allusers);
-                mAdapter.updateUsers(mAllUsers);
+                mUser = FireBaseUsersHelper.getInstance().findProfile(FireBaseUsersHelper.getInstance().getUid(), mAllUsers);
+                mAdapter.updateUsers(mAllUsers, mUser);
             }
         });
 
 
     }
-
 
     @Override
     public void onClick(View v) {
@@ -177,13 +277,24 @@ public class ForumFragment extends Fragment implements  View.OnClickListener, Fa
                 mAdapter.updateCurrentData(mTripsPosts);
 
                 break;
+
+            case R.id.fab_new_post:
+                try {
+                    FragmentManager fm = Objects.requireNonNull(getActivity()).getSupportFragmentManager();
+                    NewForumPostDialog newForumPostDialog= NewForumPostDialog.newInstance(mCurrentForum);
+                    newForumPostDialog.show(fm, newForumPostDialog.getTag());
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+                break;
         }
     }
 
     private void swapAdapter() {
         mAdapter = new ForumAdapter(this);
         mAdapter.mPostType = mCurrentForum;
-        mAdapter.updateUsers(mAllUsers);
+        mAdapter.updateUsers(mAllUsers, mUser);
         mRecyclerView.setAdapter(mAdapter);
     }
 
@@ -297,18 +408,7 @@ public class ForumFragment extends Fragment implements  View.OnClickListener, Fa
 
     }
 
-    @Override
-    public void onFabClicked() {
-        Log.d(TAG, "onFabClicked: ");
-        try {
-            FragmentManager fm = Objects.requireNonNull(getActivity()).getSupportFragmentManager();
-            NewForumPostDialog newForumPostDialog= NewForumPostDialog.newInstance(mCurrentForum);
-            newForumPostDialog.show(fm, newForumPostDialog.getTag());
-        }
-        catch (Exception e){
-            e.printStackTrace();
-        }
-    }
+
 
 
 

@@ -117,9 +117,6 @@ public class ForecastFragment extends Fragment implements  ForecastListener, onD
         mChart.setScaleEnabled(true);
         mChart.setPinchZoom(true);
         // to use for it
-        MyMarkerView mv = new MyMarkerView(getContext(), R.layout.custom_marker_view);
-        mv.setChartView(mChart); // For bounds control
-        mChart.setMarker(mv); // Set the marker to the chart);
         mChart.getDescription().setText("");
 
         LimitLine llXAxis = new LimitLine(10f, "Index 10");

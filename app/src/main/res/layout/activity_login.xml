@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:animateLayoutChanges="true"
-    android:background="@drawable/grad_bg"
+    android:background="@color/white"
     tools:context="com.shaym.leash.ui.authentication.LoginActivity">
 
     <RelativeLayout
@@ -16,9 +16,12 @@
 
         <ImageView
             android:id="@+id/imgView_logo"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:layout_margin="20dp"
             android:adjustViewBounds="true"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
             android:scaleType="fitCenter"
             android:src="@mipmap/leash_launcher_round" />
 
@@ -38,15 +41,6 @@
                 android:visibility="invisible"
                 android:layout_marginTop="120dp" />
 
-            <TextView
-                android:id="@+id/tv_login"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:fontFamily="sans-serif-medium"
-                android:text="@string/login_label"
-                android:textColor="@color/white"
-                android:textSize="30sp" />
 
 
 
@@ -54,7 +48,7 @@
                 android:id="@+id/linlay1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/tv_login"
+                android:layout_alignParentTop="true"
                 android:layout_marginTop="20dp"
                 android:orientation="vertical">
 
@@ -68,65 +62,44 @@
                     android:layout_gravity="end">
 
                 </com.facebook.login.widget.LoginButton>
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="sans-serif-light"
-                        android:text="@string/email_label"
-                        android:textAllCaps="true"
-                        android:textColor="@color/white"
-                        android:textSize="15sp" />
 
-                    <EditText
+                    <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
-                        android:layout_height="40dp"
-                        android:layout_marginTop="5dp"
-                        android:background="@drawable/et_bg"
-                        android:fontFamily="sans-serif-light"
-                        android:paddingLeft="15dp"
-                        android:paddingRight="15dp"
-                        android:textColor="@color/white"
-                        android:textSize="15sp"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="10dp"
+                        android:theme="@style/TextLabel"
+                        android:layout_marginTop="5dp">
+
+                    <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/loginemailfield"
-                        android:singleLine="true"/>
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/email_label"
+                        android:singleLine="true"
+                        android:maxLength="60"
+                        />
+                    </com.google.android.material.textfield.TextInputLayout>
 
-                </LinearLayout>
 
-                <LinearLayout
+
+                <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="20dp"
-                    android:orientation="vertical">
+                    android:layout_margin="10dp"
+                    android:theme="@style/TextLabel"
+                    android:layout_marginTop="5dp">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="sans-serif-light"
-                        android:text="@string/password_label"
-                        android:textAllCaps="true"
-                        android:textColor="@color/white"
-                        android:textSize="15sp" />
-
-                    <EditText
-                        android:layout_width="match_parent"
-                        android:layout_height="40dp"
-                        android:layout_marginTop="5dp"
-                        android:background="@drawable/et_bg"
-                        android:fontFamily="sans-serif-light"
-                        android:paddingLeft="15dp"
-                        android:paddingRight="15dp"
-                        android:textColor="@color/white"
-                        android:textSize="15sp"
-                        android:inputType="textPassword"
+                    <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/loginpassfield"
-                        android:singleLine="true"/>
-
-                </LinearLayout>
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/password_label"
+                        android:inputType="textPassword"
+                        android:singleLine="true"
+                        android:maxLength="12"
+                        />
+                </com.google.android.material.textfield.TextInputLayout>
 
 
             </LinearLayout>
@@ -148,7 +121,6 @@
                 android:id="@+id/loginbtn"/>
 
 
-                 />
 
         </RelativeLayout>
 

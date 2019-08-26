@@ -43,33 +43,26 @@ public class UIHelper {
                 context.findViewById(R.id.profile_layout_toolbar).setVisibility(View.VISIBLE);
                 context.findViewById(R.id.back_icon_toolbar).setVisibility(View.GONE);
                 context.findViewById(R.id.back_icon_toolbar).setClickable(false);
-                context.findViewById(R.id.forecast_details_layout).setVisibility(View.GONE);
 
-                context.findViewById(R.id.profile_pic).setVisibility(View.GONE);
-                mHeaderView.setImageDrawable(context.getDrawable(R.drawable.wave_new));
-                context.findViewById(R.id.bottom_bar).setVisibility(View.VISIBLE);
+                context.findViewById(R.id.profile_pic_profilefragment).setVisibility(View.GONE);
 
                 break;
 
             case FORECAST_SELECTED:
-                mAppBar.setExpanded(true);
-                context.findViewById(R.id.profile_pic).setVisibility(View.GONE);
-                context.findViewById(R.id.forecast_details_layout).setVisibility(View.VISIBLE);
-                mHeaderView.setImageDrawable(context.getDrawable(R.drawable.low_wave));
+                mAppBar.setExpanded(false);
+                context.findViewById(R.id.profile_pic_profilefragment).setVisibility(View.GONE);
 
                 break;
 
             case FORUM_SELECTED:
                 mAppBar.setExpanded(false);
-                context.findViewById(R.id.profile_pic).setVisibility(View.GONE);
-                context.findViewById(R.id.forecast_details_layout).setVisibility(View.GONE);
+                context.findViewById(R.id.profile_pic_profilefragment).setVisibility(View.GONE);
 
                 break;
 
             case GEAR_SELECTED:
                 mAppBar.setExpanded(false);
-                context.findViewById(R.id.profile_pic).setVisibility(View.GONE);
-                context.findViewById(R.id.forecast_details_layout).setVisibility(View.GONE);
+                context.findViewById(R.id.profile_pic_profilefragment).setVisibility(View.GONE);
 
                 break;
 
@@ -79,9 +72,8 @@ public class UIHelper {
                 context.findViewById(R.id.profile_layout_toolbar).setVisibility(View.GONE);
                 context.findViewById(R.id.back_icon_toolbar).setVisibility(View.VISIBLE);
                 context.findViewById(R.id.back_icon_toolbar).setClickable(true);
-                context.findViewById(R.id.forecast_details_layout).setVisibility(View.GONE);
 
-                context.findViewById(R.id.profile_pic).setVisibility(View.VISIBLE);
+                context.findViewById(R.id.profile_pic_profilefragment).setVisibility(View.VISIBLE);
 
                 break;
 
@@ -91,8 +83,7 @@ public class UIHelper {
                 context.findViewById(R.id.profile_layout_toolbar).setVisibility(View.GONE);
                 context.findViewById(R.id.back_icon_toolbar).setVisibility(View.VISIBLE);
                 context.findViewById(R.id.back_icon_toolbar).setClickable(true);
-                context.findViewById(R.id.profile_pic).setVisibility(View.GONE);
-                context.findViewById(R.id.forecast_details_layout).setVisibility(View.GONE);
+                context.findViewById(R.id.profile_pic_profilefragment).setVisibility(View.GONE);
 
                 break;
 
@@ -102,9 +93,7 @@ public class UIHelper {
                 context.findViewById(R.id.profile_layout_toolbar).setVisibility(View.GONE);
                 context.findViewById(R.id.back_icon_toolbar).setVisibility(View.VISIBLE);
                 context.findViewById(R.id.back_icon_toolbar).setClickable(true);
-                context.findViewById(R.id.profile_pic).setVisibility(View.GONE);
-                context.findViewById(R.id.forecast_details_layout).setVisibility(View.GONE);
-                context.findViewById(R.id.bottom_bar).setVisibility(View.GONE);
+                context.findViewById(R.id.profile_pic_profilefragment).setVisibility(View.GONE);
 
                 break;
 
@@ -112,34 +101,9 @@ public class UIHelper {
         }
     }
 
-    public void showSnackBar(View v){
-        Snackbar snack = Snackbar.make(v, "HEYY", Snackbar.LENGTH_LONG);
-        View view = snack.getView();
-        FrameLayout.LayoutParams params =(FrameLayout.LayoutParams)view.getLayoutParams();
-        params.gravity = Gravity.TOP;
-        view.setLayoutParams(params);
-        snack.show();
 
-    }
 
-    public void setMenuItemSelected(View menuItemSelectedView, Activity context){
 
-        context.findViewById(R.id.bottom_nav_cameras_selectedindicator).setVisibility(View.GONE);
-        context.findViewById(R.id.bottom_nav_forecast_selectedindicator).setVisibility(View.GONE);
-        context.findViewById(R.id.bottom_nav_forum_selectedindicator).setVisibility(View.GONE);
-        context.findViewById(R.id.bottom_nav_gear_selectedindicator).setVisibility(View.GONE);
 
-        menuItemSelectedView.setVisibility(View.VISIBLE);
-    }
-
-    public void setCaSelected(View menuItemSelectedView, Activity context){
-
-        context.findViewById(R.id.bottom_nav_cameras_selectedindicator).setVisibility(View.GONE);
-        context.findViewById(R.id.bottom_nav_forecast_selectedindicator).setVisibility(View.GONE);
-        context.findViewById(R.id.bottom_nav_forum_selectedindicator).setVisibility(View.GONE);
-        context.findViewById(R.id.bottom_nav_gear_selectedindicator).setVisibility(View.GONE);
-
-        menuItemSelectedView.setVisibility(View.VISIBLE);
-    }
 
 }

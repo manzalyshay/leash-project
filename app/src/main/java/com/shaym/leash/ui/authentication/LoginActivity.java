@@ -51,20 +51,15 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     RelativeLayout rellay1, rellay2;
     private FirebaseAuth mAuth;
-    private Button mLoginButton;
-    private Button mSingUpButton;
-    private Button mResetPassButton;
     private EditText mLoginEmailField;
     private EditText mLoginPassField;
     private CallbackManager mCallbackManager;
     private Handler mSplasHandler = new Handler();
     private LoginButton mFBLoginBtn;
-    private DatabaseReference myRef;
     private AlertDialog mForgotPassDialog;
     private EditText mResetPassEmailInput;
     private ProgressBar mLoginProgressBar;
     private String mDisplayName;
-    private String mGender;
 
     private String mFBProfilePic = "";
     private String mFromUID= "";
@@ -75,7 +70,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         setContentView(R.layout.activity_login);
 
         mAuth = FirebaseAuth.getInstance();
-        myRef = FirebaseDatabase.getInstance().getReference();
 
         initUI();
         initFacebookLogin();
@@ -86,14 +80,13 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
         rellay1 = (RelativeLayout) findViewById(R.id.rellay1);
         rellay2 = (RelativeLayout) findViewById(R.id.rellay2);
-        mLoginButton = (Button) findViewById(R.id.loginbtn);
-        mSingUpButton = (Button) findViewById(R.id.signupb);
+        Button mLoginButton = (Button) findViewById(R.id.loginbtn);
+        Button mSingUpButton = (Button) findViewById(R.id.signupb);
         mLoginProgressBar = findViewById(R.id.loginprogressbar);
-        mResetPassButton = findViewById(R.id.forgotpass_btn);
+        Button mResetPassButton = findViewById(R.id.forgotpass_btn);
         mLoginEmailField = findViewById(R.id.loginemailfield);
         mLoginPassField = findViewById(R.id.loginpassfield);
-        mFBLoginBtn = findViewById(R.id.login_button);
-        mFBLoginBtn.setReadPermissions(Arrays.asList(EMAIL));
+
 
         mSingUpButton.setOnClickListener(this);
         mLoginButton.setOnClickListener(this);
@@ -133,9 +126,11 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     }
 
     private void initFacebookLogin() {
+        mFBLoginBtn = findViewById(R.id.login_button);
+        mFBLoginBtn.setPermissions(Arrays.asList(EMAIL));
         mCallbackManager = CallbackManager.Factory.create();
-        mFBLoginBtn.setReadPermissions("email", "public_profile");
-        LoginManager.getInstance().registerCallback(mCallbackManager, this);
+
+        mFBLoginBtn.registerCallback(mCallbackManager, this);
     }
 
     @Override
@@ -180,6 +175,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                         FirebaseUser user = mAuth.getCurrentUser();
                         UserProfileChangeRequest profileUpdate = new UserProfileChangeRequest.Builder()
                                 .setDisplayName(mDisplayName).build();
+                        assert user != null;
                         user.updateProfile(profileUpdate);
                         updateUI(user );
                     } else {
@@ -212,7 +208,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
             Bundle b = new Bundle();
             if (!mFBProfilePic.isEmpty()) {
-                FireBaseUsersHelper.getInstance().createUserInDB(mFBProfilePic, mGender, currentUser);
+                FireBaseUsersHelper.getInstance().createUserInDB(mFBProfilePic, "", currentUser);
 
             }
 
@@ -239,6 +235,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                     Toast.makeText(LoginActivity.this, "Email/Password is missing.",
                             Toast.LENGTH_SHORT).show();
                 } else {
+                    mLoginProgressBar.setVisibility(View.VISIBLE);
                     mAuth.signInWithEmailAndPassword(email.trim(), pass)
                             .addOnCompleteListener(this, task -> {
                                 if (task.isSuccessful()) {
@@ -247,6 +244,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                                     FirebaseUser user = mAuth.getCurrentUser();
                                     updateUI(user);
                                 } else {
+                                    mLoginProgressBar.setVisibility(View.GONE);
+
                                     // If sign in fails, display a message to the user.
                                     Log.w(TAG, "signInWithEmail:failure", task.getException());
                                     Toast.makeText(LoginActivity.this, "Authentication failed.",
@@ -307,7 +306,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                         String userId = loginResult.getAccessToken().getUserId();
                         mFBProfilePic = "https://graph.facebook.com/" + userId+ "/picture?type=large";
                         mDisplayName = firstName + " " + lastName;
-//                        mGender = response.getJSONObject().getString("gender");
 
 
                         handleFacebookAccessToken(loginResult.getAccessToken());

@@ -1,26 +1,33 @@
 <androidx.coordinatorlayout.widget.CoordinatorLayout android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:fitsSystemWindows="true"
     android:id="@+id/general_layout"
+    android:fitsSystemWindows="true"
     xmlns:android="http://schemas.android.com/apk/res/android">
+
+
 
     <include layout="@layout/layout_top_home" />
 
 
-        <androidx.viewpager.widget.ViewPager
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:layout_behavior=".ui.utils.ScrollingViewWithBottomNavigationBehavior"
-            android:id="@+id/container_home" />
+
+    <androidx.viewpager.widget.ViewPager
+        android:id="@+id/container_home"
+        android:layout_marginTop="10dp"
+        android:layout_width="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+
+        android:layout_height="match_parent" />
 
 
-    <include layout="@layout/layout_bottom_navigation_view"
+    <ProgressBar style="?android:attr/progressBarStyleSmall"
+        android:layout_height="150dp"
+        android:layout_width="150dp"
+        android:layout_gravity="center_horizontal|center_vertical"
+        android:id="@+id/leash_progressbar"
+
         />
 
-
-
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
-
 
 

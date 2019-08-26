@@ -24,7 +24,7 @@ import com.shaym.leash.logic.chat.ChatMessage;
 import com.shaym.leash.logic.chat.Conversation;
 import com.shaym.leash.logic.user.Profile;
 import com.shaym.leash.logic.utils.FireBasePostsHelper;
-import com.shaym.leash.ui.home.chat.ChatActivity;
+import com.shaym.leash.ui.home.chat.ChatDialog;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,18 +41,19 @@ public class ProfileConversationViewHolder extends RecyclerView.ViewHolder imple
     private ImageView deleteView;
 
     private TextView LastMessageView;
-    private StorageReference storageReference;
     private Fragment mFragment;
    private Profile mConversationPartner;
 
     ProfileConversationViewHolder(View itemView) {
         super(itemView);
-        FirebaseStorage storage = FirebaseStorage.getInstance();
-        storageReference = storage.getReference();
         convPartnerProgressBar = itemView.findViewById(R.id.post_author_photo_progressbar);
         convPartnerPic = itemView.findViewById(R.id.post_author_photo);
         convPartnerName = itemView.findViewById(R.id.post_author);
         LastMessageView = itemView.findViewById(R.id.post_body);
+        itemView.findViewById(R.id.comments_amount).setVisibility(View.GONE);
+        itemView.findViewById(R.id.comments_postfix).setVisibility(View.GONE);
+
+        itemView.findViewById(R.id.expand_icon).setVisibility(View.GONE);
 
         itemView.setOnClickListener(this);
     }
@@ -99,11 +100,7 @@ public class ProfileConversationViewHolder extends RecyclerView.ViewHolder imple
     @Override
     public void onClick(View v) {
 
-        Intent intent = new Intent(mFragment.getActivity(), ChatActivity.class);
-        Bundle b = new Bundle();
-        b.putString(ChatActivity.EXTRA_PARTNER_KEY, mConversationPartner.getUid());
-        intent.putExtras(b); //Put your id to your next Intent
-        Objects.requireNonNull(mFragment.getActivity()).startActivity(intent);
+        FireBasePostsHelper.getInstance().openChatWindow(mFragment, mConversationPartner.getUid());
 
     }
 }

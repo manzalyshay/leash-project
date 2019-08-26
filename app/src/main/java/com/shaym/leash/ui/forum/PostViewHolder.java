@@ -19,17 +19,13 @@ import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
 import com.shaym.leash.R;
 import com.shaym.leash.logic.forum.Comment;
 import com.shaym.leash.logic.forum.ForumViewModel;
@@ -40,11 +36,7 @@ import com.shaym.leash.logic.utils.FireBasePostsHelper;
 import com.shaym.leash.logic.utils.FireBaseUsersHelper;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Objects;
-
-import static com.shaym.leash.logic.utils.CONSTANT.SPOTS_POSTS;
 
 public class PostViewHolder extends RecyclerView.ViewHolder implements PopupMenu.OnMenuItemClickListener, View.OnClickListener, TextWatcher {
 
@@ -59,8 +51,8 @@ public class PostViewHolder extends RecyclerView.ViewHolder implements PopupMenu
     private ImageView postImage;
     private ProgressBar postImageProgressBar;
     private TextView numStarsView;
-    private TextView bodyView;
-    private Profile postProfile;
+    private EditText bodyView;
+    private Profile mPostProfile;
     private Post currentPost;
     private Fragment mFragment;
     private boolean isExpanded;
@@ -80,6 +72,8 @@ public class PostViewHolder extends RecyclerView.ViewHolder implements PopupMenu
     private RelativeLayout mCommentsLayout;
     private boolean isCommentExpanded;
     private boolean isArrowExpanded;
+    private Profile mUser;
+    private Button mSaveEditBtn;
 
     public PostViewHolder(View itemView) {
         super(itemView);
@@ -94,6 +88,31 @@ public class PostViewHolder extends RecyclerView.ViewHolder implements PopupMenu
         settingsView = itemView.findViewById(R.id.settings);
         numStarsView = itemView.findViewById(R.id.post_num_stars);
         bodyView = itemView.findViewById(R.id.post_body);
+        bodyView.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (!s.toString().isEmpty()){
+                    mSaveEditBtn.setEnabled(true);
+                }
+                else {
+                    mSaveEditBtn.setEnabled(false);
+
+                }
+
+            }
+        });
+        mSaveEditBtn = itemView.findViewById(R.id.save_edit_btn);
+        mSaveEditBtn.setOnClickListener(this);
         mExpandArrow = itemView.findViewById(R.id.expand_icon);
         itemView.setOnClickListener(this);
         mCommentField = itemView.findViewById(R.id.comment_field);
@@ -112,21 +131,23 @@ public class PostViewHolder extends RecyclerView.ViewHolder implements PopupMenu
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(mFragment.getContext());
         layoutManager.setItemPrefetchEnabled(true);
-//        layoutManager.setStackFromEnd(true);
-
+        layoutManager.setReverseLayout(true);
+        layoutManager.setStackFromEnd(true);
         mCommentsRecycler.setLayoutManager(layoutManager);
         // Listen for comments
-        mAdapter = new CommentsAdapter();
+        mAdapter = new CommentsAdapter(currentPost);
         mAdapter.setAllUsers(mAllUsers);
         mCommentsRecycler.setAdapter(mAdapter);
+
+
     }
 
 
-    public void bindToPost(Post post, Fragment fragment, Profile postprofile, List<Profile> allUsers) {
+    public void bindToPost(Post post, Fragment fragment,Profile user, List<Profile> allUsers) {
         mAllUsers = allUsers;
+        mPostProfile = FireBaseUsersHelper.getInstance().findProfile(post.uid, allUsers);
         mFragment = fragment;
-        postProfile = postprofile;
-
+        mUser = user;
         currentPost = post;
 
         settingsView.setOnClickListener(this::showPopup);
@@ -151,12 +172,12 @@ public class PostViewHolder extends RecyclerView.ViewHolder implements PopupMenu
             FireBasePostsHelper.getInstance().attachPic(post.images.get(0), postImage, postImageProgressBar, 200, 200);
         }
 
-        if (postprofile != null) {
-            FireBasePostsHelper.getInstance().attachRoundPic(postProfile.getAvatarurl(), authorPic, authorPicProgressBar, 100, 100);
-            FireBasePostsHelper.getInstance().attachRoundPic(FireBaseUsersHelper.getInstance().findProfile(getUid(), mAllUsers).getAvatarurl(), postCommentImage, postCommentImageProgressBar, 100, 100);
+        if (mPostProfile != null && mUser != null) {
+            FireBasePostsHelper.getInstance().attachRoundPic(mPostProfile.getAvatarurl(), authorPic, authorPicProgressBar, 100, 100);
+            FireBasePostsHelper.getInstance().attachRoundPic(mUser.getAvatarurl(), postCommentImage, postCommentImageProgressBar, 100, 100);
 
-            authorPic.setOnClickListener(v -> FireBasePostsHelper.getInstance().showProfilePopup(postProfile, mFragment));
-            authorView.setText(postProfile.getDisplayname());
+            authorPic.setOnClickListener(v -> FireBasePostsHelper.getInstance().showProfilePopup(mUser, mPostProfile, mFragment));
+            authorView.setText(mPostProfile.getDisplayname());
         }
 
         mForumViewModel = ViewModelProviders.of(fragment).get(ForumViewModel.class);
@@ -185,12 +206,6 @@ public class PostViewHolder extends RecyclerView.ViewHolder implements PopupMenu
     }
 
 
-
-
-    public String getUid() {
-        return Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
-    }
-
     public void showCommentForm(boolean state){
         if (state){
             if ((mCommentList.size() == 0 || isExpanded) && !isCommentExpanded) {
@@ -215,8 +230,10 @@ public class PostViewHolder extends RecyclerView.ViewHolder implements PopupMenu
         popup.setOnMenuItemClickListener(this);
         MenuInflater inflater = popup.getMenuInflater();
         inflater.inflate(R.menu.forumpost_settings_menu, popup.getMenu());
-        if (getUid().equals(currentPost.uid)){
+        if (mUser.getUid().equals(currentPost.uid)){
             popup.getMenu().findItem(R.id.delete).setVisible(true);
+            popup.getMenu().findItem(R.id.edit).setVisible(true);
+
         }
         popup.show();
     }
@@ -227,8 +244,11 @@ public class PostViewHolder extends RecyclerView.ViewHolder implements PopupMenu
             case R.id.delete:
                 FireBasePostsHelper.getInstance().deleteForumPost(currentPost);
                 return true;
-            case R.id.share:
-
+            case R.id.edit:
+                itemView.setOnClickListener(null);
+                setExpanded(false);
+                setEditable(true);
+                mSaveEditBtn.setVisibility(View.VISIBLE);
                 return true;
             default:
                 return false;
@@ -236,21 +256,48 @@ public class PostViewHolder extends RecyclerView.ViewHolder implements PopupMenu
     }
 
 
-    @Override
-    public void onClick(View v) {
-        if (!isExpanded) {
-            isExpanded = true;
+    private void setEditable(boolean isEditable){
+        if (isEditable) {
+            bodyView.setFocusableInTouchMode(true);
+            bodyView.setClickable(true);
+            bodyView.requestFocus();
+        }
+        else {
+            bodyView.setFocusable(false);
+            bodyView.setClickable(false);
+        }
+
+    }
+
+    private void setExpanded(boolean isExpanded){
+        if (isExpanded){
             setArrowExpanded(true);
             mCommentsLayout.setVisibility(View.VISIBLE);
             showCommentForm(true);
-
         }
         else {
-            isExpanded = false;
             setArrowExpanded(false);
             mCommentsLayout.setVisibility(View.GONE);
             showCommentForm(false);
+        }
 
+    }
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.item_post:
+                isExpanded = !isExpanded;
+                setExpanded(isExpanded);
+
+                break;
+
+            case R.id.save_edit_btn:
+                setEditable(false);
+                mSaveEditBtn.setVisibility(View.GONE);
+                FireBasePostsHelper.getInstance().updateForumPost(currentPost, bodyView.getText().toString().trim());
+                itemView.setOnClickListener(this);
+
+                break;
         }
     }
 
@@ -284,10 +331,9 @@ public class PostViewHolder extends RecyclerView.ViewHolder implements PopupMenu
     private void postComment() {
         // Create new comment object
         String commentText = mCommentField.getText().toString();
-        Comment comment = new Comment(postProfile.getUid() ,mCommentsReference.push().getKey(), new Date(), commentText);
 
         // Push the comment, it will appear in the list
-        mCommentsReference.push().setValue(comment);
+        FireBasePostsHelper.getInstance().writeNewComment(mUser.getUid(), currentPost.forum, currentPost.key, commentText );
 
         // Clear the field
         mCommentField.setText(null);

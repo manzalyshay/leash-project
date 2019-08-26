@@ -1,75 +1,32 @@
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/main_cams_content"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:weightSum="10">
 
-<RelativeLayout
+    >
+
+<com.google.android.material.tabs.TabLayout
     android:layout_width="match_parent"
-    android:layout_height="0dp"
-    android:layout_weight="0.5"
-    android:id="@+id/cameras_menu">
+    android:layout_height="wrap_content"
+    android:layout_alignParentTop="true"
+    android:id="@+id/cameras_menu"/>
 
-
-    <androidx.appcompat.widget.AppCompatTextView
-        android:id="@+id/telaviv_label"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textStyle="bold"
-        android:text="@string/telaviv_location"
-        android:layout_marginEnd="15dp"
-        android:layout_alignParentStart="true"
-        android:background="@drawable/underline_cameras"
-        />
-
-
-    <androidx.appcompat.widget.AppCompatTextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textStyle="bold"
-        android:id="@+id/herzelia_label"
-        android:layout_marginEnd="15dp"
-        android:text="@string/herzelia_location"
-        android:layout_toEndOf="@id/telaviv_label"/>
-
-    <androidx.appcompat.widget.AppCompatTextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textStyle="bold"
-        android:id="@+id/ceasara_label"
-        android:layout_marginEnd="15dp"
-
-        android:text="@string/ceasearea_camtitle"
-        android:layout_toEndOf="@id/herzelia_label"/>
-
-    <androidx.appcompat.widget.AppCompatTextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textStyle="bold"
-        android:id="@+id/ashdod_label"
-        android:layout_marginEnd="15dp"
-
-        android:text="@string/ashdod_location"
-        android:layout_toEndOf="@id/ceasara_label"/>
-
-
-</RelativeLayout>
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/cameras_list"
-
+        android:layout_marginTop="10dp"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="2"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/cameras_menu"
+        android:layout_marginBottom="10dp"
         android:nestedScrollingEnabled="true" />
 
     <FrameLayout
         android:id="@+id/player_fragment_container"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="5">
+        android:layout_below="@id/cameras_list"
+        android:layout_height="330dp">
 
     </FrameLayout>
 
-</LinearLayout>
+</RelativeLayout>

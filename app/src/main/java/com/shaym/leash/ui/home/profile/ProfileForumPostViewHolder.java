@@ -16,6 +16,7 @@ import com.google.firebase.storage.StorageReference;
 import com.shaym.leash.R;
 import com.shaym.leash.logic.forum.Post;
 import com.shaym.leash.logic.utils.FireBasePostsHelper;
+import com.shaym.leash.ui.home.HomeActivity;
 
 import java.util.Objects;
 
@@ -90,6 +91,7 @@ public class ProfileForumPostViewHolder extends RecyclerView.ViewHolder implemen
 
     @Override
     public void onClick(View v) {
-
+        HomeActivity.mSelectedPostID = mCurrentPost.key;
+        HomeActivity.mTablayout.selectTab(HomeActivity.mTablayout.getTabAt(2));
     }
 }

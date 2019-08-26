@@ -43,7 +43,6 @@
                 android:id="@+id/linlay1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/tv_login"
                 android:layout_marginTop="70dp"
                 android:orientation="vertical">
 
@@ -80,7 +79,7 @@
                         android:layout_height="wrap_content"
                         android:hint="@string/email_label"
                         android:singleLine="true"
-                        android:maxLength="20"
+                        android:maxLength="60"
                         />
 
                 </com.google.android.material.textfield.TextInputLayout>
@@ -100,7 +99,7 @@
                         android:hint="@string/password_label"
                         android:singleLine="true"
                         android:inputType="textPassword"
-                        android:maxLength="20"
+                        android:maxLength="12"
                         />
 
                 </com.google.android.material.textfield.TextInputLayout>

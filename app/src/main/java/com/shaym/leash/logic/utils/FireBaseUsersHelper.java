@@ -141,15 +141,6 @@ public class FireBaseUsersHelper {
         }
     }
 
-    private void saveUser(Profile mUser){
-        try{
-            mDatabase.child(USERS_TABLE).child(getUid()).setValue(mUser);
-        }
-        catch (Exception e){
-            Log.d(TAG,   e.toString());
-        }
-    }
-
     public void saveUserByID(String userUid, Profile userprofile){
         try{
             mDatabase.child(USERS_TABLE).child(userUid).setValue(userprofile);

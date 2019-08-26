@@ -240,6 +240,15 @@ public class ProfileFragment extends Fragment implements  View.OnClickListener, 
     public void onUserByIDLoaded(Profile userbyID) {
 
     }
+
+    public boolean haschatWith(String chatkey) {
+        for (int i=0; i<mAllConversations.size(); i++){
+            if (mAllConversations.get(i).key.equals(chatkey)){
+                return true;
+            }
+        }
+        return false;
+    }
 }
 
 

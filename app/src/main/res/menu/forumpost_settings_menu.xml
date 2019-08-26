@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@+id/delete"
-        android:title="מחק"
+        android:title="@string/delete"
         android:visible="false"/>
-    <item android:id="@+id/share"
-        android:title="שתף" />
+    <item android:id="@+id/edit"
+        android:title="@string/edit"
+        android:visible="false"/>
 </menu>

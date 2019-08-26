@@ -87,7 +87,7 @@
                     android:layout_marginStart="25dp"
                     android:id="@+id/shake_user"
 
-                    android:src="@drawable/surf_hand_shake"
+                    android:src="@drawable/hand_shake"
                     android:contentDescription="@string/send_email" />
 
             </LinearLayout>

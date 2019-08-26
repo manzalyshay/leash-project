@@ -41,7 +41,18 @@
             android:layout_toEndOf="@id/comments_postfix"
             android:id="@+id/expand_icon"
             android:src="@drawable/ic_expand"
+            android:layout_marginEnd="15dp"
             android:layout_height="32dp" />
+
+            <Button
+                android:layout_toEndOf="@id/expand_icon"
+                android:id="@+id/save_edit_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:enabled="false"
+                style="@style/Base.Widget.AppCompat.Button.Borderless"
+                android:text="@string/ok"/>
         </RelativeLayout>
 
         <RelativeLayout
@@ -106,7 +117,7 @@
                 android:maxLines="1"
                 android:textDirection="locale"
                 android:textSize="13sp"
-                android:hint="@string/write_a_message_hint"/>
+                android:hint="@string/write_a_comment"/>
 
             <Button
                 android:layout_alignParentEnd="true"
@@ -114,8 +125,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:enabled="false"
-                style="@style/sendbuttonStyle"
-                android:background="@drawable/send_btn_bg"
+                style="@style/Base.Widget.AppCompat.Button.Borderless"
                 android:text="@string/send_label"/>
 
         </RelativeLayout>

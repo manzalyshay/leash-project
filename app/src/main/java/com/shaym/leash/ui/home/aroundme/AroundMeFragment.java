@@ -2,11 +2,8 @@ package com.shaym.leash.ui.home.aroundme;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -34,12 +31,10 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.database.DataSnapshot;
 import com.shaym.leash.R;
-import com.shaym.leash.logic.aroundme.CircleTransform;
 import com.shaym.leash.logic.user.Profile;
 import com.shaym.leash.logic.user.UsersViewModel;
 import com.shaym.leash.logic.utils.FireBasePostsHelper;
 import com.shaym.leash.logic.utils.FireBaseUsersHelper;
-import com.shaym.leash.logic.utils.UsersHelperListener;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
@@ -72,7 +67,9 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
     private FusedLocationProviderClient mFusedLocationClient;
     private static final String TAG = "AroundMeFragment";
     protected Set<PoiTarget> poiTargets = new HashSet<>();
-    HashMap<Profile, LatLng> markerlocation = new HashMap<>();
+    private HashMap<Profile, LatLng> markerlocation = new HashMap<>();
+    private List<Marker> markerList = new ArrayList<>();
+
     public static final float COORDINATE_OFFSET = 0.00002f; // You can change this value according to your need
     public int MAX_NUMBER_OF_MARKERS;
     private SupportMapFragment mapFragment;
@@ -198,35 +195,47 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
         return new LatLng(location[0], location[1]);
     }
 
-    private void addUsersMarkers() {
+    private void updateUsersMarkers() {
         //to fetch all the users of firebase Auth app
         if (mGoogleMap != null && !mAllUsers.isEmpty()) {
 
-            mGoogleMap.clear();
-            markerlocation.clear();
+            try {
+                markerlocation.clear();
+                poiTargets.clear();
+                MAX_NUMBER_OF_MARKERS = safeLongToInt(mAllUsers.size());
 
-            MAX_NUMBER_OF_MARKERS = safeLongToInt(mAllUsers.size());
+                for (int i = 0; i < mAllUsers.size(); i++) {
+                    Profile user = mAllUsers.get(i);
+                    LatLng latLng = coordinateForMarker(new LatLng(user.getCurrentlatitude(), user.getCurrentlongitude()), user);
+                    markerlocation.put(user, latLng);
 
-            for (int i = 0; i<mAllUsers.size(); i++) {
-                Profile user = mAllUsers.get(i);
-                LatLng latLng = coordinateForMarker(new LatLng(user.getCurrentlatitude(), user.getCurrentlongitude()), user);
-                markerlocation.put(user, latLng);
+                }
+                for (Profile user : markerlocation.keySet()) {
+
+                    Marker m = getMarkerFor(user);
+
+                    if (m == null) {
+                        m = mGoogleMap.addMarker(new MarkerOptions()
+                                .position(Objects.requireNonNull(markerlocation.get(user)))
+                                .snippet(user.getUid()));
+                    }
+                    else {
+                        m.setPosition(Objects.requireNonNull(markerlocation.get(user)));
+                    }
+                    PoiTarget pt = new PoiTarget(m);
+
+
+                    poiTargets.add(pt);
+                    FireBasePostsHelper.getInstance().attachRoundPicToPoiTarget(user.getAvatarurl(), pt, 100, 100);
+
+                }
+
+                moveCameraToCurrentLocation(new LatLng(mUser.getCurrentlatitude(), mUser.getCurrentlongitude()));
 
             }
-            for (Profile user : markerlocation.keySet()) {
-
-                Marker m = mGoogleMap.addMarker(new MarkerOptions()
-                        .position(markerlocation.get(user))
-                        .snippet(user.getUid()));
-                final PoiTarget pt = new PoiTarget(m);
-
-                poiTargets.add(pt);
-                attachImageToTarget(user.getAvatarurl(), pt);
-
+            catch (Exception e){
+                e.printStackTrace();
             }
-
-            moveCameraToCurrentLocation(new LatLng(mUser.getCurrentlatitude(), mUser.getCurrentlongitude()));
-
         }
 
 
@@ -234,30 +243,18 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
 
     }
 
-    private void attachImageToTarget(String avatarUrl, PoiTarget pt) {
-        if (!avatarUrl.isEmpty()) {
 
-            if (avatarUrl.charAt(0) == 'g') {
-                try {
-                    FireBaseUsersHelper.getInstance().getStorageReference().child(avatarUrl).getDownloadUrl().addOnSuccessListener(uri -> Picasso.get().load(uri).resize(100, 100).centerCrop().transform(new CircleTransform()).into(pt));
 
-                } catch (Exception e) {
-                    Log.d(TAG, "onDataChange: " + e.toString());
-                }
-            } else {
-                try {
-                    Picasso.get().load(Uri.parse((avatarUrl))).resize(100, 100).centerCrop().transform(new CircleTransform()).into(pt);
-
-                } catch (Exception e) {
-                    Log.d(TAG, "onDataChange: " + e.toString());
-                }
+    private Marker getMarkerFor(Profile user) {
+        for (int i=0; i<markerList.size(); i++){
+            if (markerList.get(i).getSnippet().equals(user.getDisplayname())){
+                return markerList.get(i);
             }
-
-        } else {
-            Picasso.get().load(R.drawable.launcher_leash).resize(100, 100).centerCrop().transform(new CircleTransform()).into(pt);
-
         }
+
+        return null;
     }
+
 
     @SuppressLint("MissingPermission")
     @NeedsPermission(ACCESS_COARSE_LOCATION)
@@ -286,15 +283,6 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
 
         mUsersViewModel = ViewModelProviders.of(this).get(UsersViewModel.class);
 
-        LiveData<DataSnapshot> currentUserLiveData = mUsersViewModel.getCurrentUserDataSnapshotLiveData();
-
-        currentUserLiveData.observe(this, dataSnapshot -> {
-            if (dataSnapshot != null) {
-                Log.d(TAG, "initUsersViewModel: ");
-                mUser = dataSnapshot.getValue(Profile.class);
-            }
-        });
-
         LiveData<DataSnapshot> allUserLiveData = mUsersViewModel.getAllUsersDataSnapshotLiveData();
         allUserLiveData.observe(this, dataSnapshot -> {
             if (dataSnapshot != null) {
@@ -304,8 +292,9 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
                     Profile user = ds.getValue(Profile.class);
                     mAllUsers.add(user);
                 }
+                mUser = FireBaseUsersHelper.getInstance().findProfile(FireBaseUsersHelper.getInstance().getUid(), mAllUsers);
 
-                addUsersMarkers();
+                updateUsersMarkers();
 
             }
         });
@@ -335,9 +324,9 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
     public boolean onMarkerClick(Marker marker) {
 
         for (int i = 0; i<mAllUsers.size(); i++) {
-            Profile user = mAllUsers.get(i);
-            if (marker.getSnippet().equals(user.getUid())) {
-                FireBasePostsHelper.getInstance().showProfilePopup(user, this);
+            Profile clickeduser = mAllUsers.get(i);
+            if (marker.getSnippet().equals(clickeduser.getUid())) {
+                FireBasePostsHelper.getInstance().showProfilePopup(mUser, clickeduser, this);
             }
         }
 
@@ -347,7 +336,7 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
 
 
 
-    class PoiTarget implements Target {
+    public class PoiTarget implements Target {
         private Marker m;
 
         PoiTarget(Marker m) { this.m = m; }

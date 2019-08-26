@@ -17,12 +17,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/post_content"
+
             android:lines="6"
             android:gravity="top"
             android:textSize="15sp"
             android:inputType="textMultiLine"
             android:maxLength="255"
-            android:textColor="@color/white"
+            android:textColor="@color/black"
             />
 
     </com.google.android.material.textfield.TextInputLayout>
@@ -50,7 +51,7 @@
                 android:inputType="number"
                 android:hint="@string/price"
                 android:maxLength="6"
-                android:textColor="@color/white"
+                android:textColor="@color/black"
                 />
 
         </com.google.android.material.textfield.TextInputLayout>
@@ -72,7 +73,7 @@
                 android:inputType="number"
                 android:hint="@string/phone"
                 android:maxLength="10"
-                android:textColor="@color/white"
+                android:textColor="@color/black"
 
                 />
         </com.google.android.material.textfield.TextInputLayout>

@@ -1,22 +1,22 @@
 package com.shaym.leash.ui.home;
 
-/**
- * Created by shaym on 2/14/18.
- */
-
-
+import android.Manifest;
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.Rect;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewTreeObserver;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
+import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -26,87 +26,88 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
-import androidx.core.view.GravityCompat;
-import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.viewpager.widget.ViewPager;
 
+import com.github.dhaval2404.imagepicker.ImagePicker;
 import com.google.android.material.appbar.AppBarLayout;
-import com.google.android.material.bottomappbar.BottomAppBar;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.tabs.TabLayout;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.shaym.leash.R;
 import com.shaym.leash.logic.user.Profile;
 import com.shaym.leash.logic.user.UsersViewModel;
 import com.shaym.leash.logic.utils.FireBasePostsHelper;
 import com.shaym.leash.logic.utils.FireBaseUsersHelper;
+import com.shaym.leash.logic.utils.onPictureUploadedListener;
+import com.shaym.leash.ui.authentication.LoginActivity;
 import com.shaym.leash.ui.forecast.ForecastFragment;
 import com.shaym.leash.ui.forum.ForumFragment;
 import com.shaym.leash.ui.gear.GearFragment;
 import com.shaym.leash.ui.home.aroundme.AroundMeFragment;
 import com.shaym.leash.ui.home.cameras.CamerasFragment;
 import com.shaym.leash.ui.home.profile.ProfileFragment;
-import com.shaym.leash.ui.utils.FabClickedListener;
-import com.shaym.leash.ui.utils.NavHelper;
 import com.shaym.leash.ui.utils.UIHelper;
 
-import static android.R.id.home;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.Objects;
 
-public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageChangeListener, View.OnClickListener {
+import permissions.dispatcher.NeedsPermission;
+import permissions.dispatcher.OnShowRationale;
+import permissions.dispatcher.PermissionRequest;
+import permissions.dispatcher.RuntimePermissions;
+
+import static com.shaym.leash.logic.utils.CONSTANT.PROFILE_PICS;
+
+@RuntimePermissions
+public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageChangeListener, View.OnClickListener, TabLayout.OnTabSelectedListener, PopupMenu.OnMenuItemClickListener, onPictureUploadedListener {
 
     private static final String TAG = "HomeActivity";
     public static final String FROM_UID_KEY = "FROM_UID_KEY";
+    public static final int CHOOSE_PROFILE_PIC = 98;
+
     public static final String PUSH_RECEIVED = "PUSH_RECEIVED";
-
-    private static final int ACTIVITY_NUM = 0;
     public final static String REGISTER_KEY = "REGISTER";
-
-
     private CamerasFragment mCamerasFragment;
     private AroundMeFragment mAroundMeFragment;
     private ProfileFragment mProfileFramgent;
     private ForecastFragment mForecastFragment;
     private ForumFragment mForumFragment;
     private GearFragment mGearFragment;
-    private FloatingActionButton mFab;
-    private FabClickedListener mFabClickedListener;
-    public ViewPager vp;
-    private DrawerLayout mDrawerLayout;
-    private NavigationView mNavigationView;
-    private NavHelper mNavHelper;
+
+    private ViewPager vp;
     private Profile mUser;
     private AppBarLayout mAppBar;
     private TextView mProfileIconUnreadCounter;
-    private LinearLayout mCamerasMenuItem;
-    private LinearLayout mForecastMenuItem;
-    private ImageView mSepearatorMenuItem;
-    private LinearLayout mForumMenuItem;
-    private LinearLayout mGearMenuItem;
     private ImageView mHeaderView;
-    private BottomAppBar mBottomAppBar;
-    private ProgressBar mProfileProgressBar;
-    private ImageView mProfilePicture;
+    private ProgressBar mProfileProgressBarProfileFragment;
+    private ImageView mProfilePictureProfileFragment;
     private ProgressBar mToolbarProfileProgressBar;
     private ImageView mToolbarProfilePicture;
+    public static TabLayout mTablayout;
     private boolean uiSet;
-    private UsersViewModel mUserViewModel;
-    private SectionPagerAdapter mSectionPagerAdapter;
-    private boolean mFabPage;
+    public static String mSelectedPostID;
+    private ProgressBar mLeashProgressBar;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate: ");
         super.onCreate(savedInstanceState);
         // In Activity's onCreate() for instance
-
-
         setContentView(R.layout.activity_home);
+        mLeashProgressBar = findViewById(R.id.leash_progressbar);
 
         LocalBroadcastManager.getInstance(this).registerReceiver(mPushReceiver,
                 new IntentFilter(PUSH_RECEIVED));
 
+    }
+
+    public boolean hasChatWith(String id){
+        return mProfileFramgent.haschatWith(id);
     }
 
     private BroadcastReceiver mPushReceiver = new BroadcastReceiver() {
@@ -114,20 +115,22 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
         public void onReceive(Context context, Intent intent) {
             // Get extra data included in the Intent
             Log.d(TAG, "onReceive: ");
-           if (mUser != null){
-               mUser.setUnreadcounter(mUser.getUnreadcounter() + 1);
-               FireBaseUsersHelper.getInstance().saveUserByID(mUser.getUid(), mUser);
-           }
+            if (mUser != null){
+                mUser.setUnreadcounter(mUser.getUnreadcounter() + 1);
+                FireBaseUsersHelper.getInstance().saveUserByID(mUser.getUid(), mUser);
+            }
 
         }
     };
 
-
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.d(TAG, "onActivityResult: ");
-        super.onActivityResult(requestCode, resultCode, data);
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        HomeActivityPermissionsDispatcher.onRequestPermissionsResult(this, requestCode, grantResults);
+    }
 
+    public void dismissProgressBar(){
+        mLeashProgressBar.setVisibility(View.GONE);
     }
 
 
@@ -152,6 +155,8 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
     private void updateUI() {
         Log.d(TAG, "updateUI: ");
         FireBasePostsHelper.getInstance().attachRoundPic(mUser.getAvatarurl(),mToolbarProfilePicture, mToolbarProfileProgressBar, 100, 100);
+        FireBasePostsHelper.getInstance().attachRoundPic(mUser.getAvatarurl(),mProfilePictureProfileFragment, mProfileProgressBarProfileFragment, 150, 150);
+
         uiSet = true;
 
         if (mUser.getUnreadcounter() > 0){
@@ -175,7 +180,7 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
             if (mFromUID !=null && !mFromUID.isEmpty()) {
                 Log.d(TAG, "handleIntent: " + mFromUID);
 //                ChatFragment cf = ChatFragment.newInstance(mFromUID);
-//                cf.show(getSupportFragmentManager(), "activity_chat");
+//                cf.show(getSupportFragmentManager(), "dialog_chat");
 
             }
 
@@ -185,7 +190,7 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
     private void initUsersViewModel() {
         // Obtain a new or prior instance of HotStockViewModel from the
         // ViewModelProviders utility class.
-        mUserViewModel = ViewModelProviders.of(this).get(UsersViewModel.class);
+        UsersViewModel mUserViewModel = ViewModelProviders.of(this).get(UsersViewModel.class);
 
         LiveData<DataSnapshot> currentUserLiveData = mUserViewModel.getCurrentUserDataSnapshotLiveData();
 
@@ -203,8 +208,6 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
 
 
     private void initUI() {
-//        new KeyboardUtil(this, findViewById(R.id.container_home));
-
         mAppBar = findViewById(R.id.app_bar);
 
         CoordinatorLayout.LayoutParams params = (CoordinatorLayout.LayoutParams) mAppBar.getLayoutParams();
@@ -218,38 +221,31 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
                 }
             });
             params.setBehavior(behavior);
-    }
+        }
 
         mAppBar.setLayoutParams(params);
 
-
-
-        mFab = findViewById(R.id.fab_new_post);
-        mFab.setOnClickListener(this);
         findViewById(R.id.location_icon_toolbar).setOnClickListener(this);
-        findViewById(R.id.profile_icon_toolbar).setOnClickListener(this);
-        findViewById(R.id.menu_icon_toolbar).setOnClickListener(this);
         findViewById(R.id.back_icon_toolbar).setOnClickListener(this);
         findViewById(R.id.back_icon_toolbar).setClickable(false);
         mProfileIconUnreadCounter = findViewById(R.id.profile_icon_unread_counter);
-        mCamerasMenuItem = findViewById(R.id.bottom_nav_cameras);
-        mCamerasMenuItem.setOnClickListener(this);
-        mForecastMenuItem = findViewById(R.id.bottom_nav_forecast);
-        mForecastMenuItem.setOnClickListener(this);
-        mSepearatorMenuItem = findViewById(R.id.bottom_nav_sepearator);
-        mForumMenuItem = findViewById(R.id.bottom_nav_forum);
-        mForumMenuItem.setOnClickListener(this);
-        mGearMenuItem = findViewById(R.id.bottom_nav_gear);
-        mGearMenuItem.setOnClickListener(this);
-        mBottomAppBar = findViewById(R.id.bottom_bar);
+        mTablayout = findViewById(R.id.tab_layout);
+        Objects.requireNonNull(Objects.requireNonNull(mTablayout.getTabAt(0)).getIcon()).setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN);
+        Objects.requireNonNull(Objects.requireNonNull(mTablayout.getTabAt(1)).getIcon()).setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN);
+        Objects.requireNonNull(Objects.requireNonNull(mTablayout.getTabAt(2)).getIcon()).setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN);
+        Objects.requireNonNull(Objects.requireNonNull(mTablayout.getTabAt(3)).getIcon()).setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN);
+        mTablayout.setSelectedTabIndicatorColor(getResources().getColor(R.color.active_bottommenu));
 
+        mTablayout.addOnTabSelectedListener(this);
 
-        UIHelper.getInstance().setMenuItemSelected(findViewById(R.id.bottom_nav_cameras_selectedindicator), this);
         mHeaderView = findViewById(R.id.header);
 
-        mProfilePicture = findViewById(R.id.profile_pic);
-        mProfileProgressBar = findViewById(R.id.profilepic_progressbar);
-        mToolbarProfilePicture = findViewById(R.id.profile_icon_toolbar);
+        mProfilePictureProfileFragment = findViewById(R.id.profile_pic_profilefragment);
+        mProfilePictureProfileFragment.setOnClickListener(this);
+
+        mProfileProgressBarProfileFragment = findViewById(R.id.profilepic_progressbar_profilefragment);
+        mToolbarProfilePicture = findViewById(R.id.profile_icon_pic);
+        mToolbarProfilePicture.setOnClickListener(this);
         mToolbarProfileProgressBar = findViewById(R.id.profile_icon_progressbar);
 
         mAroundMeFragment = new AroundMeFragment();
@@ -271,35 +267,13 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
         actionbar.setDisplayShowHomeEnabled(false);
         actionbar.setDisplayShowTitleEnabled(false);
 
-        View rootView = findViewById(R.id.general_layout);
-        rootView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
-                Rect r = new Rect();
-                rootView.getWindowVisibleDisplayFrame(r);
-                int heightDiff = rootView.getRootView().getHeight() - (r.bottom - r.top);
-
-                if (heightDiff > 100) { // if more than 100 pixels, its probably a keyboard...
-                    //ok now we know the keyboard is up...
-                    mBottomAppBar.setVisibility(View.GONE);
-                    mFab.setVisibility(View.GONE);
-
-                }else{
-                    //ok now we know the keyboard is down...
-                    mBottomAppBar.setVisibility(View.VISIBLE);
-                    if (mFabPage)
-                    mFab.setVisibility(View.VISIBLE);
-
-                }
-            }
-        });
 
         uiSet = true;
 
     }
 
     private void setupViewPager() {
-        mSectionPagerAdapter = new SectionPagerAdapter(getSupportFragmentManager());
+        SectionPagerAdapter mSectionPagerAdapter = new SectionPagerAdapter(getSupportFragmentManager());
         mSectionPagerAdapter.AddFragment(mCamerasFragment);
 //        sectionPagerAdapter.AddFragment(mVisualizeFragment);
         mSectionPagerAdapter.AddFragment(mForecastFragment);
@@ -313,6 +287,8 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
         vp.setClipToPadding(true);
         vp.setPadding(5,0,5,0);
         vp.addOnPageChangeListener(this);
+        Log.d(TAG, "setupViewPager: ");
+        vp.setOffscreenPageLimit(5);
 
     }
 
@@ -336,75 +312,50 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
 
     @Override
     public void onPageSelected(int position) {
-        Log.d(TAG, "onPageSelected: ");
+        Log.d(TAG, "onPageSelected: " + position);
         switch (position){
             case 0:
                 UIHelper.getInstance().updateToolBar(UIHelper.CAMERAS_SELECTED, this, mAppBar, mHeaderView );
-                UIHelper.getInstance().setMenuItemSelected(findViewById(R.id.bottom_nav_cameras_selectedindicator), this);
-                mSepearatorMenuItem.setVisibility(View.GONE);
-                mFab.hide();
-                mFabPage = false;
+
                 break;
 
             case 1:
                 UIHelper.getInstance().updateToolBar(UIHelper.FORECAST_SELECTED, this, mAppBar, mHeaderView );
-                UIHelper.getInstance().setMenuItemSelected(findViewById(R.id.bottom_nav_forecast_selectedindicator), this);
-                mSepearatorMenuItem.setVisibility(View.GONE);
-                mFab.hide();
-                mFabPage = false;
 
-//                mNavHelper.onNavigationItemSelected(mNavigationView.getMenu().findItem(FORECAST_ITEM_ID));
+
                 break;
 
 
             case 2:
                 UIHelper.getInstance().updateToolBar(UIHelper.FORUM_SELECTED, this, mAppBar, mHeaderView );
-                UIHelper.getInstance().setMenuItemSelected(findViewById(R.id.bottom_nav_forum_selectedindicator), this);
-                mSepearatorMenuItem.setVisibility(View.VISIBLE);
-                mFabClickedListener = mForumFragment;
-                mFab.show();
-                mFabPage = true;
-
-//                mNavHelper.onNavigationItemSelected(mNavigationView.getMenu().findItem(AROUNDME_FRAGMENT_ITEM_ID));
+                if (mSelectedPostID != null){
+                    mForumFragment.setCurrentPost(mSelectedPostID);
+                    mSelectedPostID = null;
+                }
                 break;
 
 
             case 3:
                 UIHelper.getInstance().updateToolBar(UIHelper.GEAR_SELECTED, this, mAppBar, mHeaderView );
-                UIHelper.getInstance().setMenuItemSelected(findViewById(R.id.bottom_nav_gear_selectedindicator), this);
-                mSepearatorMenuItem.setVisibility(View.VISIBLE);
-                mFabClickedListener = mGearFragment;
-                mFabPage = true;
-
-                mFab.show();
-//                mNavHelper.onNavigationItemSelected(mNavigationView.getMenu().findItem(GEAR_ITEM_ID));
+                if (mSelectedPostID != null){
+                    mGearFragment.setCurrentPost(mSelectedPostID);
+                    mSelectedPostID = null;
+                }
                 break;
 
             case 4:
                 UIHelper.getInstance().updateToolBar(UIHelper.PROFILE_SELECTED, this, mAppBar, mHeaderView );
-                mSepearatorMenuItem.setVisibility(View.GONE);
-                mFab.hide();
-                mFabPage = false;
-
-//                mNavHelper.onNavigationItemSelected(mNavigationView.getMenu().findItem(PROFILE_FRAGMENT_ITEM_ID));
+                FireBasePostsHelper.getInstance().attachRoundPic(mUser.getAvatarurl(), findViewById(R.id.profile_pic_profilefragment), findViewById(R.id.profilepic_progressbar_profilefragment), 100, 100);
                 break;
 
             case 5:
                 UIHelper.getInstance().updateToolBar(UIHelper.AROUNDME_SELECTED, this, mAppBar, mHeaderView );
-                mSepearatorMenuItem.setVisibility(View.GONE);
-                mFab.hide();
-                mFabPage = false;
 
-//                mNavHelper.onNavigationItemSelected(mNavigationView.getMenu().findItem(PROFILE_FRAGMENT_ITEM_ID));
                 break;
 
             case 6:
                 UIHelper.getInstance().updateToolBar(UIHelper.CHAT_SELECTED, this, mAppBar, mHeaderView );
-                mSepearatorMenuItem.setVisibility(View.GONE);
-                mFab.hide();
-                mFabPage = false;
 
-//                mNavHelper.onNavigationItemSelected(mNavigationView.getMenu().findItem(PROFILE_FRAGMENT_ITEM_ID));
                 break;
 
         }
@@ -416,46 +367,59 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
 
     }
 
+
+
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case home:
-                mDrawerLayout.openDrawer(GravityCompat.START);
-                return true;
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        Log.d(TAG, "onActivityResult: ");
+
+        if (resultCode == Activity.RESULT_OK && requestCode == CHOOSE_PROFILE_PIC) {
+            // File object will not be null for RESULT_OK
+            File file = ImagePicker.Companion.getFile(data);
+            FileInputStream fis = null;
+            try {
+                fis = new FileInputStream(file);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+
+            Bitmap selectedBitmap = BitmapFactory.decodeStream(fis);
+
+            FireBasePostsHelper.getInstance().uploadImage(this, PROFILE_PICS, selectedBitmap, this);
         }
-        return super.onOptionsItemSelected(item);
+
+    }
+    @OnShowRationale({Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA})
+    void showRationaleForExtStorage(final PermissionRequest request) {
+        new AlertDialog.Builder(this)
+                .setTitle("Permission Needed")
+                .setMessage("This permission is needed in order to upload image")
+                .setPositiveButton("OK", (dialog, which) -> request.proceed())
+                .setNegativeButton("Cancel", (dialog, which) -> request.cancel())
+                .show();
     }
 
+    @NeedsPermission({Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA})
+    public void pickImage() {
+        ImagePicker.Companion.with(this)
+                .crop(1f, 1f)	    		//Crop Square image(Optional)
+                .compress(1024)			//Final image size will be less than 1 MB(Optional)
+                .maxResultSize(1080, 1080)	//Final image resolution will be less than 1080 x 1080(Optional)
+                .start(CHOOSE_PROFILE_PIC);
+
+    }
 
 
     @Override
     public void onClick(View v) {
         switch (v.getId()){
-
-            case R.id.fab_new_post:
-                mFabClickedListener.onFabClicked();
-                break;
-
-            case R.id.bottom_nav_cameras:
             case R.id.back_icon_toolbar:
-
+                mTablayout.selectTab(mTablayout.getTabAt(0));
                 vp.setCurrentItem(0);
                 break;
 
-            case R.id.bottom_nav_forecast:
-                vp.setCurrentItem(1);
-                break;
-
-            case R.id.bottom_nav_forum:
-                vp.setCurrentItem(2);
-
-                break;
-
-            case R.id.bottom_nav_gear:
-                vp.setCurrentItem(3);
-                break;
-
-            case R.id.profile_icon_toolbar:
+            case R.id.profile_icon_pic:
                 vp.setCurrentItem(4);
                 break;
 
@@ -463,9 +427,10 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
                 vp.setCurrentItem(5);
                 break;
 
-            case R.id.menu_icon_toolbar:
-                mDrawerLayout.openDrawer(GravityCompat.START);
+            case R.id.profile_pic_profilefragment:
+                showPopup(findViewById(R.id.profile_pic_profilefragment));
                 break;
+
 
         }
     }
@@ -476,8 +441,79 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mPushReceiver);
 
     }
+
+    public void showPopup(View v) {
+        PopupMenu popup = new PopupMenu(this, v);
+        MenuInflater inflater = popup.getMenuInflater();
+        inflater.inflate(R.menu.menu_profile_pic, popup.getMenu());
+        popup.show();
+        popup.setOnMenuItemClickListener(this);
+    }
+
+    @Override
+    public boolean onMenuItemClick(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.choose_pic_action:
+                HomeActivityPermissionsDispatcher.pickImageWithPermissionCheck(this);
+                return true;
+            case R.id.logout_action:
+                FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+                firebaseAuth.addAuthStateListener(firebaseAuth1 -> {
+                    if (firebaseAuth1.getCurrentUser() == null){
+                        //Do anything here which needs to be done after signout is complete
+                        startActivity(new Intent(HomeActivity.this, LoginActivity.class));
+                        finish();
+                    }
+                });
+                firebaseAuth.signOut();
+
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    @Override
+    public void onTabSelected(TabLayout.Tab tab) {
+        Log.d(TAG, "onTabSelected: " + tab.getPosition());
+        Objects.requireNonNull(tab.getIcon()).setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN);
+
+        vp.setCurrentItem(tab.getPosition());
+
+    }
+
+    @Override
+    public void onTabUnselected(TabLayout.Tab tab) {
+        Objects.requireNonNull(tab.getIcon()).setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN);
+
+    }
+
+    @Override
+    public void onTabReselected(TabLayout.Tab tab) {
+
+    }
+
+    @Override
+    public void onPointerCaptureChanged(boolean hasCapture) {
+
+    }
+
+    @Override
+    public void onPictureUploaded(String uploadPath) {
+        Log.d(TAG, "onPictureUploaded: ");
+
+        if (mUser.getAvatarurl().charAt(0) != 'h') {
+            ArrayList<String> pics = new ArrayList<>();
+            pics.add(mUser.getAvatarurl());
+            FireBasePostsHelper.getInstance().deleteImagesFromStorage(pics);
+        }
+        mUser.setAvatarurl(uploadPath);
+        FireBaseUsersHelper.getInstance().saveUserByID(mUser.getUid(), mUser);
+    }
+
+    @Override
+    public void onUploadFailed() {
+        Log.d(TAG, "onUploadFailed: ");
+    }
 }
-
-
-
 

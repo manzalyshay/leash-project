@@ -1,7 +1,11 @@
 package com.shaym.leash.ui.home.cameras;
 
-import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -9,83 +13,76 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
 
+import com.google.android.material.tabs.TabLayout;
 import com.shaym.leash.R;
 import com.shaym.leash.logic.cameras.CameraObject;
 import com.shaym.leash.logic.cameras.CamerasListener;
 import com.shaym.leash.logic.cameras.CamerasViewModel;
 import com.shaym.leash.logic.cameras.DownloadCameras;
 import com.shaym.leash.logic.cameras.GetCamerasByCity;
-import com.shaym.leash.ui.utils.UIHelper;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import static com.shaym.leash.logic.utils.CONSTANT.ASHDOD;
-import static com.shaym.leash.logic.utils.CONSTANT.CAESAREA;
-import static com.shaym.leash.logic.utils.CONSTANT.HERZELIA;
 import static com.shaym.leash.logic.utils.CONSTANT.PLAYER_STREAM;
 import static com.shaym.leash.logic.utils.CONSTANT.TELAVIV;
-import static com.shaym.leash.logic.utils.CONSTANT.herzelia_location;
 
 /**
  * Created by shaym on 2/17/18.
  */
-public class CamerasFragment extends Fragment implements onCameraSelectedListener, View.OnClickListener, CamerasListener {
+public class CamerasFragment extends Fragment implements onCameraSelectedListener,
+        CamerasListener, TabLayout.OnTabSelectedListener {
 
     private CamerasAdapter mAdapter;
-    private List<CameraObject> mTelAvivCamerasList = new ArrayList<>();
-    private List<CameraObject> mAshdodCameraList = new ArrayList<>();
-    private List<CameraObject> mHerzeliaCameraList = new ArrayList<>();
-    private List<CameraObject> mCaesareaCameraList = new ArrayList<>();
+    private List<List<CameraObject>> mCamerasByCity = new ArrayList<>();
 
     private static final String TAG = "CamerasFragment";
     public static final String CAMERA_PARCE = "CAMERA_PARCE";
 
     private String currentTab = TELAVIV;
-    private TextView mTelavivCamerasButton;
-    private TextView mHerzeliaCamerasButton;
-    private TextView mAshdodCamerasButton;
-    private TextView mCaesareaCamerasButton;
+    private TabLayout mTabLayout;
     private RecyclerView mRecyclerView;
     private CamerasViewModel mCamerasViewModel;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull final LayoutInflater inflater, @Nullable final ViewGroup container, @Nullable Bundle savedInstanceState) {
+        Log.d(TAG, "onCreateView: ");
         return inflater.inflate(R.layout.fragment_cameras, container, false);
     }
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        Log.d(TAG, "onActivityCreated: ");
         super.onActivityCreated(savedInstanceState);
         initUI();
         initCamerasViewModel();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        Log.d(TAG, "onStart: ");
         new DownloadCameras().execute();
+
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.d(TAG, "onResume: ");
     }
 
     private void initUI() {
         mRecyclerView = Objects.requireNonNull(getView()).findViewById(R.id.cameras_list);
-        mAdapter = new CamerasAdapter(this, mTelAvivCamerasList);
+        mAdapter = new CamerasAdapter(this);
         LinearLayoutManager mManager = new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL, true);
         mRecyclerView.setLayoutManager(mManager);
         mRecyclerView.setAdapter(mAdapter);
-
-        mTelavivCamerasButton = getView().findViewById(R.id.telaviv_label);
-        mTelavivCamerasButton.setOnClickListener(this);
-        mHerzeliaCamerasButton = getView().findViewById(R.id.herzelia_label);
-        mHerzeliaCamerasButton.setOnClickListener(this);
-        mCaesareaCamerasButton = getView().findViewById(R.id.ceasara_label);
-        mCaesareaCamerasButton.setOnClickListener(this);
-        mAshdodCamerasButton = getView().findViewById(R.id.ashdod_label);
-        mAshdodCamerasButton.setOnClickListener(this);
-
+        mTabLayout = getView().findViewById(R.id.cameras_menu);
+        mTabLayout.addOnTabSelectedListener(this);
         setVideoViewPlayerFragment(null);
     }
 
@@ -149,84 +146,81 @@ public class CamerasFragment extends Fragment implements onCameraSelectedListene
         }
     }
 
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()){
-            case R.id.telaviv_label:
-                mAdapter.setCamerasList(mTelAvivCamerasList);
-                onCameraSelected(mTelAvivCamerasList.get(0));
-                setActiveButton(mTelavivCamerasButton);
-                currentTab = TELAVIV;
-                break;
-
-            case R.id.ashdod_label:
-                mAdapter.setCamerasList(mAshdodCameraList);
-                onCameraSelected(mAshdodCameraList.get(0));
-                setActiveButton(mAshdodCamerasButton);
-                currentTab = ASHDOD;
-
-                break;
-
-            case R.id.herzelia_label:
-                mAdapter.setCamerasList(mHerzeliaCameraList);
-                onCameraSelected(mHerzeliaCameraList.get(0));
-                setActiveButton(mHerzeliaCamerasButton);
-                currentTab = HERZELIA;
-
-                break;
-
-            case R.id.ceasara_label:
-                mAdapter.setCamerasList(mCaesareaCameraList);
-                onCameraSelected(mCaesareaCameraList.get(0));
-                setActiveButton(mCaesareaCamerasButton);
-                currentTab = CAESAREA;
-
-                break;
-        }
+    private void addTab(String title) {
+        mTabLayout.addTab(mTabLayout.newTab().setText(title));
     }
 
-    private void setActiveButton(TextView button) {
-        mTelavivCamerasButton.setBackgroundResource(R.color.transparent);
-        mCaesareaCamerasButton.setBackgroundResource(R.color.transparent);
-        mAshdodCamerasButton.setBackgroundResource(R.color.transparent);
-        mHerzeliaCamerasButton.setBackgroundResource(R.color.transparent);
 
-        button.setBackground(Objects.requireNonNull(getActivity()).getDrawable(R.drawable.underline_cameras));
-    }
 
 
     @Override
     public void onCamerasLoaded(List<List<CameraObject>> camerasbycity) {
+        mTabLayout.removeAllTabs();
 
-        mTelAvivCamerasList = camerasbycity.get(0);
-        mAshdodCameraList = camerasbycity.get(1);
-        mCaesareaCameraList = camerasbycity.get(2);
-        mHerzeliaCameraList = camerasbycity.get(3);
+        if (camerasbycity.get(0).size() > 0){
+            addTab(getString(R.string.telaviv_location));
+            mCamerasByCity.add(camerasbycity.get(0));
+        }
 
-        switch (currentTab){
-            case TELAVIV:
-                mAdapter.setCamerasList(mTelAvivCamerasList);
-                onCameraSelected(mTelAvivCamerasList.get(0));
-                break;
-
-            case ASHDOD:
-                mAdapter.setCamerasList(mAshdodCameraList);
-
-                onCameraSelected(mAshdodCameraList.get(0));
-                break;
-            case HERZELIA:
-                mAdapter.setCamerasList(mHerzeliaCameraList);
-
-                onCameraSelected(mHerzeliaCameraList.get(0));
-                break;
-
-            case CAESAREA:
-                mAdapter.setCamerasList(mCaesareaCameraList);
-
-                onCameraSelected(mCaesareaCameraList.get(0));
-                break;
+        if (camerasbycity.get(1).size() > 0){
+            addTab(getString(R.string.ashdod_location));
+            mCamerasByCity.add(camerasbycity.get(1));
 
         }
+
+        if (camerasbycity.get(2).size() > 0){
+            addTab(getString(R.string.ceasearea_camtitle));
+            mCamerasByCity.add(camerasbycity.get(2));
+
+        }
+
+        if (camerasbycity.get(3).size() > 0){
+            addTab(getString(R.string.herzelia_location));
+            mCamerasByCity.add(camerasbycity.get(3));
+
+        }
+
+        mTabLayout.selectTab(mTabLayout.getTabAt(0));
+
+
+
+    }
+
+    @Override
+    public void onTabSelected(TabLayout.Tab tab) {
+        if (mCamerasByCity.size() > 0) {
+            switch (tab.getPosition()) {
+                case 0:
+                    mAdapter.setCamerasList(mCamerasByCity.get(0));
+                    onCameraSelected(mCamerasByCity.get(0).get(0));
+                    break;
+
+                case 1:
+                    mAdapter.setCamerasList(mCamerasByCity.get(1));
+                    onCameraSelected(mCamerasByCity.get(1).get(0));
+                    break;
+
+                case 2:
+                    mAdapter.setCamerasList(mCamerasByCity.get(2));
+                    onCameraSelected(mCamerasByCity.get(2).get(0));
+                    break;
+
+                case 3:
+                    mAdapter.setCamerasList(mCamerasByCity.get(3));
+                    onCameraSelected(mCamerasByCity.get(3).get(0));
+                    break;
+
+            }
+        }
+    }
+
+    @Override
+    public void onTabUnselected(TabLayout.Tab tab) {
+
+    }
+
+    @Override
+    public void onTabReselected(TabLayout.Tab tab) {
 
     }
 }

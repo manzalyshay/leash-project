@@ -22,7 +22,7 @@
             android:textSize="15sp"
             android:inputType="textMultiLine"
             android:maxLength="255"
-            android:textColor="@color/white"
+            android:textColor="@color/black"
             />
 
     </com.google.android.material.textfield.TextInputLayout>

@@ -30,7 +30,6 @@ public class UsersViewModel extends ViewModel {
 
 
 
-
     public void setUserByidRef(DatabaseReference userByidRef) {
         USER_BYID_REF = userByidRef;
         userByIDLiveData = new FirebaseQueryLiveData(USER_BYID_REF);

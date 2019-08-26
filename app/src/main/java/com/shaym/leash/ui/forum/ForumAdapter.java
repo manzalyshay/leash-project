@@ -29,6 +29,15 @@ public class ForumAdapter extends RecyclerView.Adapter<PostViewHolder>{
     public String mPostType = GENERAL_POSTS;
     private List<Profile> mAllUsers = new ArrayList<>();
     private List<Post> mCurrentData = new ArrayList<>();
+    private Profile mUser;
+
+    ForumAdapter( Fragment fragment) {
+        Log.d(TAG, "ForumAdapter: ");
+        mFragment = fragment;
+        setHasStableIds(true);
+
+    }
+
 
     public void updateCurrentData(List<Post> currentData){
         if (!mCurrentData.isEmpty()) {
@@ -47,7 +56,7 @@ public class ForumAdapter extends RecyclerView.Adapter<PostViewHolder>{
     }
 
 
-    public void updateUsers(List<Profile> AllUsers) {
+    public void updateUsers(List<Profile> AllUsers, Profile user) {
         if (!mAllUsers.isEmpty()) {
             UserDiffCallback userDiffCallback = new UserDiffCallback(mAllUsers, AllUsers);
             DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(userDiffCallback);
@@ -55,23 +64,21 @@ public class ForumAdapter extends RecyclerView.Adapter<PostViewHolder>{
             mAllUsers.clear();
             mAllUsers.addAll(AllUsers);
             diffResult.dispatchUpdatesTo(this);
+
         }
         else {
-            mAllUsers.clear();
             mAllUsers.addAll(AllUsers);
             notifyDataSetChanged();
         }
 
 
+        mUser = user;
+
+
+
 
     }
 
-
-
-    ForumAdapter( Fragment fragment) {
-        Log.d(TAG, "ForumAdapter: ");
-        mFragment = fragment;
-    }
 
     @NonNull
     @Override
@@ -99,7 +106,7 @@ public class ForumAdapter extends RecyclerView.Adapter<PostViewHolder>{
     @Override
     public void onBindViewHolder(@NonNull PostViewHolder holder, int position) {
         Log.d(TAG, "onBindViewHolder: " + position);
-        holder.bindToPost(mCurrentData.get(position),mFragment, FireBaseUsersHelper.getInstance().findProfile(mCurrentData.get(position).uid, mAllUsers), mAllUsers);
+        holder.bindToPost(mCurrentData.get(position),mFragment, mUser, mAllUsers);
 
     }
 

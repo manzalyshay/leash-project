@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -34,6 +35,8 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.shaym.leash.R;
 import com.shaym.leash.logic.utils.FireBasePostsHelper;
+import com.shaym.leash.logic.utils.FireBaseUsersHelper;
+import com.shaym.leash.logic.utils.onPictureUploadedListener;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -56,7 +59,7 @@ import static com.shaym.leash.logic.utils.CONSTANT.SPOTS_POSTS;
 import static com.shaym.leash.logic.utils.CONSTANT.TRIPS_POSTS;
 
 @RuntimePermissions
-public class NewForumPostDialog extends DialogFragment {
+public class NewForumPostDialog extends DialogFragment implements onPictureUploadedListener {
     public static final String TAG = "NewForumPostDialog";
     public static final String CATEGORY_KEY = "CATEGORY_KEY";
 
@@ -94,6 +97,7 @@ public class NewForumPostDialog extends DialogFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         Bundle args = getArguments();
+        assert args != null;
         mNewPostCategory = args.getString(CATEGORY_KEY);
         storage = FirebaseStorage.getInstance();
         storageReference = storage.getReference();
@@ -210,8 +214,6 @@ public class NewForumPostDialog extends DialogFragment {
                 .maxResultSize(1080, 1080)	//Final image resolution will be less than 1080 x 1080(Optional)
                 .start(FORUM_PICK_IMAGE_REQUEST);
 
-
-
     }
 
 
@@ -220,7 +222,7 @@ public class NewForumPostDialog extends DialogFragment {
         super.onActivityResult(requestCode, resultCode, data);
         Log.d(TAG, "onActivityResult: ");
 
-        if (resultCode == Activity.RESULT_OK) {
+        if (resultCode == Activity.RESULT_OK && requestCode == FORUM_PICK_IMAGE_REQUEST) {
             // File object will not be null for RESULT_OK
             File file = ImagePicker.Companion.getFile(data);
             FileInputStream fis = null;
@@ -234,8 +236,10 @@ public class NewForumPostDialog extends DialogFragment {
 
             if (selectedBitmap != null) {
                 mImagePicked = true;
-                mUploadLabel.setText("Image Picked!");
-                mUploadLabel.setTextColor(Color.RED);
+                mUploadLabel.setText(Objects.requireNonNull(getActivity()).getString(R.string.image_picked));
+                mUploadLabel.setTextColor(Color.BLACK);
+                mUploadLabel.setTypeface(null, Typeface.BOLD);
+
             }
         }
 
@@ -258,61 +262,36 @@ public class NewForumPostDialog extends DialogFragment {
     }
 
 
-
-
-
     private void submitPost() {
         if (!mImagePicked) {
             publishPost();
 
         }
         else{
-            uploadImage();
+            FireBasePostsHelper.getInstance().uploadImage(getContext(), FORUM_POSTS_PICS, selectedBitmap, this);
+
         }
     }
 
-
-    private String getUid() {
-        return Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
-
+    @Override
+    public void onPictureUploaded(String uploadPath){
+        Log.d(TAG, "onPictureUploaded: ");
+        mPostImagepaths.add(uploadPath);
+        publishPost();
     }
 
+    @Override
+    public void onUploadFailed() {
+        Log.d(TAG, "onUploadFailed: ");
+    }
+
+
     private void publishPost() {
-        FireBasePostsHelper.getInstance().writeNewForumPost(getUid(), mBodyInput.getText().toString().trim(), mNewPostCategory, mPostImagepaths);
+        FireBasePostsHelper.getInstance().writeNewForumPost(FireBaseUsersHelper.getInstance().getUid(), mBodyInput.getText().toString().trim(), mNewPostCategory, mPostImagepaths);
         Toast.makeText(getContext(), "Post Published.", Toast.LENGTH_SHORT).show();
         this.dismiss();
     }
 
-    private void uploadImage() {
-
-        if(selectedBitmap != null)
-        {
-            final ProgressDialog progressDialog = new ProgressDialog(getContext());
-            progressDialog.setTitle("Uploading...");
-            progressDialog.show();
-
-            String uploadPath = FORUM_POSTS_PICS + "/" + getUid() + "/" + UUID.randomUUID().toString();
-            StorageReference ref = storageReference.child(uploadPath);
-            byte[] data = FireBasePostsHelper.getInstance().convertBitmapToByteArray(selectedBitmap);
-
-            ref.putBytes(data)
-                    .addOnSuccessListener(taskSnapshot -> {
-                        progressDialog.dismiss();
-                        Toast.makeText(getContext(), "Uploaded", Toast.LENGTH_SHORT).show();
-                        mPostImagepaths.add(uploadPath);
-                        publishPost();
-                    })
-                    .addOnFailureListener(e -> {
-                        progressDialog.dismiss();
-                        Toast.makeText(getContext(), "Failed "+e.getMessage(), Toast.LENGTH_SHORT).show();
-                    })
-                    .addOnProgressListener(taskSnapshot -> {
-                        double progress = (100.0*taskSnapshot.getBytesTransferred()/taskSnapshot
-                                .getTotalByteCount());
-                        progressDialog.setMessage("Uploaded "+(int)progress+"%");
-                    });
-        }
-    }
 
 
 

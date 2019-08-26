@@ -12,27 +12,27 @@
     import com.shaym.leash.logic.utils.FireBasePostsHelper;
     import com.squareup.picasso.Picasso;
 
+    import java.util.ArrayList;
     import java.util.List;
 
     public class CamerasAdapter extends RecyclerView.Adapter<CameraItemViewHolder> {
 
         private onCameraSelectedListener mListener;
+        private List<CameraObject> camerasList = new ArrayList<>();
 
         public void setCamerasList(List<CameraObject> camerasList) {
             this.camerasList = camerasList;
             notifyDataSetChanged();
         }
 
-        private List<CameraObject> camerasList;
 
         private static final String TAG = "CamerasAdapter";
         int selected_position = 0; // You have to set this globally in the Adapter class
 
 
-        CamerasAdapter(onCameraSelectedListener listener, List<CameraObject> cameralist) {
+        CamerasAdapter(onCameraSelectedListener listener) {
             Log.d(TAG, "CamerasAdapter: ");
             this.mListener = listener;
-            this.camerasList = cameralist;
 
         }
 

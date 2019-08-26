@@ -40,11 +40,16 @@ import com.shaym.leash.logic.gear.GearPost;
 import com.shaym.leash.logic.gear.GearViewModel;
 import com.shaym.leash.logic.user.Profile;
 import com.shaym.leash.logic.user.UsersViewModel;
+import com.shaym.leash.logic.utils.FireBaseUsersHelper;
 import com.shaym.leash.ui.forum.ForumAdapter;
+import com.shaym.leash.ui.forum.NewForumPostDialog;
 import com.shaym.leash.ui.utils.FabClickedListener;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import static com.shaym.leash.logic.utils.CONSTANT.BOARDS_POSTS;
@@ -75,6 +80,14 @@ public class GearFragment extends Fragment implements View.OnClickListener, FabC
     private GearViewModel mGearViewModel;
     private LinearLayoutManager mManager;
     private UsersViewModel mUsersViewModel;
+    private List<GearPost> mBoardPosts = new ArrayList<>();
+    private List<GearPost> mLeashPosts = new ArrayList<>();
+    private List<GearPost> mFinsPosts = new ArrayList<>();
+    private List<GearPost> mClothingPosts = new ArrayList<>();
+    private List<GearPost> mOtherPosts = new ArrayList<>();
+    private List<Profile> mAllUsers = new ArrayList<>();
+    private int lastPos = -1;
+    private FloatingActionButton mFab;
     private Profile mUser;
 
     @Nullable
@@ -98,6 +111,9 @@ public class GearFragment extends Fragment implements View.OnClickListener, FabC
 
     private void initUI(View v)  {
         Log.d(TAG, "initUI: ");
+        mFab = v.findViewById(R.id.fab_new_post);
+        mFab.setOnClickListener(this);
+
         mSecondHandButton = v.findViewById(R.id.secondhand_button);
         mStoresButton = v.findViewById(R.id.stores_button);
 
@@ -127,16 +143,6 @@ public class GearFragment extends Fragment implements View.OnClickListener, FabC
     private void initUsersViewModel() {
         mUsersViewModel = ViewModelProviders.of(this).get(UsersViewModel.class);
 
-        LiveData<DataSnapshot> currentUserLiveData = mUsersViewModel.getCurrentUserDataSnapshotLiveData();
-
-        currentUserLiveData.observe(this, dataSnapshot -> {
-            if (dataSnapshot != null) {
-                Log.d(TAG, "Current User Observer Triggered ");
-                mUser = dataSnapshot.getValue(Profile.class);
-                mAdapter.setViewerProfile(mUser);
-            }
-
-        });
 
         LiveData<DataSnapshot> allUserLiveData = mUsersViewModel.getAllUsersDataSnapshotLiveData();
 
@@ -150,11 +156,22 @@ public class GearFragment extends Fragment implements View.OnClickListener, FabC
                     Profile user = ds.getValue(Profile.class);
                     allusers.add(user);
                 }
-                mAdapter.updateUsers(allusers);
+                mAllUsers.clear();
+                mAllUsers.addAll(allusers);
+                getCurrentUser();
+                mAdapter.updateUsers(mAllUsers, mUser);
             }
         });
 
 
+    }
+
+    private void getCurrentUser(){
+        for (int i=0; i<mAllUsers.size(); i++){
+            if (mAllUsers.get(i).getUid().equals(FireBaseUsersHelper.getInstance().getUid())){
+                mUser = mAllUsers.get(i);
+            }
+        }
     }
 
     private void initAdapter() {
@@ -166,8 +183,26 @@ public class GearFragment extends Fragment implements View.OnClickListener, FabC
 
         // Set up FirebaseRecyclerAdapter with the Query
 
-        mAdapter = new GearAdapter(  this );
+        mAdapter = new GearAdapter( this);
         mRecyclerView.setAdapter(mAdapter);
+
+        mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+
+                int pos = mManager.findFirstCompletelyVisibleItemPosition();
+                Log.d(TAG, "onScrollStateChanged: " + pos);
+                if (pos != -1 && pos != lastPos) {
+
+                    if (lastPos != -1){
+                        mAdapter.notifyItemChanged(lastPos, false);
+                    }
+                    mAdapter.notifyItemChanged(pos, true);
+                    lastPos = pos;
+                }
+            }
+        });
     }
 
     private void setGearViewModel() {
@@ -188,7 +223,12 @@ public class GearFragment extends Fragment implements View.OnClickListener, FabC
                     GearPost post = ds.getValue(GearPost.class);
                     boardposts.add(post);
                 }
-                mAdapter.updateBoardPostsData(boardposts);
+                mBoardPosts.clear();
+                mBoardPosts.addAll(boardposts);
+
+                if (mCurrentCategory.equals(BOARDS_POSTS)){
+                    mAdapter.updateCurrentData(mBoardPosts);
+                }
             }
         });
 
@@ -201,8 +241,12 @@ public class GearFragment extends Fragment implements View.OnClickListener, FabC
                     GearPost post = ds.getValue(GearPost.class);
                     leashposts.add(post);
                 }
-                mAdapter.updateleashPostsData(leashposts);
-            }
+                mLeashPosts.clear();
+                mLeashPosts.addAll(leashposts);
+
+                if (mCurrentCategory.equals(LEASHES_POSTS)){
+                    mAdapter.updateCurrentData(mLeashPosts);
+                }            }
         });
 
         mFinsPostsLiveData.observe(this, dataSnapshot -> {
@@ -214,8 +258,12 @@ public class GearFragment extends Fragment implements View.OnClickListener, FabC
                     GearPost post = ds.getValue(GearPost.class);
                     finsposts.add(post);
                 }
-                mAdapter.updatefinsPostsData(finsposts);
-            }
+                mFinsPosts.clear();
+                mFinsPosts.addAll(finsposts);
+
+                if (mCurrentCategory.equals(FINS_POSTS)){
+                    mAdapter.updateCurrentData(mFinsPosts);
+                }            }
         });
 
         mClothingPostsLiveData.observe(this, dataSnapshot -> {
@@ -227,8 +275,12 @@ public class GearFragment extends Fragment implements View.OnClickListener, FabC
                     GearPost post = ds.getValue(GearPost.class);
                     clothingposts.add(post);
                 }
-                mAdapter.updateclothingPostsData(clothingposts);
-            }
+                mClothingPosts.clear();
+                mClothingPosts.addAll(clothingposts);
+
+                if (mCurrentCategory.equals(CLOTHING_POSTS)){
+                    mAdapter.updateCurrentData(mClothingPosts);
+                }            }
         });
 
         mOtherPostsLiveData.observe(this, dataSnapshot -> {
@@ -241,8 +293,12 @@ public class GearFragment extends Fragment implements View.OnClickListener, FabC
                     GearPost post = ds.getValue(GearPost.class);
                     otherposts.add(post);
                 }
-                mAdapter.updateotherPostsData(otherposts);
-            }
+                mOtherPosts.clear();
+                mOtherPosts.addAll(otherposts);
+
+                if (mCurrentCategory.equals(OTHER_POSTS)){
+                    mAdapter.updateCurrentData(mOtherPosts);
+                }            }
         });
 
     }
@@ -282,6 +338,17 @@ public class GearFragment extends Fragment implements View.OnClickListener, FabC
                 Toast.makeText(getContext(), "Stores Section is not available at the moment.", Toast.LENGTH_SHORT).show();
                 break;
 
+            case R.id.fab_new_post:
+                try {
+                    FragmentManager fm = Objects.requireNonNull(getActivity()).getSupportFragmentManager();
+                    NewGearPostDialog newGearPostDialog= NewGearPostDialog.newInstance(mCurrentCategory);
+                    newGearPostDialog.show(fm, newGearPostDialog.getTag());
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+                break;
+
         }
     }
 
@@ -310,40 +377,145 @@ public class GearFragment extends Fragment implements View.OnClickListener, FabC
         switch (position){
             case 0 :
                 mCurrentCategory = BOARDS_POSTS;
-                mAdapter.mCurrentCategory = mCurrentCategory;
-                mAdapter.notifyDataSetChanged();
+                swapAdapter();
+                mAdapter.updateCurrentData(mBoardPosts);
+
                 break;
 
             case 1:
                 mCurrentCategory = LEASHES_POSTS;
-                mAdapter.mCurrentCategory = mCurrentCategory;
-                mAdapter.notifyDataSetChanged();
+                swapAdapter();
+                mAdapter.updateCurrentData(mLeashPosts);
                 break;
 
             case 2:
                 mCurrentCategory = FINS_POSTS;
-                mAdapter.mCurrentCategory = mCurrentCategory;
-                mAdapter.notifyDataSetChanged();
+                swapAdapter();
+                mAdapter.updateCurrentData(mFinsPosts);
                 break;
 
             case 3:
                 mCurrentCategory = CLOTHING_POSTS;
-                mAdapter.mCurrentCategory = mCurrentCategory;
-                mAdapter.notifyDataSetChanged();
+                swapAdapter();
+                mAdapter.updateCurrentData(mClothingPosts);
                 break;
 
             case 4:
                 mCurrentCategory = OTHER_POSTS;
-                mAdapter.mCurrentCategory = mCurrentCategory;
-                mAdapter.notifyDataSetChanged();
+                swapAdapter();
+                mAdapter.updateCurrentData(mOtherPosts);
                 break;
 
         }
     }
 
+    private void swapAdapter() {
+        mAdapter = new GearAdapter(this);
+        mAdapter.mCurrentCategory = mCurrentCategory;
+        mAdapter.updateUsers(mAllUsers, mUser);
+        mRecyclerView.setAdapter(mAdapter);
+    }
+
     @Override
     public void onNothingSelected(AdapterView<?> parent) {
 
+    }
+
+    public void setCurrentPost(String postid){
+        Map<String, Integer> map = searchForPost(postid);
+        String category = "";
+        int pos = -1;
+        Iterator it = map.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry)it.next();
+            System.out.println(pair.getKey() + " = " + pair.getValue());
+            category = (String) pair.getKey();
+            pos = (int) pair.getValue();
+            it.remove(); // avoids a ConcurrentModificationException
+        }
+
+        switch (category){
+            case BOARDS_POSTS:
+                mSecondHandCategories.setSelection(0);
+                break;
+            case LEASHES_POSTS:
+                mSecondHandCategories.setSelection(1);
+
+                break;
+            case FINS_POSTS:
+                mSecondHandCategories.setSelection(2);
+
+            case CLOTHING_POSTS:
+                mSecondHandCategories.setSelection(3);
+
+
+            case OTHER_POSTS:
+                mSecondHandCategories.setSelection(4);
+
+
+        }
+
+        mRecyclerView.scrollToPosition(pos);
+    }
+
+
+    private  Map<String, Integer> searchForPost(String postid) {
+        Map<String, Integer> map = new HashMap<>();
+        String category = "";
+        int pos = -1;
+        List<GearPost> allPosts = new ArrayList<>();
+        allPosts.addAll(mBoardPosts);
+        allPosts.addAll(mClothingPosts);
+        allPosts.addAll(mFinsPosts);
+        allPosts.addAll(mLeashPosts);
+        allPosts.addAll(mOtherPosts);
+
+        for (int i=0; i<allPosts.size(); i++){
+            if (allPosts.get(i).key.equals(postid)){
+                category = allPosts.get(i).category;
+                switch (category){
+                    case BOARDS_POSTS:
+                        for (int j=0; j<mBoardPosts.size(); j++) {
+                            if (mBoardPosts.get(j).key.equals(postid)) {
+                                pos = j;
+                            }
+                        }
+                        break;
+                    case LEASHES_POSTS:
+                        for (int j=0; j<mLeashPosts.size(); j++) {
+                            if (mLeashPosts.get(j).key.equals(postid)) {
+                                pos = j;
+                            }
+                        }
+                        break;
+                    case FINS_POSTS:
+                        for (int j=0; j<mFinsPosts.size(); j++) {
+                            if (mFinsPosts.get(j).key.equals(postid)) {
+                                pos = j;
+                            }
+                        }
+
+                    case CLOTHING_POSTS:
+                        for (int j=0; j<mClothingPosts.size(); j++) {
+                            if (mClothingPosts.get(j).key.equals(postid)) {
+                                pos = j;
+                            }
+                        }
+
+                    case OTHER_POSTS:
+                        for (int j=0; j<mOtherPosts.size(); j++) {
+                            if (mOtherPosts.get(j).key.equals(postid)) {
+                                pos = j;
+                            }
+                        }
+                        break;
+                }
+                break;
+
+            }
+        }
+        map.put(category, pos);
+        return map;
     }
 }
 

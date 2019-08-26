@@ -25,7 +25,8 @@
         android:theme="@style/AppTheme"
         android:largeHeap="true"
         android:hardwareAccelerated="true"
-        android:networkSecurityConfig="@xml/network_secuirty_config">
+        android:networkSecurityConfig="@xml/network_secuirty_config"
+        tools:ignore="GoogleAppIndexingWarning">
 
 
 
@@ -50,7 +51,6 @@
             </intent-filter>
         </activity>
 
-
         <activity android:name="com.shaym.leash.ui.authentication.LoginActivity">
 
             <intent-filter>
@@ -66,13 +66,6 @@
         <activity android:name="com.shaym.leash.ui.home.HomeActivity"
             android:windowSoftInputMode="adjustPan"
             >
-
-        </activity>
-        <activity android:name="com.shaym.leash.ui.home.chat.ChatActivity"
-            android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
-            android:alwaysRetainTaskState="true"
-            android:noHistory="true"
-            android:windowSoftInputMode="adjustPan">
 
         </activity>
 

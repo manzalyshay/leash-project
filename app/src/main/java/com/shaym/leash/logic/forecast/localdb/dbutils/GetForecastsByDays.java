@@ -61,6 +61,7 @@ public class GetForecastsByDays extends AsyncTask<Void, Void, List<List<Forecast
     protected void onPostExecute(List<List<ForecastObject>> result) {
         if (result != null) {
             Log.d(TAG, "onPostExecute: " + result.toString());
+            mDays.remove(mDays.size()-1);
             mListener.onForecastsLoaded(result, mDays);
         }
     }

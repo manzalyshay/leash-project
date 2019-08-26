@@ -13,6 +13,7 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import com.crashlytics.android.Crashlytics;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
@@ -63,7 +64,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
     public void onClick(View view) {
         switch (view.getId()){
             case R.id.signupbtn:
-                Log.d(TAG, "onClick: LoginBtn");
+                Log.d(TAG, "RegisterActivity: LoginBtn");
 
                 String disname = mSignUpNameField.getText().toString();
                 String email = mSignUpEmailField.getText().toString();
@@ -114,9 +115,11 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
     }
 
     private void  updateUI(FirebaseUser user) {
+        Log.d(TAG, "updateUI: ");
         FireBaseUsersHelper.getInstance().createUserInDB("", mGender, user);
         if (user != null) {
             startActivity(new Intent(RegisterActivity.this, HomeActivity.class));
+            finish();
         }
 
     }

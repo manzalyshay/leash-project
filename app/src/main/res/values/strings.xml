@@ -72,8 +72,8 @@
     </string-array>
 
     //Facebook
-    <string name="facebook_app_id" translatable="false">1637949759563628</string>
-    <string name="fb_login_protocol_scheme" translatable="false">fb1637949759563628</string>
+    <string name="facebook_app_id">1637949759563628</string>
+    <string name="fb_login_protocol_scheme">fb1637949759563628</string>
     <string name="title_location_permission">Location Permisson</string>
     <string name="text_location_permission">Please allow location</string>
     <string name="ok">OK</string>
@@ -183,6 +183,13 @@
     <string name="gender">Gender</string>
     <string name="pick_image_intent_text">Pick Image</string>
     <string name="comments_postfix">תגובות</string>
+    <string name="image_picked">Image Picked!</string>
+    <string name="shake">!!שקשוק!!</string>
+    <string name="forum_activity">פעילות בפורום</string>
+    <string name="shop_activity">פעילות בחנות</string>
+    <string name="inbox">דואר נכנס</string>
+    <string name="delete">מחק</string>
+    <string name="edit">ערוך</string>
 
 
     <string-array name="forum_categories_array">

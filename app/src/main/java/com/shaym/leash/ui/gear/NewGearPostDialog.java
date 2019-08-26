@@ -9,6 +9,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -33,6 +34,7 @@ import com.google.firebase.storage.StorageReference;
 import com.shaym.leash.R;
 import com.shaym.leash.logic.utils.FireBasePostsHelper;
 import com.shaym.leash.logic.utils.FireBaseUsersHelper;
+import com.shaym.leash.logic.utils.onPictureUploadedListener;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -59,7 +61,7 @@ import static com.shaym.leash.logic.utils.CONSTANT.LEASHES_POSTS;
 import static com.shaym.leash.logic.utils.CONSTANT.OTHER_POSTS;
 
 @RuntimePermissions
-public class NewGearPostDialog extends DialogFragment{
+public class NewGearPostDialog extends DialogFragment implements onPictureUploadedListener {
     public static final String TAG = "NewGearPostDialog";
     public static final String CATEGORY_KEY = "CATEGORY_KEY";
 
@@ -259,7 +261,7 @@ public class NewGearPostDialog extends DialogFragment{
         super.onActivityResult(requestCode, resultCode, data);
         Log.d(TAG, "onActivityResult: ");
 
-        if (resultCode == Activity.RESULT_OK) {
+        if (resultCode == Activity.RESULT_OK && requestCode == GEAR_PICK_IMAGE_REQUEST) {
             // File object will not be null for RESULT_OK
             File file = ImagePicker.Companion.getFile(data);
             FileInputStream fis = null;
@@ -273,8 +275,9 @@ public class NewGearPostDialog extends DialogFragment{
 
             if (selectedBitmap != null) {
                 mImagePicked = true;
-                mUploadLabel.setText("Image Picked!");
-                mUploadLabel.setTextColor(Color.RED);
+                mUploadLabel.setText(Objects.requireNonNull(getActivity()).getString(R.string.image_picked));
+                mUploadLabel.setTextColor(Color.BLACK);
+                mUploadLabel.setTypeface(null, Typeface.BOLD);
             }
         }
     }
@@ -328,8 +331,21 @@ public class NewGearPostDialog extends DialogFragment{
 
             }
             else{
-                uploadImage();
+                FireBasePostsHelper.getInstance().uploadImage(getContext(), GEAR_POSTS_PICS, selectedBitmap, this);
             }
+    }
+
+
+    @Override
+    public void onPictureUploaded(String uploadPath){
+        Log.d(TAG, "onPictureUploaded: ");
+        mPostImagepaths.add(uploadPath);
+        publishPost();
+    }
+
+    @Override
+    public void onUploadFailed() {
+        Log.d(TAG, "onUploadFailed: ");
     }
 
     private void publishPost() {
@@ -343,38 +359,6 @@ public class NewGearPostDialog extends DialogFragment{
     }
 
 
-
-
-    private void uploadImage() {
-
-        if(selectedBitmap != null)
-        {
-            final ProgressDialog progressDialog = new ProgressDialog(getContext());
-            progressDialog.setTitle("Uploading...");
-            progressDialog.show();
-
-            String uploadPath = GEAR_POSTS_PICS + "/" + FireBaseUsersHelper.getInstance().getUid() + "/" + UUID.randomUUID().toString();
-            StorageReference ref = storageReference.child(uploadPath);
-            byte[] data = FireBasePostsHelper.getInstance().convertBitmapToByteArray(selectedBitmap);
-
-            ref.putBytes(data)
-                    .addOnSuccessListener(taskSnapshot -> {
-                        progressDialog.dismiss();
-                        Toast.makeText(getContext(), "Uploaded", Toast.LENGTH_SHORT).show();
-                        mPostImagepaths.add(uploadPath);
-                        publishPost();
-                    })
-                    .addOnFailureListener(e -> {
-                        progressDialog.dismiss();
-                        Toast.makeText(getContext(), "Failed "+e.getMessage(), Toast.LENGTH_SHORT).show();
-                    })
-                    .addOnProgressListener(taskSnapshot -> {
-                        double progress = (100.0*taskSnapshot.getBytesTransferred()/taskSnapshot
-                                .getTotalByteCount());
-                        progressDialog.setMessage("Uploaded "+(int)progress+"%");
-                    });
-        }
-    }
 
 
 }
