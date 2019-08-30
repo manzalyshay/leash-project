@@ -3,11 +3,6 @@ package com.shaym.leash.logic.cameras;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.shaym.leash.MainApplication;
-import com.shaym.leash.R;
-import com.shaym.leash.logic.forecast.ForecastListener;
-import com.shaym.leash.logic.forecast.localdb.dbutils.ForecastObject;
-import com.shaym.leash.logic.forecast.localdb.dbutils.SaveForecast;
 import com.shaym.leash.logic.forecast.utils.HttpHandler;
 
 import org.json.JSONArray;
@@ -15,11 +10,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import static com.shaym.leash.ui.forecast.ForecastFragment.CALIFORNIA_TAG;
-import static com.shaym.leash.ui.forecast.ForecastFragment.TELAVIV_TAG;
 
 /**
  * Created by shaym on 3/26/18.

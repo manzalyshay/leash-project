@@ -61,11 +61,8 @@ public class VideoViewPlayerFragment extends Fragment implements PlayerListener 
         return v;
     }
 
-    public VideoView getVideoView() {
-        return mVideoView;
-    }
 
-    public void updateCamera(CameraObject cam){
+    void updateCamera(CameraObject cam){
         mCurrentCameraObject = cam;
         mVideoView.setVideoPath(mCurrentCameraObject.getUrl());
         mVideoView.getPlayer().start();
@@ -81,7 +78,6 @@ public class VideoViewPlayerFragment extends Fragment implements PlayerListener 
 
     @Override
     public void onBufferingUpdate(GiraffePlayer giraffePlayer, int percent) {
-        Log.d(TAG, "onBufferingUpdate: ");
     }
 
     @Override
@@ -91,7 +87,6 @@ public class VideoViewPlayerFragment extends Fragment implements PlayerListener 
 
     @Override
     public void onCompletion(GiraffePlayer giraffePlayer) {
-        Log.d(TAG, "onCompletion: ");
 
     }
 
@@ -131,6 +126,7 @@ public class VideoViewPlayerFragment extends Fragment implements PlayerListener 
         if (newState == 3){
             firstPlay = true;
             HomeActivity activity = (HomeActivity) getActivity();
+            assert activity != null;
             activity.dismissProgressBar();
 
         }

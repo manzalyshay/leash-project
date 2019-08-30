@@ -2,12 +2,18 @@
 <LinearLayout android:orientation="vertical"
     android:layout_height="wrap_content"
     android:layout_width="match_parent"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <com.google.android.material.tabs.TabLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:tabMode="fixed"
+        app:tabGravity="fill"
+        android:id="@+id/days_menu"/>
 <LinearLayout
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:background="@color/white"
+    android:layout_height="200dp"
     android:orientation="horizontal"
     android:layout_marginBottom="30dp"
     android:weightSum="2">
@@ -19,16 +25,29 @@
         android:layout_marginEnd="10dp"
         android:orientation="vertical">
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_marginEnd="10dp"
-        android:layout_height="wrap_content">
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/israelmap"
+            android:background="@drawable/round_corner"/>
+
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:orientation="vertical">
+
 
         <RelativeLayout
-            android:layout_width="100dp"
+            android:layout_width="wrap_content"
             android:id="@+id/wave_measure"
-            android:layout_centerHorizontal="true"
+            android:layout_margin="10dp"
             android:layout_height="wrap_content">
+
             <TextView
                 android:id="@+id/min_wave_height"
                 android:layout_width="wrap_content"
@@ -57,47 +76,20 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="5dp"
                 style="@style/TextAppearance.AppCompat.Widget.ActionBar.Title"
-
-
                 android:text="@string/cm_unit"/>
-
 
         </RelativeLayout>
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:layout_below="@id/wave_measure"
-            android:id="@+id/date_picker"
-            android:layout_centerHorizontal="true"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:nestedScrollingEnabled="true"
-            android:layoutDirection="inherit"
-            />
-
-
-
-    </RelativeLayout>
-
-
-
-    </LinearLayout>
-    <RelativeLayout
-        android:layout_width="0dp"
-        android:layout_weight="1"
-        android:layout_height="200dp">
 
         <LinearLayout
             android:id="@+id/forecast_values"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:weightSum="2">
+            android:orientation="vertical">
             <RelativeLayout
                 android:id="@+id/wind_values"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:gravity="center"
-
+                android:layout_width="wrap_content"
+                android:layout_margin="10dp"
                 android:layout_height="wrap_content">
                 <ImageView
                     android:id="@+id/wind_direction_icon"
@@ -127,9 +119,8 @@
             </RelativeLayout>
             <RelativeLayout
                 android:id="@+id/temp_values"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:gravity="center"
+                android:layout_width="wrap_content"
+                android:layout_margin="10dp"
                 android:layout_height="wrap_content">
                 <ImageView
                     android:id="@+id/temp_icon"
@@ -153,14 +144,9 @@
                     android:layout_height="wrap_content" />
             </RelativeLayout>
         </LinearLayout>
-        <ImageView
-            android:layout_below="@id/forecast_values"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/israelmap"
-            android:background="@drawable/round_corner"/>
 
-    </RelativeLayout>
+
+    </LinearLayout>
 
 </LinearLayout>
 
@@ -179,7 +165,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAlignment="center"
-            android:text="גלשת היום?\n דרג את גובה הגל!"
+            android:text="@string/surf_today_string"
             style="@style/TextAppearance.Compat.Notification.Title"/>
 
         <Button
@@ -191,7 +177,7 @@
             android:background="@drawable/rounded_button_checked"
 
             android:textSize="12sp"
-            android:text="דרג"
+            android:text="@string/rate"
             android:textColor="@color/white"
 
             android:textStyle="bold" />

@@ -1,16 +1,18 @@
 package com.shaym.leash.ui.gear;
 
-import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
-import com.firebase.ui.database.FirebaseRecyclerOptions;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-
-import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -19,31 +21,17 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.Spinner;
-import android.widget.Toast;
-
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
 import com.shaym.leash.R;
-import com.shaym.leash.logic.forum.ForumViewModel;
-import com.shaym.leash.logic.forum.Post;
 import com.shaym.leash.logic.gear.GearPost;
 import com.shaym.leash.logic.gear.GearViewModel;
 import com.shaym.leash.logic.user.Profile;
 import com.shaym.leash.logic.user.UsersViewModel;
 import com.shaym.leash.logic.utils.FireBaseUsersHelper;
-import com.shaym.leash.ui.forum.ForumAdapter;
-import com.shaym.leash.ui.forum.NewForumPostDialog;
 import com.shaym.leash.ui.utils.FabClickedListener;
+import com.shaym.leash.ui.utils.UIHelper;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -55,31 +43,21 @@ import java.util.Objects;
 import static com.shaym.leash.logic.utils.CONSTANT.BOARDS_POSTS;
 import static com.shaym.leash.logic.utils.CONSTANT.CLOTHING_POSTS;
 import static com.shaym.leash.logic.utils.CONSTANT.FINS_POSTS;
-import static com.shaym.leash.logic.utils.CONSTANT.FORUM_POSTS;
-import static com.shaym.leash.logic.utils.CONSTANT.GEAR_POSTS;
-import static com.shaym.leash.logic.utils.CONSTANT.GENERAL_POSTS;
 import static com.shaym.leash.logic.utils.CONSTANT.LEASHES_POSTS;
 import static com.shaym.leash.logic.utils.CONSTANT.OTHER_POSTS;
-import static com.shaym.leash.logic.utils.CONSTANT.SPOTS_POSTS;
-import static com.shaym.leash.logic.utils.CONSTANT.TRIPS_POSTS;
-import static com.shaym.leash.logic.utils.CONSTANT.USED_GEAR_POSTS;
 
 /**
  * Created by shaym on 2/14/18.
  */
 
-public class GearFragment extends Fragment implements View.OnClickListener, FabClickedListener, AdapterView.OnItemSelectedListener {
+public class GearFragment extends Fragment implements View.OnClickListener, FabClickedListener, AdapterView.OnItemSelectedListener, TabLayout.OnTabSelectedListener {
     private static final String TAG = "GearFragment";
     private RecyclerView mRecyclerView;
     private GearAdapter mAdapter;
-    private Button mSecondHandButton;
-    private Button mStoresButton;
     private Spinner mSecondHandCategories;
     private String mCurrentCategory;
     private NewGearPostDialog mNewGearPostDialog;
-    private GearViewModel mGearViewModel;
     private LinearLayoutManager mManager;
-    private UsersViewModel mUsersViewModel;
     private List<GearPost> mBoardPosts = new ArrayList<>();
     private List<GearPost> mLeashPosts = new ArrayList<>();
     private List<GearPost> mFinsPosts = new ArrayList<>();
@@ -87,15 +65,14 @@ public class GearFragment extends Fragment implements View.OnClickListener, FabC
     private List<GearPost> mOtherPosts = new ArrayList<>();
     private List<Profile> mAllUsers = new ArrayList<>();
     private int lastPos = -1;
-    private FloatingActionButton mFab;
     private Profile mUser;
+    private TabLayout mGearMenu;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         Log.d(TAG, "onCreateView: ");
-        View v = inflater.inflate(R.layout.fragment_gear, container, false);
-        return v;
+        return inflater.inflate(R.layout.fragment_gear, container, false);
     }
 
     @Override
@@ -111,16 +88,13 @@ public class GearFragment extends Fragment implements View.OnClickListener, FabC
 
     private void initUI(View v)  {
         Log.d(TAG, "initUI: ");
-        mFab = v.findViewById(R.id.fab_new_post);
+        mGearMenu = v.findViewById(R.id.gear_menu);
+        UIHelper.getInstance().addTab(mGearMenu, getString(R.string.second_hand));
+        UIHelper.getInstance().addTab(mGearMenu, getString(R.string.new_gear));
+        mGearMenu.addOnTabSelectedListener(this);
+
+        FloatingActionButton mFab = v.findViewById(R.id.fab_new_post);
         mFab.setOnClickListener(this);
-
-        mSecondHandButton = v.findViewById(R.id.secondhand_button);
-        mStoresButton = v.findViewById(R.id.stores_button);
-
-        mSecondHandButton.setOnClickListener(this);
-        setButtonChecked(mSecondHandButton);
-        mSecondHandButton.setOnClickListener(this);
-        mStoresButton.setOnClickListener(this);
 
         mSecondHandCategories = v.findViewById(R.id.secondhand_categories);
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(Objects.requireNonNull(getContext()),
@@ -141,7 +115,7 @@ public class GearFragment extends Fragment implements View.OnClickListener, FabC
 
 
     private void initUsersViewModel() {
-        mUsersViewModel = ViewModelProviders.of(this).get(UsersViewModel.class);
+        UsersViewModel mUsersViewModel = ViewModelProviders.of(this).get(UsersViewModel.class);
 
 
         LiveData<DataSnapshot> allUserLiveData = mUsersViewModel.getAllUsersDataSnapshotLiveData();
@@ -207,7 +181,7 @@ public class GearFragment extends Fragment implements View.OnClickListener, FabC
 
     private void setGearViewModel() {
         Log.d(TAG, "setGearViewModel: ");
-        mGearViewModel = ViewModelProviders.of(this).get(GearViewModel.class);
+        GearViewModel mGearViewModel = ViewModelProviders.of(this).get(GearViewModel.class);
 
         LiveData<DataSnapshot> mBoardsPostsLiveData = mGearViewModel.getBoardPostsLiveData();
         LiveData<DataSnapshot> mLeashesPostsLiveData = mGearViewModel.getLeashPostsLiveData();
@@ -313,30 +287,10 @@ public class GearFragment extends Fragment implements View.OnClickListener, FabC
     }
 
 
-    private void setButtonChecked(Button b) {
-        Log.d(TAG, "setButtonChecked: ");
-        mSecondHandButton.setBackground(Objects.requireNonNull(getActivity()).getDrawable(R.drawable.rounded_button_unchecked));
-        mSecondHandButton.setTextColor(ContextCompat.getColor(Objects.requireNonNull(getContext()), R.color.bottom_nav_bg_color));
-
-        mStoresButton.setBackground(getActivity().getDrawable(R.drawable.rounded_button_unchecked));
-        mStoresButton.setTextColor(ContextCompat.getColor(getContext(), R.color.bottom_nav_bg_color));
-
-        b.setBackground(getActivity().getDrawable(R.drawable.rounded_button_checked));
-        b.setTextColor(Color.WHITE);
-
-    }
-
-
     @Override
     public void onClick(View v) {
         switch (v.getId()){
-            case R.id.secondhand_button:
-                setButtonChecked(mSecondHandButton);
-                break;
 
-            case R.id.stores_button:
-                Toast.makeText(getContext(), "Stores Section is not available at the moment.", Toast.LENGTH_SHORT).show();
-                break;
 
             case R.id.fab_new_post:
                 try {
@@ -516,6 +470,27 @@ public class GearFragment extends Fragment implements View.OnClickListener, FabC
         }
         map.put(category, pos);
         return map;
+    }
+
+    @Override
+    public void onTabSelected(TabLayout.Tab tab) {
+        switch (tab.getPosition()){
+            case 1:
+                Toast.makeText(getContext(), getString(R.string.stores_notavail), Toast.LENGTH_SHORT).show();
+                mGearMenu.selectTab(mGearMenu.getTabAt(0));
+                break;
+        }
+
+    }
+
+    @Override
+    public void onTabUnselected(TabLayout.Tab tab) {
+
+    }
+
+    @Override
+    public void onTabReselected(TabLayout.Tab tab) {
+
     }
 }
 

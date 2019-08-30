@@ -1,47 +1,31 @@
 package com.shaym.leash.ui.forum;
 
-import android.graphics.Color;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
-import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProviders;
-import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
 import com.shaym.leash.R;
-import com.shaym.leash.logic.chat.Conversation;
 import com.shaym.leash.logic.forum.ForumViewModel;
 import com.shaym.leash.logic.forum.Post;
-import com.shaym.leash.logic.gear.GearPost;
 import com.shaym.leash.logic.user.Profile;
 import com.shaym.leash.logic.user.UsersViewModel;
-import com.shaym.leash.logic.utils.FireBasePostsHelper;
 import com.shaym.leash.logic.utils.FireBaseUsersHelper;
-import com.shaym.leash.logic.utils.PostDiffCallback;
-import com.shaym.leash.logic.utils.UserDiffCallback;
-import com.shaym.leash.ui.gear.NewGearPostDialog;
-import com.shaym.leash.ui.home.profile.ProfileViewModel;
-import com.shaym.leash.ui.utils.FabClickedListener;
+import com.shaym.leash.ui.utils.UIHelper;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -50,31 +34,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import static com.facebook.Profile.getCurrentProfile;
-import static com.shaym.leash.logic.utils.CONSTANT.ALL_POSTS;
-import static com.shaym.leash.logic.utils.CONSTANT.BOARDS_POSTS;
-import static com.shaym.leash.logic.utils.CONSTANT.CHAT_CONVERSATIONS;
-import static com.shaym.leash.logic.utils.CONSTANT.FORUM_POSTS;
-import static com.shaym.leash.logic.utils.CONSTANT.GEAR_POSTS;
 import static com.shaym.leash.logic.utils.CONSTANT.GENERAL_POSTS;
 import static com.shaym.leash.logic.utils.CONSTANT.SPOTS_POSTS;
 import static com.shaym.leash.logic.utils.CONSTANT.TRIPS_POSTS;
-import static com.shaym.leash.logic.utils.CONSTANT.USED_GEAR_POSTS;
-import static com.shaym.leash.logic.utils.CONSTANT.USER_CONVERSATIONS;
-import static com.shaym.leash.logic.utils.CONSTANT.USER_POSTS;
 
 /**
  * Created by shaym on 2/14/18.
  */
 
-public class ForumFragment extends Fragment implements  View.OnClickListener {
+public class ForumFragment extends Fragment implements  View.OnClickListener, TabLayout.OnTabSelectedListener {
     private static final String TAG = "ForumFragment";
     private String mCurrentForum = GENERAL_POSTS;
     private RecyclerView mRecyclerView;
     private ForumAdapter mAdapter;
-    private Button mGeneralButton;
-    private Button mTripsButton;
-    private Button mSpotsButton;
+    private TabLayout mForumButtons;
     private List<Profile> mAllUsers = new ArrayList<>();
     private List<Post> mGeneralPosts = new ArrayList<>();
     private List<Post> mTripsPosts = new ArrayList<>();
@@ -115,29 +88,18 @@ public class ForumFragment extends Fragment implements  View.OnClickListener {
 
         switch (category){
             case GENERAL_POSTS:
-                setButtonChecked(mGeneralButton);
-                mCurrentForum = GENERAL_POSTS;
+                mForumButtons.selectTab(mForumButtons.getTabAt(0));
 
-                swapAdapter();
-                mAdapter.updateCurrentData(mGeneralPosts);
 
                 break;
 
             case SPOTS_POSTS:
-                setButtonChecked(mSpotsButton);
-                mCurrentForum = SPOTS_POSTS;
-
-                swapAdapter();
-                mAdapter.updateCurrentData(mSpotsPosts);
+                mForumButtons.selectTab(mForumButtons.getTabAt(1));
 
                 break;
 
             case TRIPS_POSTS:
-                setButtonChecked(mTripsButton);
-                mCurrentForum = TRIPS_POSTS;
-
-                swapAdapter();
-                mAdapter.updateCurrentData(mTripsPosts);
+                mForumButtons.selectTab(mForumButtons.getTabAt(2));
 
                 break;
 
@@ -158,7 +120,7 @@ public class ForumFragment extends Fragment implements  View.OnClickListener {
 
         for (int i=0; i<allPosts.size(); i++){
             if (allPosts.get(i).key.equals(postid)){
-                category = allPosts.get(i).forum;
+                category = allPosts.get(i).category;
                 switch (category){
                     case GENERAL_POSTS:
                         for (int j=0; j<mGeneralPosts.size(); j++) {
@@ -191,12 +153,6 @@ public class ForumFragment extends Fragment implements  View.OnClickListener {
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
-        Log.d(TAG, "onStart: ");
-    }
-
-    @Override
     public void onResume() {
         super.onResume();
         Log.d(TAG, "onResume: ");
@@ -206,14 +162,12 @@ public class ForumFragment extends Fragment implements  View.OnClickListener {
     private void initUi(View v) {
         mFab = v.findViewById(R.id.fab_new_post);
         mFab.setOnClickListener(this);
-        mGeneralButton = v.findViewById(R.id.general_forum_button);
-        mSpotsButton = v.findViewById(R.id.spots_forum_button);
-        mTripsButton = v.findViewById(R.id.trips_forum_button);
+        mForumButtons = v.findViewById(R.id.forum_buttons);
+        UIHelper.getInstance().addTab(mForumButtons,getString(R.string.general_menu_title));
+        UIHelper.getInstance().addTab(mForumButtons,getString(R.string.spots_menu_title));
+        UIHelper.getInstance().addTab(mForumButtons,getString(R.string.trips_menu_title));
 
-        mGeneralButton.setOnClickListener(this);
-        setButtonChecked(mGeneralButton);
-        mSpotsButton.setOnClickListener(this);
-        mTripsButton.setOnClickListener(this);
+        mForumButtons.addOnTabSelectedListener(this);
 
         mRecyclerView = v.findViewById(R.id.forum_posts_list);
 
@@ -252,31 +206,6 @@ public class ForumFragment extends Fragment implements  View.OnClickListener {
     @Override
     public void onClick(View v) {
         switch (v.getId()){
-            case R.id.general_forum_button:
-                setButtonChecked(mGeneralButton);
-                mCurrentForum = GENERAL_POSTS;
-
-                swapAdapter();
-                mAdapter.updateCurrentData(mGeneralPosts);
-                break;
-
-            case R.id.spots_forum_button:
-                setButtonChecked(mSpotsButton);
-                mCurrentForum = SPOTS_POSTS;
-
-                swapAdapter();
-                mAdapter.updateCurrentData(mSpotsPosts);
-
-                break;
-
-            case R.id.trips_forum_button:
-                setButtonChecked(mTripsButton);
-                mCurrentForum = TRIPS_POSTS;
-
-                swapAdapter();
-                mAdapter.updateCurrentData(mTripsPosts);
-
-                break;
 
             case R.id.fab_new_post:
                 try {
@@ -392,32 +321,42 @@ public class ForumFragment extends Fragment implements  View.OnClickListener {
         }
 
 
+    @Override
+    public void onTabSelected(TabLayout.Tab tab) {
+        switch (tab.getPosition()){
+            case 0:
+                mCurrentForum = GENERAL_POSTS;
 
-    private void setButtonChecked(Button b) {
-        mGeneralButton.setBackground(Objects.requireNonNull(getActivity()).getDrawable(R.drawable.rounded_button_unchecked));
-        mGeneralButton.setTextColor(ContextCompat.getColor(Objects.requireNonNull(getContext()), R.color.bottom_nav_bg_color));
+                swapAdapter();
+                mAdapter.updateCurrentData(mGeneralPosts);
+                break;
 
-        mTripsButton.setBackground(getActivity().getDrawable(R.drawable.rounded_button_unchecked));
-        mTripsButton.setTextColor(ContextCompat.getColor(getContext(), R.color.bottom_nav_bg_color));
+            case 1:
+                mCurrentForum = TRIPS_POSTS;
 
-        mSpotsButton.setBackground(getActivity().getDrawable(R.drawable.rounded_button_unchecked));
-        mSpotsButton.setTextColor(ContextCompat.getColor(getContext(), R.color.bottom_nav_bg_color));
+                swapAdapter();
+                mAdapter.updateCurrentData(mTripsPosts);
+                break;
 
-        b.setBackground(getActivity().getDrawable(R.drawable.rounded_button_checked));
-        b.setTextColor(Color.WHITE);
+            case 2:
+                mCurrentForum = SPOTS_POSTS;
+
+                swapAdapter();
+                mAdapter.updateCurrentData(mSpotsPosts);
+                break;
+        }
 
     }
 
+    @Override
+    public void onTabUnselected(TabLayout.Tab tab) {
 
+    }
 
+    @Override
+    public void onTabReselected(TabLayout.Tab tab) {
 
-
-
-
-
-
-
-
+    }
 }
 
 

@@ -21,6 +21,7 @@ import com.shaym.leash.logic.cameras.CamerasListener;
 import com.shaym.leash.logic.cameras.CamerasViewModel;
 import com.shaym.leash.logic.cameras.DownloadCameras;
 import com.shaym.leash.logic.cameras.GetCamerasByCity;
+import com.shaym.leash.ui.utils.UIHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,10 +42,7 @@ public class CamerasFragment extends Fragment implements onCameraSelectedListene
     private static final String TAG = "CamerasFragment";
     public static final String CAMERA_PARCE = "CAMERA_PARCE";
 
-    private String currentTab = TELAVIV;
     private TabLayout mTabLayout;
-    private RecyclerView mRecyclerView;
-    private CamerasViewModel mCamerasViewModel;
 
     @Nullable
     @Override
@@ -76,7 +74,7 @@ public class CamerasFragment extends Fragment implements onCameraSelectedListene
     }
 
     private void initUI() {
-        mRecyclerView = Objects.requireNonNull(getView()).findViewById(R.id.cameras_list);
+        RecyclerView mRecyclerView = Objects.requireNonNull(getView()).findViewById(R.id.cameras_list);
         mAdapter = new CamerasAdapter(this);
         LinearLayoutManager mManager = new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL, true);
         mRecyclerView.setLayoutManager(mManager);
@@ -87,7 +85,7 @@ public class CamerasFragment extends Fragment implements onCameraSelectedListene
     }
 
     private void initCamerasViewModel() {
-        mCamerasViewModel = ViewModelProviders.of(this).get(CamerasViewModel.class);
+        CamerasViewModel mCamerasViewModel = ViewModelProviders.of(this).get(CamerasViewModel.class);
         mCamerasViewModel.getAllCameras().observe(this, cameras -> {
             // Update the cached copy of the words in the adapter.
             Log.d(TAG, "onCreateView: Observer Triggered");
@@ -146,9 +144,7 @@ public class CamerasFragment extends Fragment implements onCameraSelectedListene
         }
     }
 
-    private void addTab(String title) {
-        mTabLayout.addTab(mTabLayout.newTab().setText(title));
-    }
+
 
 
 
@@ -158,24 +154,24 @@ public class CamerasFragment extends Fragment implements onCameraSelectedListene
         mTabLayout.removeAllTabs();
 
         if (camerasbycity.get(0).size() > 0){
-            addTab(getString(R.string.telaviv_location));
+            UIHelper.getInstance().addTab(mTabLayout,getString(R.string.telaviv_location));
             mCamerasByCity.add(camerasbycity.get(0));
         }
 
         if (camerasbycity.get(1).size() > 0){
-            addTab(getString(R.string.ashdod_location));
+            UIHelper.getInstance().addTab(mTabLayout,getString(R.string.ashdod_location));
             mCamerasByCity.add(camerasbycity.get(1));
 
         }
 
         if (camerasbycity.get(2).size() > 0){
-            addTab(getString(R.string.ceasearea_camtitle));
+            UIHelper.getInstance().addTab(mTabLayout,getString(R.string.ceasearea_camtitle));
             mCamerasByCity.add(camerasbycity.get(2));
 
         }
 
         if (camerasbycity.get(3).size() > 0){
-            addTab(getString(R.string.herzelia_location));
+            UIHelper.getInstance().addTab(mTabLayout,getString(R.string.herzelia_location));
             mCamerasByCity.add(camerasbycity.get(3));
 
         }

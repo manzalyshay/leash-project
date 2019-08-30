@@ -181,7 +181,7 @@ public class PostViewHolder extends RecyclerView.ViewHolder implements PopupMenu
         }
 
         mForumViewModel = ViewModelProviders.of(fragment).get(ForumViewModel.class);
-        mCommentsReference = FirebaseDatabase.getInstance().getReference().child(CONSTANT.POST_COMMENTS).child(post.forum).child(post.key);
+        mCommentsReference = FirebaseDatabase.getInstance().getReference().child(CONSTANT.POST_COMMENTS).child(post.category).child(post.key);
         mForumViewModel.setCOMMENTS_LIVE_DATA(mCommentsReference);
         LiveData<DataSnapshot> currentCommentPostLiveData = mForumViewModel.getCommentsLiveData();
 
@@ -333,7 +333,7 @@ public class PostViewHolder extends RecyclerView.ViewHolder implements PopupMenu
         String commentText = mCommentField.getText().toString();
 
         // Push the comment, it will appear in the list
-        FireBasePostsHelper.getInstance().writeNewComment(mUser.getUid(), currentPost.forum, currentPost.key, commentText );
+        FireBasePostsHelper.getInstance().writeNewComment(mUser, mPostProfile, currentPost, commentText );
 
         // Clear the field
         mCommentField.setText(null);

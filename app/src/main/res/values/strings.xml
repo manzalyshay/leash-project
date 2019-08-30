@@ -72,8 +72,8 @@
     </string-array>
 
     //Facebook
-    <string name="facebook_app_id">1637949759563628</string>
-    <string name="fb_login_protocol_scheme">fb1637949759563628</string>
+    <string name="facebook_app_id" translatable="false">1637949759563628</string>
+    <string name="fb_login_protocol_scheme" translatable="false">fb1637949759563628</string>
     <string name="title_location_permission">Location Permisson</string>
     <string name="text_location_permission">Please allow location</string>
     <string name="ok">OK</string>
@@ -171,25 +171,17 @@
     <string name="year">Year</string>
     <string name="gearpost_pricelabel">Price:</string>
     <string name="contact_name_label">Contact Name:</string>
-    <string name="description_description_description_description_description_description">Description Description Description Description Description Description</string>
     <string name="board_category">Boards</string>
     <string name="leash_category">Leashes</string>
     <string name="fins_category">Fins</string>
     <string name="clothing_category">Clothing</string>
     <string name="other_category">Other</string>
-    <string name="cm_unit">ס\"מ</string>
-    <string name="celzius">°C</string>
+    <string name="celzius" translatable="false">°C</string>
     <string name="km_h">KM/h</string>
     <string name="gender">Gender</string>
-    <string name="pick_image_intent_text">Pick Image</string>
-    <string name="comments_postfix">תגובות</string>
     <string name="image_picked">Image Picked!</string>
-    <string name="shake">!!שקשוק!!</string>
-    <string name="forum_activity">פעילות בפורום</string>
-    <string name="shop_activity">פעילות בחנות</string>
-    <string name="inbox">דואר נכנס</string>
-    <string name="delete">מחק</string>
-    <string name="edit">ערוך</string>
+    <string name="surf_today_string">"Did you surf today?
+        Please rate the wave!"</string>
 
 
     <string-array name="forum_categories_array">
@@ -214,7 +206,19 @@
         <item>Female</item>
 
     </string-array>
-
+    <string name="shop_activity">Store Activity</string>
+    <string name="shake">!!RING!!</string>
+    <string name="rate">Rate</string>
+    <string name="pick_image_intent_text">Pick Image</string>
+    <string name="forum_activity">Forum Activity</string>
+    <string name="edit">Edit</string>
+    <string name="cm_unit">CM</string>
+    <string name="comments_postfix">Comments</string>
+    <string name="delete">Delete</string>
+    <string name="second_hand">Second Hand</string>
+    <string name="stores_notavail">Stores Section is not available at the moment.</string>
+    <string name="new_gear">New</string>
+    <string name="new_comment_on_post">Published a new Comment On Your Post!</string>
 
 
 </resources>

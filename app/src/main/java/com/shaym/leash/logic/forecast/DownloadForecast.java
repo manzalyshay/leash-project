@@ -28,7 +28,6 @@ import static com.shaym.leash.ui.forecast.ForecastFragment.TELAVIV_TAG;
 public class DownloadForecast extends AsyncTask<Void, Void, ArrayList<ForecastObject>> {
     private static final String TAG = "DownloadForecast";
     private int locationNum;
-    private ForecastListener mListener;
     public DownloadForecast (int loc){
         locationNum = loc;
     }
@@ -52,7 +51,7 @@ public class DownloadForecast extends AsyncTask<Void, Void, ArrayList<ForecastOb
             url = urls.get(0);
         }
         else {
-            location = CALIFORNIA_TAG;
+            location = TELAVIV_TAG;
             url = urls.get(1);
         }
 

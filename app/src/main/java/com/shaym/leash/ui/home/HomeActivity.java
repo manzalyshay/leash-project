@@ -93,6 +93,8 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
     private boolean uiSet;
     public static String mSelectedPostID;
     private ProgressBar mLeashProgressBar;
+    String i;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate: ");
@@ -104,7 +106,11 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
         LocalBroadcastManager.getInstance(this).registerReceiver(mPushReceiver,
                 new IntentFilter(PUSH_RECEIVED));
 
+
+
+
     }
+
 
     public boolean hasChatWith(String id){
         return mProfileFramgent.haschatWith(id);
@@ -313,6 +319,7 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
     @Override
     public void onPageSelected(int position) {
         Log.d(TAG, "onPageSelected: " + position);
+        mAroundMeFragment.stopLocationUpdates();
         switch (position){
             case 0:
                 UIHelper.getInstance().updateToolBar(UIHelper.CAMERAS_SELECTED, this, mAppBar, mHeaderView );
@@ -345,12 +352,11 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
 
             case 4:
                 UIHelper.getInstance().updateToolBar(UIHelper.PROFILE_SELECTED, this, mAppBar, mHeaderView );
-                FireBasePostsHelper.getInstance().attachRoundPic(mUser.getAvatarurl(), findViewById(R.id.profile_pic_profilefragment), findViewById(R.id.profilepic_progressbar_profilefragment), 100, 100);
                 break;
 
             case 5:
                 UIHelper.getInstance().updateToolBar(UIHelper.AROUNDME_SELECTED, this, mAppBar, mHeaderView );
-
+                mAroundMeFragment.activateLocationUpdates();
                 break;
 
             case 6:

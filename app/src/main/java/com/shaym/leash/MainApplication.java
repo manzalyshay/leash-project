@@ -2,7 +2,11 @@ package com.shaym.leash;
 
 import android.app.Application;
 import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.Signature;
 import android.os.StrictMode;
+import android.util.Base64;
 import android.util.Log;
 
 import com.facebook.FacebookSdk;
@@ -11,6 +15,9 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.shaym.leash.logic.user.Profile;
 import com.squareup.picasso.OkHttp3Downloader;
 import com.squareup.picasso.Picasso;
+
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 /**
  * Created by shaym on 2/16/18.
@@ -39,6 +46,7 @@ public class MainApplication extends Application {
     public void onCreate(){
         Log.d(TAG, "onCreate: ");
         super.onCreate();
+
         mInstance = this;
         FacebookSdk.sdkInitialize(getApplicationContext());
         FirebaseDatabase.getInstance().setPersistenceEnabled(true);

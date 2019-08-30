@@ -183,7 +183,7 @@ class GearPostViewHolder extends RecyclerView.ViewHolder implements PopupMenu.On
         // Create new comment object
         String commentText = mCommentField.getText().toString();
 
-        FireBasePostsHelper.getInstance().writeNewComment(mUser.getUid(), currentPost.category, currentPost.key, commentText );
+        FireBasePostsHelper.getInstance().writeNewComment(mUser, postProfile,  currentPost, commentText );
 
         // Clear the field
         mCommentField.setText(null);

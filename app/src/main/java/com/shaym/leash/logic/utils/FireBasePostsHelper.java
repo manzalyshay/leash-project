@@ -120,18 +120,18 @@ public class FireBasePostsHelper {
 
 
     // [START write_fan_out]
-    public void writeNewForumPost(final String userId, String body, String forum, List<String> images) {
+    public void writeNewForumPost(final String userId, String body, String category, List<String> images) {
         // Create new post at /user-posts/$userid/$postid and at
         // /posts/$postid simultaneously
-        String forumkey = mDatabase.child(forum).push().getKey();
+        String forumkey = mDatabase.child(category).push().getKey();
 
-        Post post = new Post(userId,forumkey, forum, body,new Date(), images, 0);
+        Post post = new Post(userId,forumkey, category, body,new Date(), images, 0);
         Map<String, Object> postValues = post.toMap();
 
         Map<String, Object> childUpdates = new HashMap<>();
         childUpdates.put("/" + FORUM_POSTS+ "/" +ALL_POSTS + "/" + forumkey, postValues);
         childUpdates.put("/" + FORUM_POSTS+ "/" + USER_POSTS + "/" + userId + "/" + forumkey, postValues);
-        childUpdates.put("/" + FORUM_POSTS+ "/" + forum + "/" + forumkey, postValues);
+        childUpdates.put("/" + FORUM_POSTS+ "/" + category + "/" + forumkey, postValues);
 
         mDatabase.updateChildren(childUpdates);
     }
@@ -155,7 +155,7 @@ public class FireBasePostsHelper {
     public void deleteForumPost(Post post) {
         // Create new post at /user-posts/$userid/$postid and at
         // /posts/$postid simultaneously
-        mDatabase.getRef().child(FORUM_POSTS).child(post.forum).child(post.key).setValue(null);
+        mDatabase.getRef().child(FORUM_POSTS).child(post.category).child(post.key).setValue(null);
         mDatabase.getRef().child(FORUM_POSTS).child(ALL_POSTS).child(post.key).setValue(null);
         mDatabase.getRef().child(FORUM_POSTS).child(USER_POSTS).child(post.uid).child(post.key).setValue(null);
 
@@ -166,7 +166,7 @@ public class FireBasePostsHelper {
     }
 
     private void deleteForumPostComments(Post post) {
-        mDatabase.getRef().child(POST_COMMENTS).child(post.forum).child(post.key).setValue(null);
+        mDatabase.getRef().child(POST_COMMENTS).child(post.category).child(post.key).setValue(null);
 
     }
 
@@ -295,7 +295,7 @@ public class FireBasePostsHelper {
         if (!text.isEmpty()) {
             ChatMessage message = new ChatMessage(user.getUid(),chatref.push().getKey(), user.getDisplayname(), text, new Date(), false);
 
-            sendNotification(message, convpartner);
+            sendPushNotification(message, convpartner);
             // Push the message, it will appear in the list
             chatref.push().setValue(message);
         }
@@ -304,7 +304,7 @@ public class FireBasePostsHelper {
     }
 
 
-    public void sendNotification(ChatMessage message, Profile convPartner) {
+    public void sendPushNotification(ChatMessage message, Profile convPartner) {
 
         JSONObject mainObj = new JSONObject();
 
@@ -565,7 +565,7 @@ public class FireBasePostsHelper {
 
     public void deleteForumComment(Comment currentComment, Post post) {
 
-        mDatabase.getRef().child(POST_COMMENTS).child(post.forum).child(post.key).child(currentComment.key).removeValue();
+        mDatabase.getRef().child(POST_COMMENTS).child(post.category).child(post.key).child(currentComment.key).removeValue();
     }
 
     public void deleteGearComment(Comment currentComment, GearPost post) {
@@ -578,24 +578,30 @@ public class FireBasePostsHelper {
         }
     }
 
-    public void writeNewComment(String uid, String postforum, String postkey, String commentext) {
+    public void writeNewComment(Profile commentProfile,Profile postProfile, Post post, String commentext) {
 
-        String commentkey = mDatabase.child(POST_COMMENTS).child(postforum).child(postkey).push().getKey();
+        String commentkey = mDatabase.child(POST_COMMENTS).child(post.category).child(post.key).push().getKey();
 
-        Comment comment = new Comment(uid, commentkey, new Date(), commentext);
+        Comment comment = new Comment(commentProfile.getUid(), commentkey, new Date(), commentext);
         Map<String, Object> commentvalues = comment.toMap();
 
         Map<String, Object> childUpdates = new HashMap<>();
-        childUpdates.put("/" + POST_COMMENTS+ "/" +postforum + "/" + postkey + "/" + commentkey, commentvalues);
+        childUpdates.put("/" + POST_COMMENTS+ "/" +post.category + "/" + post.key + "/" + commentkey, commentvalues);
 
 
         mDatabase.updateChildren(childUpdates);
+
+        //Send Notification to Post Owner
+        ChatMessage message = new ChatMessage(commentProfile.getUid(),null, commentProfile.getDisplayname(), MainApplication.getInstace().getApplicationContext().getString(R.string.new_comment_on_post), new Date(), false);
+
+        sendPushNotification(message, postProfile);
+
     }
 
     public void updateForumPost(Post post, String text) {
         post.body = text;
         try {
-            mDatabase.getRef().child(FORUM_POSTS).child(post.forum).child(post.key).setValue(post);
+            mDatabase.getRef().child(FORUM_POSTS).child(post.category).child(post.key).setValue(post);
         }
         catch (Exception e){
             Log.d(TAG, "deleteGearComment: ");
@@ -604,5 +610,6 @@ public class FireBasePostsHelper {
     }
 
     public void updateGearPost(GearPost currentPost, String trim, String trim1) {
+        //TODO
     }
 }

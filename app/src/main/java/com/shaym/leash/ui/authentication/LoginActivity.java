@@ -78,10 +78,10 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     private void initUI() {
 
-        rellay1 = (RelativeLayout) findViewById(R.id.rellay1);
-        rellay2 = (RelativeLayout) findViewById(R.id.rellay2);
-        Button mLoginButton = (Button) findViewById(R.id.loginbtn);
-        Button mSingUpButton = (Button) findViewById(R.id.signupb);
+        rellay1 = findViewById(R.id.rellay1);
+        rellay2 = findViewById(R.id.rellay2);
+        Button mLoginButton = findViewById(R.id.loginbtn);
+        Button mSingUpButton = findViewById(R.id.signupb);
         mLoginProgressBar = findViewById(R.id.loginprogressbar);
         Button mResetPassButton = findViewById(R.id.forgotpass_btn);
         mLoginEmailField = findViewById(R.id.loginemailfield);
@@ -179,11 +179,12 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                         user.updateProfile(profileUpdate);
                         updateUI(user );
                     } else {
+                        mLoginProgressBar.setVisibility(View.GONE);
+
                         // If sign in fails, display a message to the user.
                         Log.w(TAG, "signInWithCredential:failure", task.getException());
                         Toast.makeText(LoginActivity.this, "Authentication failed.",
                                 Toast.LENGTH_SHORT).show();
-                        updateUI(null);
                     }
 
                     // ...
@@ -199,7 +200,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
 
     private void updateUI(FirebaseUser currentUser) {
-
         if (getIntent().getExtras() != null) {
             mFromUID = getIntent().getExtras().getString(FROM_UID_KEY);
         }
@@ -227,6 +227,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.loginbtn:
+                mLoginProgressBar.setVisibility(View.VISIBLE);
+
                 Log.d(TAG, "onClick: LoginBtn");
                 String pass = mLoginPassField.getText().toString();
                 String email = mLoginEmailField.getText().toString();
@@ -235,7 +237,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                     Toast.makeText(LoginActivity.this, "Email/Password is missing.",
                             Toast.LENGTH_SHORT).show();
                 } else {
-                    mLoginProgressBar.setVisibility(View.VISIBLE);
                     mAuth.signInWithEmailAndPassword(email.trim(), pass)
                             .addOnCompleteListener(this, task -> {
                                 if (task.isSuccessful()) {

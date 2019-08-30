@@ -35,7 +35,7 @@ public class ProfileGearPostViewHolder extends RecyclerView.ViewHolder implement
         locationView = itemView.findViewById(R.id.gear_post_location);
         starView = itemView.findViewById(R.id.star);
         itemView.findViewById(R.id.gear_contact_layout).setVisibility(View.GONE);
-        bodyView = itemView.findViewById(R.id.gear_post_body_dialog);
+        bodyView = itemView.findViewById(R.id.gear_post_body);
         dateView = itemView.findViewById(R.id.gear_post_date);
         priceView = itemView.findViewById(R.id.price_amount);
         itemView.setOnClickListener(this);
@@ -43,8 +43,6 @@ public class ProfileGearPostViewHolder extends RecyclerView.ViewHolder implement
 
 
     public void bindToPost(GearPost post, Fragment fragment) {
-
-        Fragment mFragment = fragment;
         mCurrentPost = post;
 
         int dayspast = FireBasePostsHelper.getInstance().getDaysDifference(mCurrentPost.date);

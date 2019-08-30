@@ -14,6 +14,7 @@ import androidx.fragment.app.FragmentActivity;
 
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.tabs.TabLayout;
 import com.shaym.leash.R;
 
 public class UIHelper {
@@ -99,6 +100,11 @@ public class UIHelper {
 
 
         }
+    }
+
+
+    public void addTab(TabLayout tabLayout, String title) {
+        tabLayout.addTab(tabLayout.newTab().setText(title));
     }
 
 

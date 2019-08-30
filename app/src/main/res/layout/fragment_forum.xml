@@ -3,48 +3,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
 
     xmlns:android="http://schemas.android.com/apk/res/android">
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/forum_buttons"
-            android:layout_marginTop="10dp"
-            android:layout_alignParentTop="true"
-            android:layout_centerHorizontal="true"
-            android:orientation="horizontal"
-            android:weightSum="3">
-            <Button
-                android:id="@+id/general_forum_button"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:background="@drawable/rounded_button_unchecked"
-                android:text="@string/general_menu_title"
-                android:textColor="@color/bottom_nav_bg_color"
-                android:textStyle="bold"
-                android:layout_marginEnd="2dp" />
-
-            <Button
-                android:id="@+id/spots_forum_button"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:background="@drawable/rounded_button_unchecked"
-                android:text="@string/spots_menu_title"
-                android:textColor="@color/bottom_nav_bg_color"
-                android:layout_marginEnd="2dp"
-                android:textStyle="bold" />
-
-            <Button
-                android:id="@+id/trips_forum_button"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:background="@drawable/rounded_button_unchecked"
-                android:text="@string/trips_menu_title"
-                android:textColor="@color/bottom_nav_bg_color"
-                android:textStyle="bold" />
-
-        </LinearLayout>
+    <com.google.android.material.tabs.TabLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:tabMode="fixed"
+        app:tabGravity="fill"
+        android:id="@+id/forum_buttons"/>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/forum_posts_list"

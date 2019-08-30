@@ -26,7 +26,7 @@ public class GetForecastsByDays extends AsyncTask<Void, Void, List<List<Forecast
     @Override
     protected List<List<ForecastObject>> doInBackground(Void... params) {
         mForecastByDays = new ArrayList<>();
-        if (allForecasts.size() >0) {
+        if (allForecasts.size() > 0) {
 
             String day = ForecastHelper.getInstance().formatDay(ForecastHelper.getInstance().formatTimeStamp(allForecasts.get(0).getLocalTimeStamp()));
             mForecastByDays.add(ForecastHelper.getInstance().getForecastsByDay(day, allForecasts));

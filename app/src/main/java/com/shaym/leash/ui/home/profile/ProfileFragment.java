@@ -17,6 +17,7 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -28,6 +29,7 @@ import com.shaym.leash.logic.user.Profile;
 import com.shaym.leash.logic.user.UsersViewModel;
 import com.shaym.leash.logic.utils.FireBaseUsersHelper;
 import com.shaym.leash.logic.utils.UsersHelperListener;
+import com.shaym.leash.ui.utils.UIHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,9 +38,12 @@ import java.util.Objects;
 import static com.shaym.leash.logic.utils.CONSTANT.CHAT_CONVERSATIONS;
 import static com.shaym.leash.logic.utils.CONSTANT.FORUM_POSTS;
 import static com.shaym.leash.logic.utils.CONSTANT.GEAR_POSTS;
+import static com.shaym.leash.logic.utils.CONSTANT.GENERAL_POSTS;
 import static com.shaym.leash.logic.utils.CONSTANT.PROFILE_CONVERSATIONS;
 import static com.shaym.leash.logic.utils.CONSTANT.PROFILE_FORUM_POSTS;
 import static com.shaym.leash.logic.utils.CONSTANT.PROFILE_GEAR_POSTS;
+import static com.shaym.leash.logic.utils.CONSTANT.SPOTS_POSTS;
+import static com.shaym.leash.logic.utils.CONSTANT.TRIPS_POSTS;
 import static com.shaym.leash.logic.utils.CONSTANT.USED_GEAR_POSTS;
 import static com.shaym.leash.logic.utils.CONSTANT.USER_CONVERSATIONS;
 import static com.shaym.leash.logic.utils.CONSTANT.USER_POSTS;
@@ -48,14 +53,10 @@ import static com.shaym.leash.logic.utils.CONSTANT.USER_POSTS;
  */
 
 
-public class ProfileFragment extends Fragment implements  View.OnClickListener, UsersHelperListener {
+public class ProfileFragment extends Fragment implements  TabLayout.OnTabSelectedListener {
 
     private static final String TAG = "ProfileFragment";
-    private TextView mForumTab;
-    private TextView mStoreTab;
-    private TextView mInboxTab;
-
-    private String mViewType;
+    private TabLayout mProfileMenu;
     private RecyclerView mRecyclerView;
     private ProfileAdapter mAdapter;
     private DatabaseReference mDatabase;
@@ -64,8 +65,6 @@ public class ProfileFragment extends Fragment implements  View.OnClickListener, 
     private List<Post> mAllPosts = new ArrayList<>();
     private List<GearPost> mAllGearPosts = new ArrayList<>();
     private List<Conversation> mAllConversations = new ArrayList<>();
-
-    private UsersViewModel mUsersViewModel;
     private ProfileViewModel mProfileViewModel;
 
     public ProfileFragment(){
@@ -76,7 +75,6 @@ public class ProfileFragment extends Fragment implements  View.OnClickListener, 
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_profile, container, false);
         mDatabase = FirebaseDatabase.getInstance().getReference();
-        mViewType = PROFILE_FORUM_POSTS;
         return v;
     }
 
@@ -140,7 +138,7 @@ public class ProfileFragment extends Fragment implements  View.OnClickListener, 
     }
 
     private void initUsersViewModel() {
-        mUsersViewModel = ViewModelProviders.of(this).get(UsersViewModel.class);
+        UsersViewModel mUsersViewModel = ViewModelProviders.of(this).get(UsersViewModel.class);
 
         LiveData<DataSnapshot> currentUserLiveData = mUsersViewModel.getCurrentUserDataSnapshotLiveData();
         LiveData<DataSnapshot> allUserLiveData = mUsersViewModel.getAllUsersDataSnapshotLiveData();
@@ -172,13 +170,11 @@ public class ProfileFragment extends Fragment implements  View.OnClickListener, 
 
 
     private void initUI() {
-        mForumTab = Objects.requireNonNull(getView()).findViewById(R.id.forum_activity);
-        mStoreTab = getView().findViewById(R.id.store_activity);
-        mInboxTab = getView().findViewById(R.id.inbox);
-
-        mForumTab.setOnClickListener(this);
-        mStoreTab.setOnClickListener(this);
-        mInboxTab.setOnClickListener(this);
+        mProfileMenu = Objects.requireNonNull(getView()).findViewById(R.id.profile_menu);
+        UIHelper.getInstance().addTab(mProfileMenu, getString(R.string.forum_activity));
+        UIHelper.getInstance().addTab(mProfileMenu, getString(R.string.shop_activity));
+        UIHelper.getInstance().addTab(mProfileMenu, getString(R.string.inbox_menu_item));
+        mProfileMenu.addOnTabSelectedListener(this);
 
         mRecyclerView = Objects.requireNonNull(getView()).findViewById(R.id.profile_list);
         mRecyclerView.setHasFixedSize(true);
@@ -199,48 +195,6 @@ public class ProfileFragment extends Fragment implements  View.OnClickListener, 
         mRecyclerView.setAdapter(mAdapter);
     }
 
-
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()){
-            case R.id.forum_activity:
-                setButtonChecked(mForumTab);
-                mAdapter.mViewType = PROFILE_FORUM_POSTS;
-                mAdapter.notifyDataSetChanged();
-                break;
-
-            case R.id.store_activity:
-                setButtonChecked(mStoreTab);
-                mAdapter.mViewType = PROFILE_GEAR_POSTS;
-                mAdapter.notifyDataSetChanged();
-
-                break;
-
-            case R.id.inbox:
-                setButtonChecked(mInboxTab);
-                mAdapter.mViewType = PROFILE_CONVERSATIONS;
-                mAdapter.notifyDataSetChanged();
-                break;
-        }
-    }
-
-
-
-    private void setButtonChecked(TextView mCurrentForum) {
-        mForumTab.setBackgroundResource(R.color.transparent);
-        mStoreTab.setBackgroundResource(R.color.transparent);
-        mInboxTab.setBackgroundResource(R.color.transparent);
-
-        mCurrentForum.setBackgroundResource(R.drawable.underline_cameras);
-    }
-
-
-
-    @Override
-    public void onUserByIDLoaded(Profile userbyID) {
-
-    }
-
     public boolean haschatWith(String chatkey) {
         for (int i=0; i<mAllConversations.size(); i++){
             if (mAllConversations.get(i).key.equals(chatkey)){
@@ -248,6 +202,39 @@ public class ProfileFragment extends Fragment implements  View.OnClickListener, 
             }
         }
         return false;
+    }
+
+    @Override
+    public void onTabSelected(TabLayout.Tab tab) {
+        switch (tab.getPosition()){
+            case 0:
+                mAdapter.mViewType = PROFILE_FORUM_POSTS;
+                break;
+
+            case 1:
+                mAdapter.mViewType = PROFILE_GEAR_POSTS;
+
+                break;
+
+            case 2:
+                mAdapter.mViewType = PROFILE_CONVERSATIONS;
+
+                break;
+        }
+
+        mAdapter.notifyDataSetChanged();
+
+
+    }
+
+    @Override
+    public void onTabUnselected(TabLayout.Tab tab) {
+
+    }
+
+    @Override
+    public void onTabReselected(TabLayout.Tab tab) {
+
     }
 }
 

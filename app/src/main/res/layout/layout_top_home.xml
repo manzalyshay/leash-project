@@ -165,7 +165,7 @@
                     android:layout_height="match_parent"
                     android:layout_gravity="bottom|end"
                     android:visibility="gone"
-                    android:src="@drawable/ic_profile"
+                    android:src="@drawable/launcher_leash"
                     android:background="@drawable/circle_shape"/>
                 <ProgressBar
                     android:id="@+id/profilepic_progressbar_profilefragment"

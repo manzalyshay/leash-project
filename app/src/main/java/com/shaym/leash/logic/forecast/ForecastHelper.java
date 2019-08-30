@@ -30,47 +30,50 @@ public class ForecastHelper {
     }
 
     public String formatDay(Date date){
-        SimpleDateFormat sdf = new SimpleDateFormat("EEEE");
+        @SuppressLint("SimpleDateFormat") SimpleDateFormat sdf = new SimpleDateFormat("dd-MM");
         return sdf.format(date);
     }
 
 
 
-        public ArrayList<ForecastObject> getForecastsByDay(String day, List<ForecastObject> mData){
-        ArrayList<ForecastObject> list = new ArrayList<>();
+    public ArrayList<ForecastObject> getForecastsByDay(String day, List<ForecastObject> mData){
+        ArrayList<ForecastObject> forecastByDay = new ArrayList<>();
         for (int i=0; i<mData.size(); i++){
             String timestamp2date = formatDay(formatTimeStamp(mData.get(i).getLocalTimeStamp()));
             if (timestamp2date.equals(day)) {
-                list.add(mData.get(i));
+                forecastByDay.add(mData.get(i));
             }
         }
 
-            float mAVGAbsMinBreakingHeight = 0f;
-            float mAVGAbsMaxBreakingHeight = 0f;
-            int mAVGWindSpeed = 0;
-            int mAVGWindDirection = 0;
-            int mAVGTempChill = 0;
-            int mAVGTemp = 0;
+        float mAVGAbsMinBreakingHeight = 0f;
+        float mAVGAbsMaxBreakingHeight = 0f;
+        int mAVGWindSpeed = 0;
+        int mAVGWindDirection = 0;
+        int mAVGTempChill = 0;
+        int mAVGTemp = 0;
 
-            for (int i=0; i<list.size(); i++) {
-                mAVGAbsMaxBreakingHeight += list.get(i).getAbsMaxBreakingHeight();
-                mAVGAbsMinBreakingHeight += list.get(i).getAbsMinBreakingHeight();
-                mAVGWindSpeed += list.get(i).getWindSpeed();
-                mAVGWindDirection += list.get(i).getWindDirection();
-                mAVGTempChill += list.get(i).getTempChill();
-                mAVGTemp += list.get(i).getTemp();
+        if (forecastByDay.size() > 0 ) {
+
+            for (int i = 0; i < forecastByDay.size(); i++) {
+                mAVGAbsMaxBreakingHeight += forecastByDay.get(i).getAbsMaxBreakingHeight();
+                mAVGAbsMinBreakingHeight += forecastByDay.get(i).getAbsMinBreakingHeight();
+                mAVGWindSpeed += forecastByDay.get(i).getWindSpeed();
+                mAVGWindDirection += forecastByDay.get(i).getWindDirection();
+                mAVGTempChill += forecastByDay.get(i).getTempChill();
+                mAVGTemp += forecastByDay.get(i).getTemp();
             }
 
-            mAVGAbsMaxBreakingHeight = mAVGAbsMaxBreakingHeight/list.size();
-            mAVGAbsMinBreakingHeight = mAVGAbsMinBreakingHeight/list.size();
-            mAVGWindSpeed = mAVGWindSpeed/list.size();
-            mAVGWindDirection = mAVGWindDirection/list.size();
-            mAVGTempChill = mAVGTempChill/list.size();
-            mAVGTemp = mAVGTemp/list.size();
+            mAVGAbsMaxBreakingHeight = mAVGAbsMaxBreakingHeight / forecastByDay.size();
+            mAVGAbsMinBreakingHeight = mAVGAbsMinBreakingHeight / forecastByDay.size();
+            mAVGWindSpeed = mAVGWindSpeed / forecastByDay.size();
+            mAVGWindDirection = mAVGWindDirection / forecastByDay.size();
+            mAVGTempChill = mAVGTempChill / forecastByDay.size();
+            mAVGTemp = mAVGTemp / forecastByDay.size();
 
 
-            list.add(new ForecastAVGObject(mAVGAbsMinBreakingHeight, mAVGAbsMaxBreakingHeight, mAVGWindSpeed, mAVGWindDirection, mAVGTempChill, mAVGTemp, day));
-            return list;
+            forecastByDay.add(new ForecastAVGObject(mAVGAbsMinBreakingHeight, mAVGAbsMaxBreakingHeight, mAVGWindSpeed, mAVGWindDirection, mAVGTempChill, mAVGTemp, day));
+        }
+        return forecastByDay;
     }
 
     public static ForecastHelper getInstance(){

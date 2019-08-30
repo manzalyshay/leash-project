@@ -31,6 +31,7 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
+import com.google.android.material.tabs.TabLayout;
 import com.shaym.leash.R;
 import com.shaym.leash.logic.forecast.DownloadForecast;
 import com.shaym.leash.logic.forecast.ForecastAVGObject;
@@ -39,6 +40,7 @@ import com.shaym.leash.logic.forecast.ForecastListener;
 import com.shaym.leash.logic.forecast.localdb.dbutils.ForecastObject;
 import com.shaym.leash.logic.forecast.localdb.dbutils.ForecastViewModel;
 import com.shaym.leash.logic.forecast.localdb.dbutils.GetForecastsByDays;
+import com.shaym.leash.ui.utils.UIHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,24 +50,18 @@ import java.util.Objects;
  * Created by shaym on 2/14/18.
  */
 
-public class ForecastFragment extends Fragment implements  ForecastListener, onDaySelectedListener {
+public class ForecastFragment extends Fragment implements  ForecastListener, TabLayout.OnTabSelectedListener {
     private static final String TAG = "ForecastFragment";
     public static final String TELAVIV_TAG = "TEL-AVIV";
     public static final String CALIFORNIA_TAG = "CALIFORNIA";
-    public final static int ISRAEL_FRAGMENT_ITEM_ID = 0201;
-    public final static int CALIFORNIA_FRAGMENT_ITEM_ID = 0202;
 
     private TextView mMinWaveHeight;
     private TextView mMaxWaveHeight;
     private TextView mWindSpeed;
     private ImageView mWindDirection;
-
     private TextView mCurrentTemp;
-
     private List<List<ForecastObject>> mForecastByDays;
-    private List<String> mDays;
-    private RecyclerView mDayPicker;
-    private DayPickerAdapter mPickerAdapter;
+    private TabLayout mDayPicker;
     private LineChart mChart;
     private static ArrayList<String> Xval = new ArrayList<>();
     private ForecastViewModel mForecastViewModel;
@@ -92,10 +88,11 @@ public class ForecastFragment extends Fragment implements  ForecastListener, onD
         mWindSpeed = getView().findViewById(R.id.wind_speed);
         mWindDirection = getView().findViewById(R.id.wind_direction_icon);
         mCurrentTemp = getView().findViewById(R.id.temp_value);
+        mDayPicker = getView().findViewById(R.id.days_menu);
+        mDayPicker.addOnTabSelectedListener(this);
 
         initChart();
         initForecastViewModel();
-        initPicker();
     }
 
     private void initForecastViewModel() {
@@ -172,20 +169,6 @@ public class ForecastFragment extends Fragment implements  ForecastListener, onD
 
 
 
-    private void initPicker() {
-        mDayPicker = Objects.requireNonNull(getView()).findViewById(R.id.date_picker);
-
-        mDayPicker.setHasFixedSize(true);
-        // Set up Layout Manager, reverse layout
-        LinearLayoutManager mManager = new LinearLayoutManager(getActivity(), RecyclerView.VERTICAL, false);
-        mDayPicker.setLayoutManager(mManager);
-        ViewCompat.setNestedScrollingEnabled(mDayPicker, false);
-        mPickerAdapter = new DayPickerAdapter( this);
-        mDayPicker.setAdapter(mPickerAdapter);
-    }
-
-
-
     private void updateAVGUI(ForecastAVGObject avgObjectToday){
             if (avgObjectToday.mAVGAbsMinBreakingHeight < 1) {
                 float normalized = avgObjectToday.mAVGAbsMinBreakingHeight*100;
@@ -219,22 +202,15 @@ public class ForecastFragment extends Fragment implements  ForecastListener, onD
     public void onForecastsLoaded(List<List<ForecastObject>> forecastByDays, List<String> days) {
         Log.d(TAG, "onForecastsLoaded: ");
         mForecastByDays = forecastByDays;
-        mDays = days;
+        mDayPicker.removeAllTabs();
 
-        mPickerAdapter.setDays(mDays);
-    }
-
-    @Override
-    public void onDaySelected(int pos) {
-        Log.d(TAG, "onDaySelected: ");
-        updateAVGUI((ForecastAVGObject)(mForecastByDays.get(pos).get(mForecastByDays.get(pos).size()-1)));
-
-        List<ForecastObject> Chartforecasts = new ArrayList<>(mForecastByDays.get(pos));
-        Chartforecasts.remove(Chartforecasts.size()-1);
-
-        updateForecastChart(Chartforecasts, 0);
+        for (int i=0; i<days.size(); i++){
+            UIHelper.getInstance().addTab(mDayPicker, days.get(i));
+        }
 
     }
+
+
 
     private void updateForecastChart(List<ForecastObject> chartforecasts, int currentForecast) {
 
@@ -315,6 +291,26 @@ public class ForecastFragment extends Fragment implements  ForecastListener, onD
     }
 
 
+    @Override
+    public void onTabSelected(TabLayout.Tab tab) {
+        Log.d(TAG, "onDaySelected: " + tab.getPosition());
+        updateAVGUI((ForecastAVGObject)(mForecastByDays.get(tab.getPosition()).get(mForecastByDays.get(tab.getPosition()).size()-1)));
+
+        List<ForecastObject> Chartforecasts = new ArrayList<>(mForecastByDays.get(tab.getPosition()));
+        Chartforecasts.remove(Chartforecasts.size()-1);
+
+        updateForecastChart(Chartforecasts, 0);
+    }
+
+    @Override
+    public void onTabUnselected(TabLayout.Tab tab) {
+
+    }
+
+    @Override
+    public void onTabReselected(TabLayout.Tab tab) {
+
+    }
 }
 
 

@@ -15,7 +15,7 @@ public class Post {
     public String uid;
     public String key;
     public String body;
-    public String forum;
+    public String category;
     public List<String> images;
     public Date date;
 
@@ -29,7 +29,7 @@ public class Post {
     public Post(String uid, String key, String forum, String body, Date date, List<String> images, int starCount) {
         this.uid = uid;
         this.key = key;
-        this.forum = forum;
+        this.category = forum;
         this.date = date;
         this.body = body;
         this.images = images;
@@ -43,7 +43,7 @@ public class Post {
         result.put("uid", uid);
         result.put("key", key);
 
-        result.put("forum", forum);
+        result.put("category", category);
         result.put("images", images);
         result.put("body", body);
         result.put("date", date);

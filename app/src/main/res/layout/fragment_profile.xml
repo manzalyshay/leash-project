@@ -1,48 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <RelativeLayout
+    <com.google.android.material.tabs.TabLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-
-        android:id="@+id/profile_menu"
-        android:layout_alignParentTop="true"
-        android:gravity="center_horizontal">
-
-        <androidx.appcompat.widget.AppCompatTextView
-            android:id="@+id/forum_activity"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textStyle="bold"
-            android:text="@string/forum_activity"
-            android:layout_marginEnd="15dp"
-            android:layout_alignParentStart="true"
-            android:background="@drawable/underline_cameras" />
-
-
-        <androidx.appcompat.widget.AppCompatTextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textStyle="bold"
-            android:id="@+id/store_activity"
-            android:layout_marginEnd="15dp"
-
-            android:text="@string/shop_activity"
-            android:layout_toEndOf="@id/forum_activity"/>
-
-        <androidx.appcompat.widget.AppCompatTextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textStyle="bold"
-            android:id="@+id/inbox"
-
-            android:text="@string/inbox"
-            android:layout_toEndOf="@id/store_activity"/>
-
-    </RelativeLayout>
+        app:tabMode="fixed"
+        app:tabGravity="fill"
+        android:id="@+id/profile_menu"/>
 
 
     <androidx.recyclerview.widget.RecyclerView

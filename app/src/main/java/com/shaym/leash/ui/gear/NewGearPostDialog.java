@@ -230,8 +230,6 @@ public class NewGearPostDialog extends DialogFragment implements onPictureUpload
                 .start(GEAR_PICK_IMAGE_REQUEST);
 
 
-
-
     }
 
 

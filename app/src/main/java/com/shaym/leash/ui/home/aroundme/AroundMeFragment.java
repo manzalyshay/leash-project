@@ -2,8 +2,12 @@ package com.shaym.leash.ui.home.aroundme;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -19,6 +23,9 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -29,6 +36,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
 import com.shaym.leash.R;
 import com.shaym.leash.logic.user.Profile;
@@ -52,6 +60,7 @@ import permissions.dispatcher.PermissionRequest;
 import permissions.dispatcher.RuntimePermissions;
 
 import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
+import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 import static com.google.android.gms.maps.GoogleMap.OnMarkerClickListener;
 import static com.google.android.gms.maps.GoogleMap.OnMyLocationButtonClickListener;
 
@@ -64,25 +73,22 @@ import static com.google.android.gms.maps.GoogleMap.OnMyLocationButtonClickListe
 public class AroundMeFragment extends Fragment implements OnMapReadyCallback, OnMyLocationButtonClickListener,
         OnMarkerClickListener {
     private GoogleMap mGoogleMap;
-    private FusedLocationProviderClient mFusedLocationClient;
     private static final String TAG = "AroundMeFragment";
-    protected Set<PoiTarget> poiTargets = new HashSet<>();
+    private Set<PoiTarget> poiTargets = new HashSet<>();
     private HashMap<Profile, LatLng> markerlocation = new HashMap<>();
     private List<Marker> markerList = new ArrayList<>();
-
-    public static final float COORDINATE_OFFSET = 0.00002f; // You can change this value according to your need
-    public int MAX_NUMBER_OF_MARKERS;
+    private static final float COORDINATE_OFFSET = 0.00002f; // You can change this value according to your need
+    private int MAX_NUMBER_OF_MARKERS;
     private SupportMapFragment mapFragment;
     private List<Profile> mAllUsers = new ArrayList<>();
     private Profile mUser;
-    private UsersViewModel mUsersViewModel;
-
+    private LocationManager locationManager;
+    private LocationListener mLocationListener;
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.fragment_aroundme, container, false);
 
-        return v;
+        return inflater.inflate(R.layout.fragment_aroundme, container, false);
     }
 
     @Override
@@ -91,30 +97,55 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
         Log.d(TAG, "onActivityCreated: ");
         mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.googleMap);
 
-        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(Objects.requireNonNull(getActivity()));
+        AroundMeFragmentPermissionsDispatcher.initLocationProvidersWithPermissionCheck(this);
+        mapFragment.getMapAsync(AroundMeFragment.this);
 
-        AroundMeFragmentPermissionsDispatcher.getCurrentLocationWithPermissionCheck(this);
+
     }
-
-
 
     @SuppressLint("MissingPermission")
-    @NeedsPermission(ACCESS_COARSE_LOCATION)
-    void getCurrentLocation() {
-        mFusedLocationClient.getLastLocation()
-                .addOnSuccessListener(Objects.requireNonNull(getActivity()), location -> {
-                    // Got last known location. In some rare situations this can be null.
-                    if (location != null) {
-                        FireBaseUsersHelper.getInstance().updateUserLocation(new LatLng(location.getLatitude(), location.getLongitude()));
-                    }
-                    mapFragment.getMapAsync(AroundMeFragment.this);
+    @NeedsPermission({ACCESS_COARSE_LOCATION, ACCESS_FINE_LOCATION})
+    public void initLocationProviders() {
+        locationManager = (LocationManager) Objects.requireNonNull(getActivity()).getSystemService(Context.LOCATION_SERVICE);
 
-                });
+// Define a listener that responds to location updates
+        mLocationListener = new LocationListener() {
+            public void onLocationChanged(Location location) {
+                Log.d(TAG, "onLocationChanged: " + location);
+                // Called when a new location is found by the network location provider.
+                if (location != null) {
+                    FireBaseUsersHelper.getInstance().updateUserLocation(new LatLng(location.getLatitude(), location.getLongitude()));
+                }
+            }
 
+            public void onStatusChanged(String provider, int status, Bundle extras) {}
+
+            public void onProviderEnabled(String provider) {}
+
+            public void onProviderDisabled(String provider) {}
+        };
 
     }
 
-    @OnShowRationale(ACCESS_COARSE_LOCATION)
+
+   public void activateLocationUpdates(){
+        AroundMeFragmentPermissionsDispatcher.startLocationUpdatesWithPermissionCheck(this);
+
+   }
+
+    public void stopLocationUpdates() {
+        locationManager.removeUpdates(mLocationListener);
+    }
+
+    @SuppressLint("MissingPermission")
+    @NeedsPermission({ACCESS_COARSE_LOCATION, ACCESS_FINE_LOCATION})
+    void startLocationUpdates() {
+        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, mLocationListener);
+
+    }
+
+
+    @OnShowRationale({ACCESS_COARSE_LOCATION, ACCESS_FINE_LOCATION})
     void showRationaleForFineLocation(PermissionRequest request) {
         showRationaleDialog(R.string.text_location_permission, request);
     }
@@ -139,7 +170,7 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
     }
 
 
-    @OnPermissionDenied(ACCESS_COARSE_LOCATION)
+    @OnPermissionDenied({ACCESS_COARSE_LOCATION, ACCESS_FINE_LOCATION})
     void onLocationDenied() {
         Toast.makeText(getContext(), "Denied", Toast.LENGTH_SHORT).show();
     }
@@ -257,7 +288,7 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
 
 
     @SuppressLint("MissingPermission")
-    @NeedsPermission(ACCESS_COARSE_LOCATION)
+    @NeedsPermission({ACCESS_COARSE_LOCATION, ACCESS_FINE_LOCATION})
     @Override
     public void onMapReady(GoogleMap googleMap) {
         Log.d(TAG, "onMapReady: ");
@@ -267,7 +298,7 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
             poiTargets.clear();
         }
         catch (Exception e){
-            Log.d(TAG, "onMapReady: " + e.toString());
+            Log.e(TAG, "onMapReady: " + e.toString());
         }
         mGoogleMap.getUiSettings().setZoomControlsEnabled(true);
 
@@ -281,10 +312,11 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
 
     private void initUsersViewModel() {
 
-        mUsersViewModel = ViewModelProviders.of(this).get(UsersViewModel.class);
+        UsersViewModel mUsersViewModel = ViewModelProviders.of(this).get(UsersViewModel.class);
 
         LiveData<DataSnapshot> allUserLiveData = mUsersViewModel.getAllUsersDataSnapshotLiveData();
         allUserLiveData.observe(this, dataSnapshot -> {
+            Log.d(TAG, "Users View Model Triggered ");
             if (dataSnapshot != null) {
                 mAllUsers.clear();
 
@@ -332,8 +364,6 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
 
         return false;
     }
-
-
 
 
     public class PoiTarget implements Target {
