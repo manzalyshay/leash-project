@@ -9,12 +9,29 @@
         app:tabMode="fixed"
         app:tabGravity="fill"
         android:id="@+id/gear_menu"/>
-    <Spinner
-        android:id="@+id/secondhand_categories"
+    <com.google.android.material.tabs.TabLayout
+        android:layout_width="match_parent"
         android:layout_below="@id/gear_menu"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:tabMode="fixed"
+        app:tabGravity="fill"
+        android:id="@+id/stores_menu"/>
+
+    <ImageView
+        android:layout_width="250"
+        android:layout_centerHorizontal="true"
+        android:id="@+id/store_thumb"
+        android:layout_below="@id/stores_menu"
+        android:layout_height="100"
+        android:visibility="gone"/>
+    <com.shaym.leash.ui.gear.GearSpinner
+
+        android:id="@+id/gear_categories"
+        android:layout_below="@id/store_thumb"
         android:layout_margin="10dp"
         android:layout_width="wrap_content"
-        android:layout_gravity="end"
+        android:layout_alignParentEnd="true"
         android:layout_height="wrap_content"/>
 
 
@@ -22,7 +39,7 @@
             android:id="@+id/posts_list"
             android:layout_width="match_parent"
             android:padding="10dp"
-            android:layout_below="@id/secondhand_categories"
+            android:layout_below="@id/gear_categories"
             android:layout_height="wrap_content" />
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_new_post"

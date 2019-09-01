@@ -158,7 +158,7 @@ ChatDialog extends DialogFragment implements View.OnClickListener, TextWatcher {
 //        layoutManager.setReverseLayout(true);
         mMessageRecycler.setLayoutManager(layoutManager);
         // use a linear layout manager
-        mAdapter = new MessageListAdapter();
+        mAdapter = new MessageListAdapter(mChatKey);
         mMessageRecycler.setAdapter(mAdapter);
     }
 
@@ -187,7 +187,6 @@ ChatDialog extends DialogFragment implements View.OnClickListener, TextWatcher {
         });
 
     }
-
 
     @Override
     public void onClick(View v) {

@@ -38,6 +38,11 @@ public class CONSTANT {
     final public static String CLOTHING_POSTS = "clothing_posts";
     final public static String OTHER_POSTS = "other_posts";
 
+    final public static String INTERSURF_POSTS = "intersurf";
+    final public static String FREEGULL_POSTS = "freegull";
+    final public static String FCS_POSTS = "fcs";
+    final public static String GALIM_POSTS = "galim";
+
 
     final public static String PROFILE_PICS = "profile_pics";
     final public static String GEAR_POSTS_PICS = "gear_posts_pics";

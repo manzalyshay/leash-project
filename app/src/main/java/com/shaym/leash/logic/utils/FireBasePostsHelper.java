@@ -293,11 +293,12 @@ public class FireBasePostsHelper {
     public void postDirectMessage(String text, Profile user, Profile convpartner, DatabaseReference chatref) {
         // Create new message object
         if (!text.isEmpty()) {
-            ChatMessage message = new ChatMessage(user.getUid(),chatref.push().getKey(), user.getDisplayname(), text, new Date(), false);
+            String key = chatref.push().getKey();
+            ChatMessage message = new ChatMessage(user.getUid(),key, user.getDisplayname(), text, new Date(), false);
 
             sendPushNotification(message, convpartner);
             // Push the message, it will appear in the list
-            chatref.push().setValue(message);
+            chatref.child(key).setValue(message);
         }
 
 
@@ -604,12 +605,22 @@ public class FireBasePostsHelper {
             mDatabase.getRef().child(FORUM_POSTS).child(post.category).child(post.key).setValue(post);
         }
         catch (Exception e){
-            Log.d(TAG, "deleteGearComment: ");
+            Log.e(TAG, "updateForumPost: ");
             e.printStackTrace();
         }
     }
 
     public void updateGearPost(GearPost currentPost, String trim, String trim1) {
         //TODO
+    }
+
+    public void updateChatMessage(ChatMessage message, String chatkey) {
+        try {
+            mDatabase.getRef().child(CHAT_CONVERSATIONS).child(CONVERSATIONS).child(chatkey).child(message.key).setValue(message);
+        }
+        catch (Exception e){
+            Log.e(TAG, "updateChatMessage: ");
+            e.printStackTrace();
+        }
     }
 }

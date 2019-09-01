@@ -205,7 +205,7 @@ public class ForecastFragment extends Fragment implements  ForecastListener, Tab
         mDayPicker.removeAllTabs();
 
         for (int i=0; i<days.size(); i++){
-            UIHelper.getInstance().addTab(mDayPicker, days.get(i));
+            UIHelper.getInstance().addTab(mDayPicker, days.get(i), mDayPicker.getTabCount() == 0);
         }
 
     }

@@ -16,43 +16,83 @@ import static com.shaym.leash.logic.utils.CONSTANT.OTHER_POSTS;
 
     public class GearViewModel extends ViewModel {
 
-        private static final DatabaseReference BOARDS_POSTS_REF =
+        private static final DatabaseReference USED_BOARDS_POSTS_REF =
                 FirebaseDatabase.getInstance().getReference().child(GEAR_POSTS).child(CONSTANT.USED_GEAR_POSTS).child(BOARDS_POSTS);
-        private static final DatabaseReference LEASH_POSTS_REF =
+        private static final DatabaseReference USED_LEASH_POSTS_REF =
                 FirebaseDatabase.getInstance().getReference().child(GEAR_POSTS).child(CONSTANT.USED_GEAR_POSTS).child(LEASHES_POSTS);
-        private static final DatabaseReference FINS_POSTS_REF =
+        private static final DatabaseReference USED_FINS_POSTS_REF =
                 FirebaseDatabase.getInstance().getReference().child(GEAR_POSTS).child(CONSTANT.USED_GEAR_POSTS).child(FINS_POSTS);
-        private static final DatabaseReference CLOTHING_POSTS_REF =
+        private static final DatabaseReference USED_CLOTHING_POSTS_REF =
                 FirebaseDatabase.getInstance().getReference().child(GEAR_POSTS).child(CONSTANT.USED_GEAR_POSTS).child(CLOTHING_POSTS);
-        private static final DatabaseReference OTHER_POSTS_REF =
+        private static final DatabaseReference USED_OTHER_POSTS_REF =
                 FirebaseDatabase.getInstance().getReference().child(GEAR_POSTS).child(CONSTANT.USED_GEAR_POSTS).child(OTHER_POSTS);
 
-        private final FirebaseQueryLiveData boardPostsLiveData = new FirebaseQueryLiveData(BOARDS_POSTS_REF);
-        private final FirebaseQueryLiveData leashPostsLiveData = new FirebaseQueryLiveData(LEASH_POSTS_REF);
-        private final FirebaseQueryLiveData finsPostsLiveData = new FirebaseQueryLiveData(FINS_POSTS_REF);
-        private final FirebaseQueryLiveData clothingPostsLiveData = new FirebaseQueryLiveData(CLOTHING_POSTS_REF);
 
-        public FirebaseQueryLiveData getBoardPostsLiveData() {
-            return boardPostsLiveData;
+        private static final DatabaseReference NEW_BOARDS_POSTS_REF =
+                FirebaseDatabase.getInstance().getReference().child(GEAR_POSTS).child(CONSTANT.NEW_GEAR_POSTS).child(BOARDS_POSTS);
+        private static final DatabaseReference NEW_LEASH_POSTS_REF =
+                FirebaseDatabase.getInstance().getReference().child(GEAR_POSTS).child(CONSTANT.NEW_GEAR_POSTS).child(LEASHES_POSTS);
+        private static final DatabaseReference NEW_FINS_POSTS_REF =
+                FirebaseDatabase.getInstance().getReference().child(GEAR_POSTS).child(CONSTANT.NEW_GEAR_POSTS).child(FINS_POSTS);
+        private static final DatabaseReference NEW_CLOTHING_POSTS_REF =
+                FirebaseDatabase.getInstance().getReference().child(GEAR_POSTS).child(CONSTANT.NEW_GEAR_POSTS).child(CLOTHING_POSTS);
+        private static final DatabaseReference NEW_OTHER_POSTS_REF =
+                FirebaseDatabase.getInstance().getReference().child(GEAR_POSTS).child(CONSTANT.NEW_GEAR_POSTS).child(OTHER_POSTS);
+
+
+        private final FirebaseQueryLiveData usedboardPostsLiveData = new FirebaseQueryLiveData(USED_BOARDS_POSTS_REF);
+        private final FirebaseQueryLiveData UsedleashPostsLiveData = new FirebaseQueryLiveData(USED_LEASH_POSTS_REF);
+        private final FirebaseQueryLiveData UsedfinsPostsLiveData = new FirebaseQueryLiveData(USED_FINS_POSTS_REF);
+        private final FirebaseQueryLiveData usedclothingPostsLiveData = new FirebaseQueryLiveData(USED_CLOTHING_POSTS_REF);
+        private final FirebaseQueryLiveData usedotherPostsLiveData = new FirebaseQueryLiveData(USED_OTHER_POSTS_REF);
+
+        private final FirebaseQueryLiveData NewboardPostsLiveData = new FirebaseQueryLiveData(NEW_BOARDS_POSTS_REF);
+        private final FirebaseQueryLiveData NewleashPostsLiveData = new FirebaseQueryLiveData(NEW_LEASH_POSTS_REF);
+        private final FirebaseQueryLiveData NewfinsPostsLiveData = new FirebaseQueryLiveData(NEW_FINS_POSTS_REF);
+        private final FirebaseQueryLiveData NewclothingPostsLiveData = new FirebaseQueryLiveData(NEW_CLOTHING_POSTS_REF);
+        private final FirebaseQueryLiveData NewotherPostsLiveData = new FirebaseQueryLiveData(NEW_OTHER_POSTS_REF);
+
+        public FirebaseQueryLiveData getUsedBoardPostsLiveData() {
+            return usedboardPostsLiveData;
         }
 
-        public FirebaseQueryLiveData getLeashPostsLiveData() {
-            return leashPostsLiveData;
+        public FirebaseQueryLiveData getUsedLeashPostsLiveData() {
+            return UsedleashPostsLiveData;
         }
 
-        public FirebaseQueryLiveData getFinsPostsLiveData() {
-            return finsPostsLiveData;
+        public FirebaseQueryLiveData getUsedFinsPostsLiveData() {
+            return UsedfinsPostsLiveData;
         }
 
-        public FirebaseQueryLiveData getClothingPostsLiveData() {
-            return clothingPostsLiveData;
+        public FirebaseQueryLiveData getUsedClothingPostsLiveData() {
+            return usedclothingPostsLiveData;
         }
 
-        public FirebaseQueryLiveData getOtherPostsLiveData() {
-            return otherPostsLiveData;
+        public FirebaseQueryLiveData getUsedOtherPostsLiveData() {
+            return usedotherPostsLiveData;
         }
 
-        private final FirebaseQueryLiveData otherPostsLiveData = new FirebaseQueryLiveData(OTHER_POSTS_REF);
+
+        public FirebaseQueryLiveData getNewBoardPostsLiveData() {
+            return NewboardPostsLiveData;
+        }
+
+        public FirebaseQueryLiveData getNewleashPostsLiveData() {
+            return NewleashPostsLiveData;
+        }
+
+        public FirebaseQueryLiveData getNewfinsPostsLiveData() {
+            return NewfinsPostsLiveData;
+        }
+
+        public FirebaseQueryLiveData getNewclothingPostsLiveData() {
+            return NewclothingPostsLiveData;
+        }
+
+        public FirebaseQueryLiveData getNewotherPostsLiveData() {
+            return NewotherPostsLiveData;
+        }
+
 
 
     }

@@ -171,9 +171,9 @@ public class ProfileFragment extends Fragment implements  TabLayout.OnTabSelecte
 
     private void initUI() {
         mProfileMenu = Objects.requireNonNull(getView()).findViewById(R.id.profile_menu);
-        UIHelper.getInstance().addTab(mProfileMenu, getString(R.string.forum_activity));
-        UIHelper.getInstance().addTab(mProfileMenu, getString(R.string.shop_activity));
-        UIHelper.getInstance().addTab(mProfileMenu, getString(R.string.inbox_menu_item));
+        UIHelper.getInstance().addTab(mProfileMenu, getString(R.string.forum_activity), true);
+        UIHelper.getInstance().addTab(mProfileMenu, getString(R.string.shop_activity), false);
+        UIHelper.getInstance().addTab(mProfileMenu, getString(R.string.inbox_menu_item), false);
         mProfileMenu.addOnTabSelectedListener(this);
 
         mRecyclerView = Objects.requireNonNull(getView()).findViewById(R.id.profile_list);

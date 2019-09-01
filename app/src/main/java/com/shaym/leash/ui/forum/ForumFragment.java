@@ -163,9 +163,9 @@ public class ForumFragment extends Fragment implements  View.OnClickListener, Ta
         mFab = v.findViewById(R.id.fab_new_post);
         mFab.setOnClickListener(this);
         mForumButtons = v.findViewById(R.id.forum_buttons);
-        UIHelper.getInstance().addTab(mForumButtons,getString(R.string.general_menu_title));
-        UIHelper.getInstance().addTab(mForumButtons,getString(R.string.spots_menu_title));
-        UIHelper.getInstance().addTab(mForumButtons,getString(R.string.trips_menu_title));
+        UIHelper.getInstance().addTab(mForumButtons,getString(R.string.general_menu_title), true);
+        UIHelper.getInstance().addTab(mForumButtons,getString(R.string.spots_menu_title), false);
+        UIHelper.getInstance().addTab(mForumButtons,getString(R.string.trips_menu_title), false);
 
         mForumButtons.addOnTabSelectedListener(this);
 

@@ -134,7 +134,8 @@ public class GearAdapter extends RecyclerView.Adapter<GearPostViewHolder> {
     }
 
 
-
+    public void filter(String filter) {
+    }
 }
 
 

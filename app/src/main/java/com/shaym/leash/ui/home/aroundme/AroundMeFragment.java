@@ -98,7 +98,6 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
         mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.googleMap);
 
         AroundMeFragmentPermissionsDispatcher.initLocationProvidersWithPermissionCheck(this);
-        mapFragment.getMapAsync(AroundMeFragment.this);
 
 
     }
@@ -124,6 +123,7 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
 
             public void onProviderDisabled(String provider) {}
         };
+        mapFragment.getMapAsync(AroundMeFragment.this);
 
     }
 
@@ -249,6 +249,7 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
                         m = mGoogleMap.addMarker(new MarkerOptions()
                                 .position(Objects.requireNonNull(markerlocation.get(user)))
                                 .snippet(user.getUid()));
+                        markerList.add(m);
                     }
                     else {
                         m.setPosition(Objects.requireNonNull(markerlocation.get(user)));

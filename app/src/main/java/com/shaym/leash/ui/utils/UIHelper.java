@@ -103,8 +103,8 @@ public class UIHelper {
     }
 
 
-    public void addTab(TabLayout tabLayout, String title) {
-        tabLayout.addTab(tabLayout.newTab().setText(title));
+    public void addTab(TabLayout tabLayout, String title, boolean isSelected) {
+        tabLayout.addTab(tabLayout.newTab().setText(title), isSelected);
     }
 
 

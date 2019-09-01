@@ -87,8 +87,12 @@ public class ProfileConversationViewHolder extends RecyclerView.ViewHolder imple
                     LastMessageView.setText(lastmsg.text);
                     if (!lastmsg.isread && !lastmsg.uid.equals(getUid())){
                         LastMessageView.setTypeface(null, Typeface.BOLD);
+                    }
+                    else {
+                        LastMessageView.setTypeface(null, Typeface.NORMAL);
 
                     }
+
                 }            }
         });
     }

@@ -154,24 +154,24 @@ public class CamerasFragment extends Fragment implements onCameraSelectedListene
         mTabLayout.removeAllTabs();
 
         if (camerasbycity.get(0).size() > 0){
-            UIHelper.getInstance().addTab(mTabLayout,getString(R.string.telaviv_location));
+            UIHelper.getInstance().addTab(mTabLayout,getString(R.string.telaviv_location), false);
             mCamerasByCity.add(camerasbycity.get(0));
         }
 
         if (camerasbycity.get(1).size() > 0){
-            UIHelper.getInstance().addTab(mTabLayout,getString(R.string.ashdod_location));
+            UIHelper.getInstance().addTab(mTabLayout,getString(R.string.ashdod_location), false);
             mCamerasByCity.add(camerasbycity.get(1));
 
         }
 
         if (camerasbycity.get(2).size() > 0){
-            UIHelper.getInstance().addTab(mTabLayout,getString(R.string.ceasearea_camtitle));
+            UIHelper.getInstance().addTab(mTabLayout,getString(R.string.ceasearea_camtitle), false);
             mCamerasByCity.add(camerasbycity.get(2));
 
         }
 
         if (camerasbycity.get(3).size() > 0){
-            UIHelper.getInstance().addTab(mTabLayout,getString(R.string.herzelia_location));
+            UIHelper.getInstance().addTab(mTabLayout,getString(R.string.herzelia_location), false);
             mCamerasByCity.add(camerasbycity.get(3));
 
         }

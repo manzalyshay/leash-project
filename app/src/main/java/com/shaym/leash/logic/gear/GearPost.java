@@ -47,7 +47,6 @@ public class GearPost extends Post {
         HashMap<String, Object> result = new HashMap<>();
         result.put("uid", uid);
         result.put("key", key);
-
         result.put("category", category);
         result.put("location", location);
         result.put("price", price);

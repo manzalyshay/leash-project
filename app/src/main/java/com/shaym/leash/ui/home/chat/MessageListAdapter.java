@@ -28,6 +28,7 @@ public class MessageListAdapter extends RecyclerView.Adapter {
     private static final int VIEW_TYPE_MESSAGE_SENT = 1;
     private static final int VIEW_TYPE_MESSAGE_RECEIVED = 2;
     private static final String TAG = "MessageListAdapter";
+    private String mChatKey;
 
     public void setConvPartner(Profile mConvPartner) {
         this.mConvPartner = mConvPartner;
@@ -41,8 +42,8 @@ public class MessageListAdapter extends RecyclerView.Adapter {
     private Profile mUser;
     private List<ChatMessage> data = new ArrayList<>();
     
-    MessageListAdapter() {
-
+    MessageListAdapter(String chatKey) {
+        mChatKey = chatKey;
     }
 
 
@@ -173,9 +174,12 @@ public class MessageListAdapter extends RecyclerView.Adapter {
             nameText.setText(message.getAuthor());
             if (!message.isread) {
                 message.setIsread(true);
+                FireBasePostsHelper.getInstance().updateChatMessage(message, mChatKey);
+
                 if (mUser != null) {
-                    mUser.setUnreadcounter(mUser.getUnreadcounter() - 1);
-                    FireBaseUsersHelper.getInstance().saveUserByID(mUser.getUid(), mUser);
+                        mUser.setUnreadcounter(mUser.getUnreadcounter() - 1);
+                        FireBaseUsersHelper.getInstance().saveUserByID(mUser.getUid(), mUser);
+
                 }
             }
 

@@ -105,10 +105,6 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
 
         LocalBroadcastManager.getInstance(this).registerReceiver(mPushReceiver,
                 new IntentFilter(PUSH_RECEIVED));
-
-
-
-
     }
 
 
