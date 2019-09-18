@@ -1,6 +1,10 @@
 <LinearLayout android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
+    android:minWidth="400dp"
+
+    android:background="@color/bottom_nav_bg_color"
+
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <com.google.android.material.textfield.TextInputLayout
@@ -13,10 +17,10 @@
         >
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/gearpost_body"
+            android:id="@+id/purchase_notes"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/post_content"
+            android:hint="@string/notes"
 
             android:lines="6"
             android:gravity="top"
@@ -45,12 +49,12 @@
             >
 
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/gearpost_price"
+                android:id="@+id/purchase_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="number"
-                android:hint="@string/price"
-                android:maxLength="6"
+                android:inputType="text"
+                android:hint="@string/full_name"
+                android:maxLength="10"
                 android:textColor="@color/black"
                 />
 
@@ -67,7 +71,7 @@
             >
 
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/gearpost_contactphone"
+                android:id="@+id/purchase_phone"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="number"
@@ -84,43 +88,8 @@
 
 
 
-<LinearLayout
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="horizontal">
-
-    <LinearLayout
-        android:id="@+id/upload_layout"
-        android:layout_weight="1"
-        android:layout_margin="10dp"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        >
-
-        <androidx.appcompat.widget.AppCompatImageView
-            android:layout_width="15dp"
-            android:layout_height="15dp"
-            android:src="@drawable/ic_image_placeholder"
-            android:layout_gravity="start|top"
-            />
-        <androidx.appcompat.widget.AppCompatTextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/upload_images"
-            android:textColor="@color/white"
-            android:layout_gravity="start|bottom"
-            android:id="@+id/add_picture_label"
-            android:textSize="12sp"/>
-
-
-    </LinearLayout>
-
-
-
-</LinearLayout>
     <Spinner
-        android:id="@+id/cities_spinner"
+        android:id="@+id/purchase_cities_spinner"
         android:layout_width="wrap_content"
         android:layout_margin="10dp"
         android:layout_height="wrap_content"

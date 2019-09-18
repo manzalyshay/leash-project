@@ -12,8 +12,10 @@
         android:ellipsize="end"
         android:background="@color/transparent"
         android:clickable="false"
+        android:scrollHorizontally="false"
         android:focusable="false"
-        android:inputType="textNoSuggestions" />
+        android:inputType="textCapSentences|textMultiLine|textNoSuggestions"
+        />
 
         <RelativeLayout
             android:layout_alignParentBottom="true"
@@ -64,7 +66,14 @@
         </LinearLayout>
         </RelativeLayout>
 
-
+<ImageView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:src="@drawable/ic_addcart"
+    android:layout_alignParentBottom="true"
+    android:id="@+id/purchase_gear"
+    android:visibility="gone"
+    android:layout_centerHorizontal="true"/>
 
 
     </RelativeLayout>

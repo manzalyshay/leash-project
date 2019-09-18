@@ -12,17 +12,19 @@ public class CONSTANT {
     final public static String USERS_TABLE = "users";
     final static String USER_POSTS_AMOUNT = "forumpostsamount";
     final static String USER_GEAR_POSTS_AMOUNT = "gearpostsamount";
-    final public static String USER_BUNDLE = "user_bundle";
-    final public static String USER_OBJ = "user_obj";
-    final public static String PUSH_TOKEN = "pushtoken";
-    final public static String USER_LAT = "currentlatitude";
-    final public static String USER_LNG = "currentlongitude";
+    final static String USER_BUNDLE = "user_bundle";
+    final static String USER_OBJ = "user_obj";
+    final static String PUSH_TOKEN = "pushtoken";
+    final static String USER_STATUS = "online";
+
+    final static String USER_LAT = "currentlatitude";
+    final static String USER_LNG = "currentlongitude";
 
 
     //FORUM
     final public static String FORUM_POSTS = "forum_posts";
     final public static String USER_POSTS = "user_posts";
-    final public static String ALL_POSTS = "all_posts";
+    final static String ALL_POSTS = "all_posts";
     final public static String GENERAL_POSTS = "general_posts";
     final public static String TRIPS_POSTS = "trips_posts";
     final public static String SPOTS_POSTS = "spots_posts";
@@ -52,15 +54,12 @@ public class CONSTANT {
     final public static String PROFILE_FORUM_POSTS = "PROFILE_FORUM_POSTS";
     final public static String PROFILE_GEAR_POSTS = "PROFILE_GEAR_POSTS";
     final public static String PROFILE_CONVERSATIONS = "PROFILE_CONVERSATIONS";
-
-    //FORECAST
-    final public static String LOCAL_FORECAST_RESULTS = "local_forecast_results";
-    final public static String FORECAST_BUNDLE = "forecast_bundle";
-    final public static String FORECAST_RESULTS = "forecast_results";
-
-    final public static String DOWNLOAD_FORECAST_RESULTS = "download_forecast_results";
-
-
+    final public static String ROLE_USER = "USER";
+    final public static String ROLE_ADMIN = "ADMIN";
+    final public static String ROLE_STORE_INTERSURF = "STORE_INTERSURF";
+    final public static String ROLE_STORE_FCS = "STORE_FCS";
+    final public static String ROLE_STORE_GALIM = "STORE_GALIM";
+    final public static String ROLE_STORE_FREEGULL = "STORE_FREEGULL";
 
     //DIRECT MESSAGES
 
@@ -68,11 +67,6 @@ public class CONSTANT {
     final public static String CONVERSATIONS = "conversations";
     final public static String USER_CONVERSATIONS = "user_conversations";
 
-    final public static String WEB_STREAM = "Web";
     final public static String PLAYER_STREAM = "Player";
 
-    final public static String TELAVIV = "TELAVIV";
-    final public static String ASHDOD = "ASHDOD";
-    final public static String HERZELIA = "HERZELIA";
-    final public static String CAESAREA = "CAESAREA";
 }

@@ -27,7 +27,7 @@ public class ProfileViewModel extends ViewModel {
 
 
     @NonNull
-    public LiveData<DataSnapshot> getConversationLiveData() {
+    LiveData<DataSnapshot> getConversationLiveData() {
         return ConversationLiveData;
     }
 
@@ -35,12 +35,12 @@ public class ProfileViewModel extends ViewModel {
         return Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
     }
 
-    public void setCONVERSATION_LIVE_DATA(DatabaseReference CONVERSATION_LIVE_DATA) {
+    void setCONVERSATION_LIVE_DATA(DatabaseReference CONVERSATION_LIVE_DATA) {
         this.CONVERSATION_LIVE_DATA = CONVERSATION_LIVE_DATA;
         ConversationLiveData = new FirebaseQueryLiveData(CONVERSATION_LIVE_DATA);
     }
 
-    public void setALL_USER_POSTS_LIVE_DATA(DatabaseReference ALL_USER_POSTS_LIVE_DATA) {
+    void setALL_USER_POSTS_LIVE_DATA(DatabaseReference ALL_USER_POSTS_LIVE_DATA) {
         this.ALL_USER_POSTS_LIVE_DATA = ALL_USER_POSTS_LIVE_DATA;
         AllUserPostsLiveData = new FirebaseQueryLiveData(ALL_USER_POSTS_LIVE_DATA);
 

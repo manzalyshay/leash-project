@@ -4,15 +4,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
-import com.firebase.ui.database.FirebaseRecyclerAdapter;
-import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.shaym.leash.R;
-import com.shaym.leash.logic.chat.ChatMessage;
 import com.shaym.leash.logic.chat.Conversation;
 import com.shaym.leash.logic.forum.Post;
 import com.shaym.leash.logic.gear.GearPost;
 import com.shaym.leash.logic.user.Profile;
-import com.shaym.leash.ui.home.chat.MessageListAdapter;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -104,7 +100,7 @@ public class ProfileAdapter extends RecyclerView.Adapter {
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         switch (mViewType){
             case PROFILE_FORUM_POSTS:
-                ((ProfileForumPostViewHolder)(holder)).bindToPost(mAllPosts.get(position), mFragment);
+                ((ProfileForumPostViewHolder)(holder)).bindToPost(mAllPosts.get(position));
                 break;
             case PROFILE_GEAR_POSTS:
                 ((ProfileGearPostViewHolder)(holder)).bindToPost(mAllGearPosts.get(position), mFragment);
@@ -180,7 +176,7 @@ public class ProfileAdapter extends RecyclerView.Adapter {
 
     }
 
-    public void updateGearData(List<GearPost> AllGearPosts) {
+    void updateGearData(List<GearPost> AllGearPosts) {
         if (mAllGearPosts != null) {
             GearPostDiffCallback postDiffCallback = new GearPostDiffCallback(mAllGearPosts, AllGearPosts);
             DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(postDiffCallback);

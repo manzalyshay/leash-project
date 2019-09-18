@@ -13,6 +13,7 @@ import com.shaym.leash.R;
 import com.shaym.leash.logic.gear.GearPost;
 import com.shaym.leash.logic.utils.FireBasePostsHelper;
 import com.shaym.leash.ui.home.HomeActivity;
+import com.shaym.leash.ui.utils.UIHelper;
 
 import java.util.Objects;
 
@@ -61,7 +62,7 @@ public class ProfileGearPostViewHolder extends RecyclerView.ViewHolder implement
         bodyView.setText(mCurrentPost.body);
 
         if (mCurrentPost.images != null) {
-            FireBasePostsHelper.getInstance().attachPic(mCurrentPost.images.get(0), gearThumb, progressBar, 200, 200);
+            UIHelper.getInstance().attachPic(mCurrentPost.images.get(0), gearThumb, progressBar, 200, 200);
         }
         else {
             progressBar.setVisibility(View.GONE);

@@ -31,6 +31,7 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.viewpager.widget.ViewPager;
 
+import com.facebook.login.LoginManager;
 import com.github.dhaval2404.imagepicker.ImagePicker;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.tabs.TabLayout;
@@ -72,7 +73,6 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
     public static final int CHOOSE_PROFILE_PIC = 98;
 
     public static final String PUSH_RECEIVED = "PUSH_RECEIVED";
-    public final static String REGISTER_KEY = "REGISTER";
     private CamerasFragment mCamerasFragment;
     private AroundMeFragment mAroundMeFragment;
     private ProfileFragment mProfileFramgent;
@@ -92,8 +92,7 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
     public static TabLayout mTablayout;
     private boolean uiSet;
     public static String mSelectedPostID;
-    private ProgressBar mLeashProgressBar;
-    String i;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,10 +100,12 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
         super.onCreate(savedInstanceState);
         // In Activity's onCreate() for instance
         setContentView(R.layout.activity_home);
-        mLeashProgressBar = findViewById(R.id.leash_progressbar);
 
         LocalBroadcastManager.getInstance(this).registerReceiver(mPushReceiver,
                 new IntentFilter(PUSH_RECEIVED));
+
+        handleIntent();
+
     }
 
 
@@ -131,9 +132,6 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
         HomeActivityPermissionsDispatcher.onRequestPermissionsResult(this, requestCode, grantResults);
     }
 
-    public void dismissProgressBar(){
-        mLeashProgressBar.setVisibility(View.GONE);
-    }
 
 
     @Override
@@ -154,10 +152,18 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
     }
 
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.d(TAG, "onPause: ");
+        FireBaseUsersHelper.getInstance().updateUserStatus(false);
+
+    }
+
     private void updateUI() {
-        Log.d(TAG, "updateUI: ");
-        FireBasePostsHelper.getInstance().attachRoundPic(mUser.getAvatarurl(),mToolbarProfilePicture, mToolbarProfileProgressBar, 100, 100);
-        FireBasePostsHelper.getInstance().attachRoundPic(mUser.getAvatarurl(),mProfilePictureProfileFragment, mProfileProgressBarProfileFragment, 150, 150);
+        Log.d(TAG, "updateUI: " + mUser);
+        UIHelper.getInstance().attachRoundPic(mUser.getAvatarurl(),mToolbarProfilePicture, mToolbarProfileProgressBar, 100, 100);
+        UIHelper.getInstance().attachRoundPic(mUser.getAvatarurl(),mProfilePictureProfileFragment, mProfileProgressBarProfileFragment, 150, 150);
 
         uiSet = true;
 
@@ -203,6 +209,8 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
                 if (mUser != null){
                     updateUI();
                     FireBaseUsersHelper.getInstance().updateUserpushToken();
+                    FireBaseUsersHelper.getInstance().updateUserStatus(true);
+
                 }
             }
         });
@@ -268,8 +276,6 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
         actionbar.setDisplayHomeAsUpEnabled(false);
         actionbar.setDisplayShowHomeEnabled(false);
         actionbar.setDisplayShowTitleEnabled(false);
-
-
         uiSet = true;
 
     }
@@ -459,7 +465,10 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
                 HomeActivityPermissionsDispatcher.pickImageWithPermissionCheck(this);
                 return true;
             case R.id.logout_action:
+                FireBaseUsersHelper.getInstance().updateUserStatus(false);
+
                 FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+
                 firebaseAuth.addAuthStateListener(firebaseAuth1 -> {
                     if (firebaseAuth1.getCurrentUser() == null){
                         //Do anything here which needs to be done after signout is complete
@@ -468,6 +477,7 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
                     }
                 });
                 firebaseAuth.signOut();
+                LoginManager.getInstance().logOut();
 
                 return true;
             default:

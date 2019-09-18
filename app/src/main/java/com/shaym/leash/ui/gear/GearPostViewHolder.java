@@ -1,12 +1,17 @@
 package com.shaym.leash.ui.gear;
 
 import android.annotation.SuppressLint;
+import android.app.Dialog;
+import android.content.DialogInterface;
+import android.graphics.drawable.ColorDrawable;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.RotateAnimation;
@@ -19,6 +24,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -27,8 +33,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
 import com.shaym.leash.R;
 import com.shaym.leash.logic.forum.Comment;
 import com.shaym.leash.logic.forum.ForumViewModel;
@@ -36,11 +40,17 @@ import com.shaym.leash.logic.gear.GearPost;
 import com.shaym.leash.logic.user.Profile;
 import com.shaym.leash.logic.utils.CONSTANT;
 import com.shaym.leash.logic.utils.FireBasePostsHelper;
+import com.shaym.leash.logic.utils.FireBaseUsersHelper;
 import com.shaym.leash.ui.forum.CommentsAdapter;
+import com.shaym.leash.ui.utils.EnlargeImageDialog;
+import com.shaym.leash.ui.utils.UIHelper;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
+import static com.shaym.leash.logic.utils.CONSTANT.ROLE_USER;
 import static com.shaym.leash.ui.home.chat.ChatDialog.getUid;
 
 class GearPostViewHolder extends RecyclerView.ViewHolder implements PopupMenu.OnMenuItemClickListener, View.OnClickListener, TextWatcher {
@@ -54,17 +64,14 @@ class GearPostViewHolder extends RecyclerView.ViewHolder implements PopupMenu.On
     private ImageView gearPic;
     private ImageView settingsPic;
 
-    private StorageReference storageReference;
     private ProgressBar progressBar;
     private ProgressBar authorProgressBar;
 
-    private DatabaseReference mDatabase;
     private ImageView authorPic;
     private GearPost currentPost;
     private Fragment mFragment;
     private Profile postProfile;
     private boolean isExpanded;
-    private ForumViewModel mForumViewModel;
     private CommentsAdapter mAdapter;
     private EditText mCommentField;
     private TextView mCommentButton;
@@ -72,8 +79,9 @@ class GearPostViewHolder extends RecyclerView.ViewHolder implements PopupMenu.On
     private ImageView mExpandArrow;
     private RecyclerView mCommentsRecycler;
     private ImageView postCommentImage;
+    private ImageView purchaseGear;
+
     private ProgressBar postCommentImageProgressBar;
-    private DatabaseReference mCommentsReference;
     private List<Profile> mAllUsers;
     private RelativeLayout mCommentForm;
     private List<Comment> mCommentList = new ArrayList<>();
@@ -82,13 +90,11 @@ class GearPostViewHolder extends RecyclerView.ViewHolder implements PopupMenu.On
     private boolean isArrowExpanded;
     private Profile mUser;
     private Button mSaveEditBtn;
+    private RelativeLayout mContainer;
 
     GearPostViewHolder(View itemView) {
         super(itemView);
-        mDatabase = FirebaseDatabase.getInstance().getReference();
 
-        FirebaseStorage storage = FirebaseStorage.getInstance();
-        storageReference = storage.getReference();
         gearpostdate = itemView.findViewById(R.id.gear_post_date);
         gearpostlocation = itemView.findViewById(R.id.gear_post_location);
 
@@ -118,6 +124,7 @@ class GearPostViewHolder extends RecyclerView.ViewHolder implements PopupMenu.On
         });
 
         gearPic = itemView.findViewById(R.id.gear_thumb);
+        gearPic.setOnClickListener(this);
         progressBar = itemView.findViewById(R.id.gear_thumb_progress);
         authorName = itemView.findViewById(R.id.gear_post_author);
         authorPic = itemView.findViewById(R.id.gear_post_author_photo);
@@ -125,7 +132,7 @@ class GearPostViewHolder extends RecyclerView.ViewHolder implements PopupMenu.On
         settingsPic = itemView.findViewById(R.id.settings_icon);
         mSaveEditBtn = itemView.findViewById(R.id.save_edit_btn);
         mSaveEditBtn.setOnClickListener(this);
-
+        purchaseGear = itemView.findViewById(R.id.purchase_gear);
         desciption = itemView.findViewById(R.id.gear_post_body);
         desciption.addTextChangedListener(new TextWatcher() {
             @Override
@@ -174,7 +181,7 @@ class GearPostViewHolder extends RecyclerView.ViewHolder implements PopupMenu.On
         layoutManager.setStackFromEnd(true);
         mCommentsRecycler.setLayoutManager(layoutManager);
         // Listen for comments
-        mAdapter = new CommentsAdapter(currentPost);
+        mAdapter = new CommentsAdapter(currentPost, mFragment);
         mAdapter.setAllUsers(mAllUsers);
         mCommentsRecycler.setAdapter(mAdapter);
     }
@@ -183,22 +190,36 @@ class GearPostViewHolder extends RecyclerView.ViewHolder implements PopupMenu.On
         // Create new comment object
         String commentText = mCommentField.getText().toString();
 
-        FireBasePostsHelper.getInstance().writeNewComment(mUser, postProfile,  currentPost, commentText );
+        FireBasePostsHelper.getInstance().writeNewGearComment(mUser, postProfile,  currentPost, commentText );
 
         // Clear the field
         mCommentField.setText(null);
-        mCommentsRecycler.postDelayed(() -> mCommentsRecycler.scrollToPosition(mCommentsRecycler.getAdapter().getItemCount() - 1), 500);
-
+        mCommentsRecycler.postDelayed(() -> mCommentsRecycler.scrollToPosition(Objects.requireNonNull(mCommentsRecycler.getAdapter()).getItemCount() - 1), 500);
     }
 
     @SuppressLint("SetTextI18n")
-    void bindToPost(GearPost post, Fragment fragment, Profile postprofile, Profile user,  List<Profile> allUsers) {
+    void bindToPost(GearPost post, Fragment fragment, Profile postprofile, Profile user,  List<Profile> allUsers, RelativeLayout container) {
         mAllUsers = allUsers;
         mUser = user;
         postProfile = postprofile;
         mFragment = fragment;
         currentPost = post;
+        mContainer = container;
         setCommentsAdapter();
+
+        if (!postprofile.getRole().equals(ROLE_USER)){
+            purchaseGear.setVisibility(View.VISIBLE);
+
+            purchaseGear.setOnClickListener(v -> {
+                try {
+                    FragmentManager fm = Objects.requireNonNull(fragment.getActivity()).getSupportFragmentManager();
+                    NewGearPurchaseForm newGearPurchaseForm = NewGearPurchaseForm.newInstance();
+                    newGearPurchaseForm.show(fm, newGearPurchaseForm.getTag());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
+        }
 
         settingsPic.setOnClickListener(this::showPopup);
 
@@ -217,7 +238,7 @@ class GearPostViewHolder extends RecyclerView.ViewHolder implements PopupMenu.On
         }
 
         if (post.images != null && post.images.size() > 0) {
-            FireBasePostsHelper.getInstance().attachPic(post.images.get(0), gearPic, progressBar, 200, 200);
+            UIHelper.getInstance().attachPic(post.images.get(0), gearPic, progressBar, 200, 200);
         }
         else {
             progressBar.setVisibility(View.GONE);
@@ -225,15 +246,15 @@ class GearPostViewHolder extends RecyclerView.ViewHolder implements PopupMenu.On
 
 
         if (postProfile != null && mUser != null) {
-            FireBasePostsHelper.getInstance().attachRoundPic(postProfile.getAvatarurl(), authorPic, authorProgressBar, 100, 100);
-            FireBasePostsHelper.getInstance().attachRoundPic(mUser.getAvatarurl(), postCommentImage, postCommentImageProgressBar, 100, 100);
-            authorPic.setOnClickListener(v -> FireBasePostsHelper.getInstance().showProfilePopup(mUser, postProfile, mFragment));
+            UIHelper.getInstance().attachRoundPic(postProfile.getAvatarurl(), authorPic, authorProgressBar, 100, 100);
+            UIHelper.getInstance().attachRoundPic(mUser.getAvatarurl(), postCommentImage, postCommentImageProgressBar, 100, 100);
+            authorPic.setOnClickListener(v -> FireBaseUsersHelper.getInstance().showProfilePopup(postProfile, mFragment));
 
             authorName.setText(postProfile.getDisplayname());
         }
 
-        mForumViewModel = ViewModelProviders.of(fragment).get(ForumViewModel.class);
-        mCommentsReference = FirebaseDatabase.getInstance().getReference().child(CONSTANT.POST_COMMENTS).child(post.category).child(post.key);
+        ForumViewModel mForumViewModel = ViewModelProviders.of(fragment).get(ForumViewModel.class);
+        DatabaseReference mCommentsReference = FirebaseDatabase.getInstance().getReference().child(CONSTANT.POST_COMMENTS).child(post.category).child(post.key);
         mForumViewModel.setCOMMENTS_LIVE_DATA(mCommentsReference);
         LiveData<DataSnapshot> currentCommentPostLiveData = mForumViewModel.getCommentsLiveData();
 
@@ -255,19 +276,18 @@ class GearPostViewHolder extends RecyclerView.ViewHolder implements PopupMenu.On
         });
     }
 
-    public void showCommentForm(boolean state){
-        if (state){
-            if ((mCommentList.size() == 0 || isExpanded) && !isCommentExpanded) {
-                mCommentForm.setVisibility(View.VISIBLE);
-                setArrowExpanded(true);
-                isCommentExpanded = true;
-            }
-        }
-        else {
+    void showCommentForm(boolean state){
+        if (!state) {
             if (isCommentExpanded) {
                 mCommentForm.setVisibility(View.GONE);
                 setArrowExpanded(false);
                 isCommentExpanded = false;
+            }
+        } else {
+            if ((mCommentList.size() == 0 || isExpanded) && !isCommentExpanded) {
+                mCommentForm.setVisibility(View.VISIBLE);
+                setArrowExpanded(true);
+                isCommentExpanded = true;
             }
         }
     }
@@ -301,7 +321,7 @@ class GearPostViewHolder extends RecyclerView.ViewHolder implements PopupMenu.On
 
 
 
-    public void showPopup(View v) {
+    private void showPopup(View v) {
         PopupMenu popup = new PopupMenu(v.getContext(), v);
         popup.setOnMenuItemClickListener(this);
         MenuInflater inflater = popup.getMenuInflater();
@@ -378,6 +398,10 @@ class GearPostViewHolder extends RecyclerView.ViewHolder implements PopupMenu.On
                 FireBasePostsHelper.getInstance().updateGearPost(currentPost, desciption.getText().toString().trim(), priceView.getText().toString().trim());
                 itemView.setOnClickListener(this);
 
+                break;
+
+            case R.id.gear_thumb:
+                UIHelper.getInstance().zoomImageFromThumb(mContainer, mContainer.findViewById(R.id.expanded_image), gearPic, currentPost.images.get(0));
                 break;
         }
     }

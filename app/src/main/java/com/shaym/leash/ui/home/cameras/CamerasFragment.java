@@ -5,6 +5,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -28,21 +29,22 @@ import java.util.List;
 import java.util.Objects;
 
 import static com.shaym.leash.logic.utils.CONSTANT.PLAYER_STREAM;
-import static com.shaym.leash.logic.utils.CONSTANT.TELAVIV;
 
 /**
  * Created by shaym on 2/17/18.
  */
 public class CamerasFragment extends Fragment implements onCameraSelectedListener,
-        CamerasListener, TabLayout.OnTabSelectedListener {
+        CamerasListener, TabLayout.OnTabSelectedListener, onStreamLoadedListener {
 
     private CamerasAdapter mAdapter;
     private List<List<CameraObject>> mCamerasByCity = new ArrayList<>();
 
     private static final String TAG = "CamerasFragment";
-    public static final String CAMERA_PARCE = "CAMERA_PARCE";
-
+    static final String CAMERA_PARCE = "CAMERA_PARCE";
     private TabLayout mTabLayout;
+    private ProgressBar mCamerasProgressbar;
+
+    public CamerasFragment (){ }
 
     @Nullable
     @Override
@@ -82,6 +84,7 @@ public class CamerasFragment extends Fragment implements onCameraSelectedListene
         mTabLayout = getView().findViewById(R.id.cameras_menu);
         mTabLayout.addOnTabSelectedListener(this);
         setVideoViewPlayerFragment(null);
+        mCamerasProgressbar = getView().findViewById(R.id.cameras_progressbar);
     }
 
     private void initCamerasViewModel() {
@@ -137,6 +140,7 @@ public class CamerasFragment extends Fragment implements onCameraSelectedListene
             if (cam.getStreamKind().equals(PLAYER_STREAM)) {
                 setVideoViewPlayerFragment(cam);
             } else {
+                assert f != null;
                 ((WebViewPlayerFragment) f).updateCamera(cam);
 
             }
@@ -218,6 +222,13 @@ public class CamerasFragment extends Fragment implements onCameraSelectedListene
     @Override
     public void onTabReselected(TabLayout.Tab tab) {
 
+    }
+
+    @Override
+    public void onStreamLoaded(boolean status) {
+        if (status){
+            mCamerasProgressbar.setVisibility(View.GONE);
+        }
     }
 }
 

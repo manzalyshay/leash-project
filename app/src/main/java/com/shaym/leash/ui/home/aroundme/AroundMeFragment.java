@@ -22,11 +22,6 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProviders;
 
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
-import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -36,13 +31,13 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
 import com.shaym.leash.R;
 import com.shaym.leash.logic.user.Profile;
 import com.shaym.leash.logic.user.UsersViewModel;
 import com.shaym.leash.logic.utils.FireBasePostsHelper;
 import com.shaym.leash.logic.utils.FireBaseUsersHelper;
+import com.shaym.leash.ui.utils.UIHelper;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
@@ -63,6 +58,7 @@ import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 import static com.google.android.gms.maps.GoogleMap.OnMarkerClickListener;
 import static com.google.android.gms.maps.GoogleMap.OnMyLocationButtonClickListener;
+import static com.shaym.leash.logic.utils.CONSTANT.ROLE_USER;
 
 
 /**
@@ -84,6 +80,8 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
     private Profile mUser;
     private LocationManager locationManager;
     private LocationListener mLocationListener;
+
+    public AroundMeFragment (){}
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -113,7 +111,8 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
                 Log.d(TAG, "onLocationChanged: " + location);
                 // Called when a new location is found by the network location provider.
                 if (location != null) {
-                    FireBaseUsersHelper.getInstance().updateUserLocation(new LatLng(location.getLatitude(), location.getLongitude()));
+                    if (mUser!= null && mUser.getRole().equals(ROLE_USER))
+                        FireBaseUsersHelper.getInstance().updateUserLocation(new LatLng(location.getLatitude(), location.getLongitude()));
                 }
             }
 
@@ -244,21 +243,30 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
                 for (Profile user : markerlocation.keySet()) {
 
                     Marker m = getMarkerFor(user);
-
+                    PoiTarget pt;
                     if (m == null) {
                         m = mGoogleMap.addMarker(new MarkerOptions()
-                                .position(Objects.requireNonNull(markerlocation.get(user)))
-                                .snippet(user.getUid()));
+                                .position(Objects.requireNonNull(markerlocation.get(user))));
+                        m.setTag(user.getUid());
                         markerList.add(m);
+                        pt = new PoiTarget(m);
+
                     }
                     else {
-                        m.setPosition(Objects.requireNonNull(markerlocation.get(user)));
+                        m.remove();
+                        Marker newmarker = mGoogleMap.addMarker(new MarkerOptions()
+                                .position(Objects.requireNonNull(markerlocation.get(user))));
+                        newmarker.setTag(user.getUid());
+                        markerList.add(newmarker);
+                        pt = new PoiTarget(newmarker);
                     }
-                    PoiTarget pt = new PoiTarget(m);
 
 
                     poiTargets.add(pt);
-                    FireBasePostsHelper.getInstance().attachRoundPicToPoiTarget(user.getAvatarurl(), pt, 100, 100);
+                    if (user.getRole().equals(ROLE_USER))
+                    UIHelper.getInstance().attachRoundPicToPoiTarget(user.getAvatarurl(), pt, 100, 100);
+                    else
+                        UIHelper.getInstance().attachPicToPoiTarget(user.getAvatarurl(), pt, 200, 200);
 
                 }
 
@@ -278,14 +286,15 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
 
 
     private Marker getMarkerFor(Profile user) {
-        for (int i=0; i<markerList.size(); i++){
-            if (markerList.get(i).getSnippet().equals(user.getDisplayname())){
+        for (int i = 0; i < markerList.size(); i++) {
+            if (Objects.equals(markerList.get(i).getTag(), user.getUid()))
                 return markerList.get(i);
-            }
         }
-
         return null;
     }
+
+
+
 
 
     @SuppressLint("MissingPermission")
@@ -303,7 +312,7 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
         }
         mGoogleMap.getUiSettings().setZoomControlsEnabled(true);
 
-        mGoogleMap.setMyLocationEnabled(true);
+        mGoogleMap.setMyLocationEnabled(false);
 
         mGoogleMap.setOnMyLocationButtonClickListener(this);
         googleMap.setOnMarkerClickListener(this);
@@ -337,7 +346,7 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
     private void moveCameraToCurrentLocation(LatLng loc) {
 
         CameraUpdate update = CameraUpdateFactory.newLatLngZoom(loc,
-                19.0f);
+                11.0f);
         mGoogleMap.moveCamera(update);
 
     }
@@ -358,8 +367,8 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
 
         for (int i = 0; i<mAllUsers.size(); i++) {
             Profile clickeduser = mAllUsers.get(i);
-            if (marker.getSnippet().equals(clickeduser.getUid())) {
-                FireBasePostsHelper.getInstance().showProfilePopup(mUser, clickeduser, this);
+            if (Objects.equals(marker.getTag(), clickeduser.getUid())) {
+                FireBaseUsersHelper.getInstance().showProfilePopup(clickeduser, this);
             }
         }
 
@@ -403,8 +412,8 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
     private boolean mapAlreadyHasMarkerForLocation(LatLng location, Profile key) {
 
         for (Profile user : markerlocation.keySet()) {
-            double lng = markerlocation.get(user).longitude;
-            double lat = markerlocation.get(user).latitude;
+            double lng = Objects.requireNonNull(markerlocation.get(user)).longitude;
+            double lat = Objects.requireNonNull(markerlocation.get(user)).latitude;
 
 
             if(lng == location.longitude && lat == location.latitude && !key.getDisplayname().equals(user.getDisplayname())){

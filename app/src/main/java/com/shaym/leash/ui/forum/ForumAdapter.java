@@ -3,6 +3,7 @@ package com.shaym.leash.ui.forum;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
+import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -30,16 +31,18 @@ public class ForumAdapter extends RecyclerView.Adapter<PostViewHolder>{
     private List<Profile> mAllUsers = new ArrayList<>();
     private List<Post> mCurrentData = new ArrayList<>();
     private Profile mUser;
+    private RelativeLayout mContainer;
 
-    ForumAdapter( Fragment fragment) {
+    ForumAdapter(Fragment fragment, RelativeLayout container) {
         Log.d(TAG, "ForumAdapter: ");
         mFragment = fragment;
+        mContainer = container;
         setHasStableIds(true);
 
     }
 
 
-    public void updateCurrentData(List<Post> currentData){
+    void updateCurrentData(List<Post> currentData){
         if (!mCurrentData.isEmpty()) {
             PostDiffCallback postDiffCallback = new PostDiffCallback(mCurrentData, currentData);
             DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(postDiffCallback);
@@ -56,7 +59,7 @@ public class ForumAdapter extends RecyclerView.Adapter<PostViewHolder>{
     }
 
 
-    public void updateUsers(List<Profile> AllUsers, Profile user) {
+    void updateUsers(List<Profile> AllUsers, Profile user) {
         if (!mAllUsers.isEmpty()) {
             UserDiffCallback userDiffCallback = new UserDiffCallback(mAllUsers, AllUsers);
             DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(userDiffCallback);
@@ -106,7 +109,7 @@ public class ForumAdapter extends RecyclerView.Adapter<PostViewHolder>{
     @Override
     public void onBindViewHolder(@NonNull PostViewHolder holder, int position) {
         Log.d(TAG, "onBindViewHolder: " + position);
-        holder.bindToPost(mCurrentData.get(position),mFragment, mUser, mAllUsers);
+        holder.bindToPost(mCurrentData.get(position),mFragment, mUser, mAllUsers, mContainer);
 
     }
 

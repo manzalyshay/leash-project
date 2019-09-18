@@ -17,6 +17,7 @@ import com.shaym.leash.logic.chat.ChatMessage;
 import com.shaym.leash.logic.user.Profile;
 import com.shaym.leash.logic.utils.FireBasePostsHelper;
 import com.shaym.leash.logic.utils.FireBaseUsersHelper;
+import com.shaym.leash.ui.utils.UIHelper;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -184,7 +185,7 @@ public class MessageListAdapter extends RecyclerView.Adapter {
             }
 
             if (mConvPartner != null) {
-                FireBasePostsHelper.getInstance().attachRoundPic(mConvPartner.getAvatarurl(), profileImage, mProfilePicProgressBar, 100, 100);
+                UIHelper.getInstance().attachRoundPic(mConvPartner.getAvatarurl(), profileImage, mProfilePicProgressBar, 100, 100);
             }
 
         }
@@ -200,7 +201,7 @@ public class MessageListAdapter extends RecyclerView.Adapter {
 
         private final List<ChatMessage> oldPosts, newPosts;
 
-        public PostDiffCallback(List<ChatMessage> oldPosts, List<ChatMessage> newPosts) {
+        PostDiffCallback(List<ChatMessage> oldPosts, List<ChatMessage> newPosts) {
             this.oldPosts = oldPosts;
             this.newPosts = newPosts;
         }

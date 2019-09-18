@@ -15,6 +15,16 @@ public class Profile implements Serializable {
     private Double currentlongitude;
     private String pushtoken;
     private String uid;
+    private String role;
+    private boolean online;
+
+    public boolean isOnline() {
+        return online;
+    }
+
+    public void setOnline(boolean online) {
+        this.online = online;
+    }
 
     public int getUnreadcounter() {
         return unreadcounter;
@@ -38,12 +48,24 @@ public class Profile implements Serializable {
                 ", pushtoken='" + pushtoken + '\'' +
                 ", uid='" + uid + '\'' +
                 ", unreadcounter='" + unreadcounter + '\'' +
+                ", role='" + role + '\'' +
+                ", online='" + online + '\'' +
 
                 '}';
     }
 
-    public Profile(String displayname, String email, String gender, String avatarurl, Double currentlatitude, Double currentlongitude,  String pushtoken, String uid, int unreadcounter) {
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    public Profile(String displayname, String role, String email, String gender, String avatarurl, Double currentlatitude, Double currentlongitude, String pushtoken, String uid, int unreadcounter) {
         this.displayname = displayname;
+        this.online = true;
+        this.role = role;
         this.email = email;
         this.gender = gender;
         this.avatarurl = avatarurl;

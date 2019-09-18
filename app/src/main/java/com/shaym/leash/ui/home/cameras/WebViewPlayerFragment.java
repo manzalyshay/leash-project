@@ -1,5 +1,6 @@
 package com.shaym.leash.ui.home.cameras;
 
+import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
@@ -17,23 +18,25 @@ import android.widget.TextView;
 import com.shaym.leash.R;
 import com.shaym.leash.logic.cameras.CameraObject;
 import com.shaym.leash.logic.utils.FireBasePostsHelper;
+import com.shaym.leash.ui.utils.UIHelper;
 
 import static com.shaym.leash.ui.home.cameras.CamerasFragment.CAMERA_PARCE;
 
 public class WebViewPlayerFragment extends Fragment {
     private WebView mWebview;
     private CameraObject mCurrentCameraObject;
-    private TextView mTitleview;
-    private TextView mLocationView;
     private ImageView mSponserLogo;
     private ProgressBar mSponserLogoPbar;
 
+    WebViewPlayerFragment() { }
+
+
+    @SuppressLint("SetJavaScriptEnabled")
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_webviewplayer, container, false);
-        mTitleview = v.findViewById(R.id.title_view);
-        mLocationView = v.findViewById(R.id.location_view);
+
         mWebview = v.findViewById(R.id.webview);
         mSponserLogo = v.findViewById(R.id.sponsor_logo);
         mSponserLogoPbar = v.findViewById(R.id.sponsor_logo_pbar);
@@ -53,16 +56,10 @@ public class WebViewPlayerFragment extends Fragment {
         return v;
     }
 
-    public WebView getWebview() {
-        return mWebview;
-    }
-
-    public void updateCamera(CameraObject cam){
+    void updateCamera(CameraObject cam){
         mCurrentCameraObject = cam;
         mWebview.loadUrl(mCurrentCameraObject.getUrl());
-        mTitleview.setText(mCurrentCameraObject.getLocation());
-        mLocationView.setText(mCurrentCameraObject.getCity());
-        FireBasePostsHelper.getInstance().attachPic(mCurrentCameraObject.mSponsorPicRef, mSponserLogo, mSponserLogoPbar, 30, 30);
+        UIHelper.getInstance().attachPic(mCurrentCameraObject.mSponsorPicRef, mSponserLogo, mSponserLogoPbar, 70, 70);
 
     }
 

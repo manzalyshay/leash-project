@@ -4,8 +4,6 @@ package com.shaym.leash.ui.authentication;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -15,12 +13,14 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
 import com.facebook.GraphRequest;
-import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 import com.google.firebase.auth.AuthCredential;
@@ -28,8 +28,6 @@ import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.shaym.leash.R;
 import com.shaym.leash.logic.utils.FireBaseUsersHelper;
 import com.shaym.leash.ui.home.HomeActivity;
@@ -44,9 +42,7 @@ import static com.shaym.leash.ui.home.HomeActivity.FROM_UID_KEY;
 
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener, FacebookCallback<LoginResult> {
 
-    private static final String EMAIL = "email";
     private static final String TAG = "LoginActivity";
-    public static final String PROFILE_PIC_KEY = "PROFILE_PIC_KEY";
     public static final String GENDER_KEY = "GENDER_KEY";
 
     RelativeLayout rellay1, rellay2;
@@ -55,7 +51,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private EditText mLoginPassField;
     private CallbackManager mCallbackManager;
     private Handler mSplasHandler = new Handler();
-    private LoginButton mFBLoginBtn;
     private AlertDialog mForgotPassDialog;
     private EditText mResetPassEmailInput;
     private ProgressBar mLoginProgressBar;
@@ -116,9 +111,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
 
         });
-        builder.setNegativeButton(R.string.cancel, (dialog, id) -> {
-            mForgotPassDialog.dismiss();
-        });
+        builder.setNegativeButton(R.string.cancel, (dialog, id) -> mForgotPassDialog.dismiss());
 
 // Create the AlertDialog
         mForgotPassDialog = builder.create();
@@ -126,8 +119,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     }
 
     private void initFacebookLogin() {
-        mFBLoginBtn = findViewById(R.id.login_button);
-        mFBLoginBtn.setPermissions(Arrays.asList(EMAIL));
+        LoginButton mFBLoginBtn = findViewById(R.id.login_button);
+        mFBLoginBtn.setPermissions(Arrays.asList("email", "user_gender"));
         mCallbackManager = CallbackManager.Factory.create();
 
         mFBLoginBtn.registerCallback(mCallbackManager, this);
@@ -152,15 +145,10 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                         +"[0-9]{1,2}|25[0-5]|2[0-4][0-9])){1}|"
                         +"([a-zA-Z]+[\\w-]+\\.)+[a-zA-Z]{2,4})$";
 
-        CharSequence inputStr = email;
-
         Pattern pattern = Pattern.compile(regExpn,Pattern.CASE_INSENSITIVE);
-        Matcher matcher = pattern.matcher(inputStr);
+        Matcher matcher = pattern.matcher(email);
 
-        if(matcher.matches())
-            return true;
-        else
-            return false;
+        return matcher.matches();
     }
 
     private void handleFacebookAccessToken(AccessToken token) {
@@ -175,7 +163,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                         FirebaseUser user = mAuth.getCurrentUser();
                         UserProfileChangeRequest profileUpdate = new UserProfileChangeRequest.Builder()
                                 .setDisplayName(mDisplayName).build();
+
                         assert user != null;
+
                         user.updateProfile(profileUpdate);
                         updateUI(user );
                     } else {
@@ -208,7 +198,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
             Bundle b = new Bundle();
             if (!mFBProfilePic.isEmpty()) {
-                FireBaseUsersHelper.getInstance().createUserInDB(mFBProfilePic, "", currentUser);
+                FireBaseUsersHelper.getInstance().createUserInDB(mFBProfilePic, "Male", currentUser);
 
             }
 
@@ -304,7 +294,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
                         String firstName = response.getJSONObject().getString("first_name");
                         String lastName = response.getJSONObject().getString("last_name");
+
                         String userId = loginResult.getAccessToken().getUserId();
+
                         mFBProfilePic = "https://graph.facebook.com/" + userId+ "/picture?type=large";
                         mDisplayName = firstName + " " + lastName;
 
@@ -317,7 +309,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                     }
                 });
         Bundle parameters = new Bundle();
-        parameters.putString("fields", "id,first_name,last_name,picture");
+        parameters.putString("fields", "id,first_name,last_name,picture,email,gender");
         request.setParameters(parameters);
         request.executeAsync();
     }

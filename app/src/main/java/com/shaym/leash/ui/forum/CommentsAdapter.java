@@ -11,6 +11,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -21,9 +22,11 @@ import com.shaym.leash.logic.gear.GearPost;
 import com.shaym.leash.logic.user.Profile;
 import com.shaym.leash.logic.utils.FireBasePostsHelper;
 import com.shaym.leash.logic.utils.FireBaseUsersHelper;
+import com.shaym.leash.ui.utils.UIHelper;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 
 public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.CommentViewHolder> {
@@ -32,6 +35,7 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.Commen
     private List<Comment> mComments = new ArrayList<>();
     private List<Profile> mAllUsers = new ArrayList<>();
     private Post mCurrentPost;
+    private Fragment mFragment;
 
     public void setAllUsers(List<Profile> AllUsers) {
         mAllUsers = AllUsers;
@@ -58,8 +62,9 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.Commen
     }
 
 
-    public CommentsAdapter(Post post) {
+    public CommentsAdapter(Post post, Fragment fragment) {
         mCurrentPost = post;
+        mFragment = fragment;
     }
 
 
@@ -82,7 +87,7 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.Commen
     @Override
     public void onBindViewHolder(@NonNull CommentViewHolder holder, int position) {
         Comment comment = mComments.get(position);
-        holder.bind(comment, position);
+        holder.bind(comment);
     }
 
 
@@ -95,6 +100,7 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.Commen
         TextView bodyView;
         ImageView settings;
         Comment currentComment;
+        Profile commentAuthor;
 
         CommentViewHolder(View itemView) {
             super(itemView);
@@ -106,10 +112,11 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.Commen
             progressBar = itemView.findViewById(R.id.comment_photo_progressbar);
             settings = itemView.findViewById(R.id.settings);
             settings.setOnClickListener(this);
+            authorPic.setOnClickListener(this);
 
         }
 
-        void bind(Comment comment, int position) {
+        void bind(Comment comment) {
             currentComment = comment;
             bodyView.setText(comment.text);
 
@@ -117,27 +124,42 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.Commen
             int dayspast = FireBasePostsHelper.getInstance().getDaysDifference(comment.date);
 
             if (dayspast != 0) {
-                dateView.setText("לפני " + dayspast + " ימים");
+                if (Locale.getDefault().getLanguage().equals("en")) {
+                    dateView.setText(bodyView.getContext().getString(R.string.days_ego_en, dayspast));
+                }
+                else
+                {
+                    dateView.setText(bodyView.getContext().getString(R.string.days_ego_he, dayspast));
+
+                }
             } else {
-                dateView.setText("היום");
+                dateView.setText(bodyView.getContext().getString(R.string.today));
 
             }
 
             if (!mAllUsers.isEmpty()) {
                 Profile profile = getProfileByID(comment.uid);
                 assert profile != null;
+                commentAuthor = profile;
                 authorView.setText(profile.getDisplayname());
-                FireBasePostsHelper.getInstance().attachRoundPic(profile.getAvatarurl(), authorPic, progressBar, 100, 100);
+                UIHelper.getInstance().attachRoundPic(profile.getAvatarurl(), authorPic, progressBar, 100, 100);
             }
 
         }
 
         @Override
         public void onClick(View v) {
-            showPopup(v);
+
+            if (v.getId() == R.id.comment_photo){
+                FireBaseUsersHelper.getInstance().showProfilePopup(commentAuthor, mFragment);
+            }
+            else {
+                showPopup(v);
+
+            }
         }
 
-        public void showPopup(View v) {
+        void showPopup(View v) {
             PopupMenu popup = new PopupMenu(v.getContext(), v);
             popup.setOnMenuItemClickListener(this);
             MenuInflater inflater = popup.getMenuInflater();
@@ -150,20 +172,16 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.Commen
 
         @Override
         public boolean onMenuItemClick(MenuItem item) {
-            switch (item.getItemId()) {
-                case R.id.delete:
-                    if (mCurrentPost instanceof GearPost) {
-                        FireBasePostsHelper.getInstance().deleteGearComment(currentComment, (GearPost)mCurrentPost);
-                    }
-                    else {
-                        FireBasePostsHelper.getInstance().deleteForumComment(currentComment, mCurrentPost);
+            if (item.getItemId() == R.id.delete) {
+                if (mCurrentPost instanceof GearPost) {
+                    FireBasePostsHelper.getInstance().deleteGearComment(currentComment, (GearPost) mCurrentPost);
+                } else {
+                    FireBasePostsHelper.getInstance().deleteForumComment(currentComment, mCurrentPost);
 
-                    }
-                    return true;
-
-                default:
-                    return false;
+                }
+                return true;
             }
+            return false;
         }
     }
 
@@ -180,7 +198,7 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.Commen
 
         private final List<Comment> oldPosts, newPosts;
 
-        public CommentDiffCallback(List<Comment> oldPosts, List<Comment> newPosts) {
+        CommentDiffCallback(List<Comment> oldPosts, List<Comment> newPosts) {
             this.oldPosts = oldPosts;
             this.newPosts = newPosts;
         }

@@ -1,6 +1,5 @@
 package com.shaym.leash.ui.gear;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -8,7 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Spinner;
+import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -48,6 +47,10 @@ import static com.shaym.leash.logic.utils.CONSTANT.INTERSURF_POSTS;
 import static com.shaym.leash.logic.utils.CONSTANT.LEASHES_POSTS;
 import static com.shaym.leash.logic.utils.CONSTANT.NEW_GEAR_POSTS;
 import static com.shaym.leash.logic.utils.CONSTANT.OTHER_POSTS;
+import static com.shaym.leash.logic.utils.CONSTANT.ROLE_STORE_FCS;
+import static com.shaym.leash.logic.utils.CONSTANT.ROLE_STORE_FREEGULL;
+import static com.shaym.leash.logic.utils.CONSTANT.ROLE_STORE_GALIM;
+import static com.shaym.leash.logic.utils.CONSTANT.ROLE_STORE_INTERSURF;
 import static com.shaym.leash.logic.utils.CONSTANT.USED_GEAR_POSTS;
 
 /**
@@ -61,8 +64,8 @@ public class GearFragment extends Fragment implements View.OnClickListener, Adap
     private GearSpinner mGearCategories;
     private String mCurrentCategory = BOARDS_POSTS;
     private String mCurrentGear = USED_GEAR_POSTS;
+    private String mCurrentStore = INTERSURF_POSTS;
 
-    private NewGearPostDialog mNewGearPostDialog;
     private LinearLayoutManager mManager;
     private List<GearPost> mUsedBoardPosts = new ArrayList<>();
     private List<GearPost> mUsedLeashPosts = new ArrayList<>();
@@ -78,9 +81,11 @@ public class GearFragment extends Fragment implements View.OnClickListener, Adap
     private List<Profile> mAllUsers = new ArrayList<>();
     private int lastPos = -1;
     private Profile mUser;
-    private TabLayout mGearMenu;
     private TabLayout mStoresMenu;
+    private ImageView mStoreThumb;
+    private FloatingActionButton mFab;
 
+    public GearFragment(){}
 
     @Nullable
     @Override
@@ -100,22 +105,22 @@ public class GearFragment extends Fragment implements View.OnClickListener, Adap
     }
 
 
-    private void initUI(View v)  {
+    private void initUI(View v) {
         Log.d(TAG, "initUI: ");
-        mGearMenu = v.findViewById(R.id.gear_menu);
+        TabLayout mGearMenu = v.findViewById(R.id.gear_menu);
         UIHelper.getInstance().addTab(mGearMenu, getString(R.string.second_hand), true);
         UIHelper.getInstance().addTab(mGearMenu, getString(R.string.new_gear), false);
         mGearMenu.addOnTabSelectedListener(this);
 
         mStoresMenu = v.findViewById(R.id.stores_menu);
         UIHelper.getInstance().addTab(mStoresMenu, getString(R.string.intersurf_menutitle), true);
-        UIHelper.getInstance().addTab(mStoresMenu, "FCS", false);
-        UIHelper.getInstance().addTab(mStoresMenu, "FreeGull", false);
-        UIHelper.getInstance().addTab(mStoresMenu, "Galim", false);
+        UIHelper.getInstance().addTab(mStoresMenu, getString(R.string.fcs_menutitle), false);
+        UIHelper.getInstance().addTab(mStoresMenu, getString(R.string.freegull_menutitle), false);
+        UIHelper.getInstance().addTab(mStoresMenu, getString(R.string.galim_menutitle), false);
 
         mStoresMenu.addOnTabSelectedListener(this);
-
-        FloatingActionButton mFab = v.findViewById(R.id.fab_new_post);
+        mStoreThumb = v.findViewById(R.id.store_thumb);
+        mFab = v.findViewById(R.id.fab_new_post);
         mFab.setOnClickListener(this);
 
         mGearCategories = v.findViewById(R.id.gear_categories);
@@ -169,7 +174,7 @@ public class GearFragment extends Fragment implements View.OnClickListener, Adap
 
         // Set up FirebaseRecyclerAdapter with the Query
 
-        mAdapter = new GearAdapter( this);
+        mAdapter = new GearAdapter(this, getView().findViewById(R.id.container_gear));
         mRecyclerView.setAdapter(mAdapter);
 
         mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -181,7 +186,7 @@ public class GearFragment extends Fragment implements View.OnClickListener, Adap
                 Log.d(TAG, "onScrollStateChanged: " + pos);
                 if (pos != -1 && pos != lastPos) {
 
-                    if (lastPos != -1){
+                    if (lastPos != -1) {
                         mAdapter.notifyItemChanged(lastPos, false);
                     }
                     mAdapter.notifyItemChanged(pos, true);
@@ -218,7 +223,7 @@ public class GearFragment extends Fragment implements View.OnClickListener, Adap
                 mUsedBoardPosts.clear();
                 mUsedBoardPosts.addAll(boardposts);
 
-                if (mCurrentCategory.equals(BOARDS_POSTS) && mCurrentGear.equals(USED_GEAR_POSTS)){
+                if (mCurrentCategory.equals(BOARDS_POSTS) && mCurrentGear.equals(USED_GEAR_POSTS)) {
                     mAdapter.updateCurrentData(mUsedBoardPosts);
                 }
             }
@@ -236,9 +241,10 @@ public class GearFragment extends Fragment implements View.OnClickListener, Adap
                 mUsedLeashPosts.clear();
                 mUsedLeashPosts.addAll(leashposts);
 
-                if (mCurrentCategory.equals(LEASHES_POSTS) && mCurrentGear.equals(USED_GEAR_POSTS)){
+                if (mCurrentCategory.equals(LEASHES_POSTS) && mCurrentGear.equals(USED_GEAR_POSTS)) {
                     mAdapter.updateCurrentData(mUsedLeashPosts);
-                }            }
+                }
+            }
         });
 
         mUsedFinsPostsLiveData.observe(this, dataSnapshot -> {
@@ -253,7 +259,7 @@ public class GearFragment extends Fragment implements View.OnClickListener, Adap
                 mUsedFinsPosts.clear();
                 mUsedFinsPosts.addAll(finsposts);
 
-                if (mCurrentCategory.equals(FINS_POSTS) && mCurrentGear.equals(USED_GEAR_POSTS)){
+                if (mCurrentCategory.equals(FINS_POSTS) && mCurrentGear.equals(USED_GEAR_POSTS)) {
                     mAdapter.updateCurrentData(mUsedFinsPosts);
                 }
             }
@@ -271,9 +277,10 @@ public class GearFragment extends Fragment implements View.OnClickListener, Adap
                 mUsedClothingPosts.clear();
                 mUsedClothingPosts.addAll(clothingposts);
 
-                if (mCurrentCategory.equals(CLOTHING_POSTS) && mCurrentGear.equals(USED_GEAR_POSTS)){
+                if (mCurrentCategory.equals(CLOTHING_POSTS) && mCurrentGear.equals(USED_GEAR_POSTS)) {
                     mAdapter.updateCurrentData(mUsedClothingPosts);
-                }            }
+                }
+            }
         });
 
         mUsedOtherPostsLiveData.observe(this, dataSnapshot -> {
@@ -289,9 +296,10 @@ public class GearFragment extends Fragment implements View.OnClickListener, Adap
                 mUsedOtherPosts.clear();
                 mUsedOtherPosts.addAll(otherposts);
 
-                if (mCurrentCategory.equals(OTHER_POSTS) && mCurrentGear.equals(USED_GEAR_POSTS)){
+                if (mCurrentCategory.equals(OTHER_POSTS) && mCurrentGear.equals(USED_GEAR_POSTS)) {
                     mAdapter.updateCurrentData(mUsedOtherPosts);
-                }            }
+                }
+            }
         });
 
         mNewBoardsPostsLiveData.observe(this, dataSnapshot -> {
@@ -305,7 +313,7 @@ public class GearFragment extends Fragment implements View.OnClickListener, Adap
                 mNewBoardPosts.clear();
                 mNewBoardPosts.addAll(newboardposts);
 
-                if (mCurrentCategory.equals(BOARDS_POSTS) && mCurrentGear.equals(NEW_GEAR_POSTS)){
+                if (mCurrentCategory.equals(BOARDS_POSTS) && mCurrentGear.equals(NEW_GEAR_POSTS)) {
                     mAdapter.updateCurrentData(mNewBoardPosts);
                 }
             }
@@ -323,9 +331,10 @@ public class GearFragment extends Fragment implements View.OnClickListener, Adap
                 mNewLeashPosts.clear();
                 mNewLeashPosts.addAll(newleashposts);
 
-                if (mCurrentCategory.equals(LEASHES_POSTS) && mCurrentGear.equals(NEW_GEAR_POSTS)){
+                if (mCurrentCategory.equals(LEASHES_POSTS) && mCurrentGear.equals(NEW_GEAR_POSTS)) {
                     mAdapter.updateCurrentData(mNewLeashPosts);
-                }            }
+                }
+            }
         });
 
         mNewFinsPostsLiveData.observe(this, dataSnapshot -> {
@@ -340,7 +349,7 @@ public class GearFragment extends Fragment implements View.OnClickListener, Adap
                 mNewFinsPosts.clear();
                 mNewFinsPosts.addAll(newfinsposts);
 
-                if (mCurrentCategory.equals(FINS_POSTS) && mCurrentGear.equals(NEW_GEAR_POSTS)){
+                if (mCurrentCategory.equals(FINS_POSTS) && mCurrentGear.equals(NEW_GEAR_POSTS)) {
                     mAdapter.updateCurrentData(mNewFinsPosts);
                 }
             }
@@ -358,9 +367,10 @@ public class GearFragment extends Fragment implements View.OnClickListener, Adap
                 mNewClothingPosts.clear();
                 mNewClothingPosts.addAll(newclothingposts);
 
-                if (mCurrentCategory.equals(CLOTHING_POSTS) && mCurrentGear.equals(NEW_GEAR_POSTS)){
+                if (mCurrentCategory.equals(CLOTHING_POSTS) && mCurrentGear.equals(NEW_GEAR_POSTS)) {
                     mAdapter.updateCurrentData(mNewClothingPosts);
-                }            }
+                }
+            }
         });
 
         mNewOtherPostsLiveData.observe(this, dataSnapshot -> {
@@ -376,53 +386,39 @@ public class GearFragment extends Fragment implements View.OnClickListener, Adap
                 mNewOtherPosts.clear();
                 mNewOtherPosts.addAll(newotherposts);
 
-                if (mCurrentCategory.equals(OTHER_POSTS) && mCurrentGear.equals(NEW_GEAR_POSTS)){
+                if (mCurrentCategory.equals(OTHER_POSTS) && mCurrentGear.equals(NEW_GEAR_POSTS)) {
                     mAdapter.updateCurrentData(mNewOtherPosts);
-                }            }
+                }
+            }
         });
 
     }
 
 
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.d(TAG, "onActivityResult: ");
-        super.onActivityResult(requestCode, resultCode, data);
-        mNewGearPostDialog.onActivityResult(requestCode, resultCode, data);
-    }
-
-
     @Override
     public void onClick(View v) {
-        switch (v.getId()){
-
-            case R.id.fab_new_post:
-                try {
-                    FragmentManager fm = Objects.requireNonNull(getActivity()).getSupportFragmentManager();
-                    NewGearPostDialog newGearPostDialog= NewGearPostDialog.newInstance(mCurrentCategory);
-                    newGearPostDialog.show(fm, newGearPostDialog.getTag());
-                }
-                catch (Exception e){
-                    e.printStackTrace();
-                }
-                break;
-
+        if (v.getId() == R.id.fab_new_post) {
+            try {
+                FragmentManager fm = Objects.requireNonNull(getActivity()).getSupportFragmentManager();
+                NewGearPostDialog newGearPostDialog = NewGearPostDialog.newInstance(mCurrentCategory, mCurrentGear, Objects.requireNonNull(mStoresMenu.getTabAt(mStoresMenu.getSelectedTabPosition())).getText());
+                newGearPostDialog.show(fm, newGearPostDialog.getTag());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         Log.d(TAG, "onItemSelected: ");
-        switch (position){
-            case 0 :
+        switch (position) {
+            case 0:
                 mCurrentCategory = BOARDS_POSTS;
                 swapAdapter();
 
                 if (mCurrentGear.equals(USED_GEAR_POSTS)) {
                     mAdapter.updateCurrentData(mUsedBoardPosts);
-                }
-                else {
+                } else {
                     mAdapter.updateCurrentData(mNewBoardPosts);
                 }
 
@@ -434,8 +430,7 @@ public class GearFragment extends Fragment implements View.OnClickListener, Adap
 
                 if (mCurrentGear.equals(USED_GEAR_POSTS)) {
                     mAdapter.updateCurrentData(mUsedLeashPosts);
-                }
-                else {
+                } else {
                     mAdapter.updateCurrentData(mNewLeashPosts);
 
                 }
@@ -448,8 +443,7 @@ public class GearFragment extends Fragment implements View.OnClickListener, Adap
 
                 if (mCurrentGear.equals(USED_GEAR_POSTS)) {
                     mAdapter.updateCurrentData(mUsedFinsPosts);
-                }
-                else {
+                } else {
                     mAdapter.updateCurrentData(mNewFinsPosts);
 
                 }
@@ -466,17 +460,17 @@ public class GearFragment extends Fragment implements View.OnClickListener, Adap
                 swapAdapter();
                 if (mCurrentGear.equals(USED_GEAR_POSTS)) {
                     mAdapter.updateCurrentData(mUsedOtherPosts);
-                }
-                else {
+                } else {
                     mAdapter.updateCurrentData(mNewOtherPosts);
 
-                }                break;
+                }
+                break;
 
         }
     }
 
     private void swapAdapter() {
-        mAdapter = new GearAdapter(this);
+        mAdapter = new GearAdapter(this, getView().findViewById(R.id.container_gear));
         mAdapter.mCurrentCategory = mCurrentCategory;
         mAdapter.updateUsers(mAllUsers, mUser);
         mRecyclerView.setAdapter(mAdapter);
@@ -487,20 +481,20 @@ public class GearFragment extends Fragment implements View.OnClickListener, Adap
 
     }
 
-    public void setCurrentPost(String postid){
+    public void setCurrentPost(String postid) {
         Map<String, Integer> map = searchForPost(postid);
         String category = "";
         int pos = -1;
         Iterator it = map.entrySet().iterator();
         while (it.hasNext()) {
-            Map.Entry pair = (Map.Entry)it.next();
+            Map.Entry pair = (Map.Entry) it.next();
             System.out.println(pair.getKey() + " = " + pair.getValue());
             category = (String) pair.getKey();
             pos = (int) pair.getValue();
             it.remove(); // avoids a ConcurrentModificationException
         }
 
-        switch (category){
+        switch (category) {
             case BOARDS_POSTS:
                 mGearCategories.setSelection(0);
                 break;
@@ -525,7 +519,7 @@ public class GearFragment extends Fragment implements View.OnClickListener, Adap
     }
 
 
-    private  Map<String, Integer> searchForPost(String postid) {
+    private Map<String, Integer> searchForPost(String postid) {
         Map<String, Integer> map = new HashMap<>();
         String category = "";
         int pos = -1;
@@ -536,40 +530,40 @@ public class GearFragment extends Fragment implements View.OnClickListener, Adap
         allPosts.addAll(mUsedLeashPosts);
         allPosts.addAll(mUsedOtherPosts);
 
-        for (int i=0; i<allPosts.size(); i++){
-            if (allPosts.get(i).key.equals(postid)){
+        for (int i = 0; i < allPosts.size(); i++) {
+            if (allPosts.get(i).key.equals(postid)) {
                 category = allPosts.get(i).category;
-                switch (category){
+                switch (category) {
                     case BOARDS_POSTS:
-                        for (int j = 0; j< mUsedBoardPosts.size(); j++) {
+                        for (int j = 0; j < mUsedBoardPosts.size(); j++) {
                             if (mUsedBoardPosts.get(j).key.equals(postid)) {
                                 pos = j;
                             }
                         }
                         break;
                     case LEASHES_POSTS:
-                        for (int j = 0; j< mUsedLeashPosts.size(); j++) {
+                        for (int j = 0; j < mUsedLeashPosts.size(); j++) {
                             if (mUsedLeashPosts.get(j).key.equals(postid)) {
                                 pos = j;
                             }
                         }
                         break;
                     case FINS_POSTS:
-                        for (int j = 0; j< mUsedFinsPosts.size(); j++) {
+                        for (int j = 0; j < mUsedFinsPosts.size(); j++) {
                             if (mUsedFinsPosts.get(j).key.equals(postid)) {
                                 pos = j;
                             }
                         }
 
                     case CLOTHING_POSTS:
-                        for (int j = 0; j< mUsedClothingPosts.size(); j++) {
+                        for (int j = 0; j < mUsedClothingPosts.size(); j++) {
                             if (mUsedClothingPosts.get(j).key.equals(postid)) {
                                 pos = j;
                             }
                         }
 
                     case OTHER_POSTS:
-                        for (int j = 0; j< mUsedOtherPosts.size(); j++) {
+                        for (int j = 0; j < mUsedOtherPosts.size(); j++) {
                             if (mUsedOtherPosts.get(j).key.equals(postid)) {
                                 pos = j;
                             }
@@ -590,40 +584,48 @@ public class GearFragment extends Fragment implements View.OnClickListener, Adap
             switch (tab.getPosition()) {
                 case 0:
                     mStoresMenu.setVisibility(View.GONE);
+                    mStoreThumb.setVisibility(View.GONE);
+
                     mCurrentGear = USED_GEAR_POSTS;
                     mGearCategories.setSelection(mGearCategories.getSelectedItemPosition());
+                    fabVisibilityLogic();
 
                     break;
                 case 1:
                     mStoresMenu.setVisibility(View.VISIBLE);
+                    mStoreThumb.setVisibility(View.VISIBLE);
                     mCurrentGear = NEW_GEAR_POSTS;
                     mGearCategories.setSelection(mGearCategories.getSelectedItemPosition());
-                    mStoresMenu.selectTab(mStoresMenu.getTabAt(0));
+                    mStoresMenu.selectTab(mStoresMenu.getTabAt(mStoresMenu.getSelectedTabPosition()));
+                    fabVisibilityLogic();
+
                     break;
             }
 
-        }
-        else {
+        } else {
             switch (tab.getPosition()) {
                 case 0:
-                    mAdapter.filter(INTERSURF_POSTS);
+                    mCurrentStore = INTERSURF_POSTS;
+                    mStoreThumb.setImageDrawable(Objects.requireNonNull(getActivity()).getDrawable(R.drawable.intersurf_logo));
                     break;
                 case 1:
-                    mAdapter.filter(FCS_POSTS);
-
+                    mCurrentStore = FCS_POSTS;
+                    mStoreThumb.setImageDrawable(Objects.requireNonNull(getActivity()).getDrawable(R.drawable.fcs_logo));
                     break;
 
                 case 2:
-                    mAdapter.filter(FREEGULL_POSTS);
-
+                    mCurrentStore = FREEGULL_POSTS;
+                    mStoreThumb.setImageDrawable(Objects.requireNonNull(getActivity()).getDrawable(R.drawable.freegull_logo));
                     break;
 
                 case 3:
-                    mAdapter.filter(GALIM_POSTS);
-
+                    mCurrentStore = GALIM_POSTS;
+                    mStoreThumb.setImageDrawable(Objects.requireNonNull(getActivity()).getDrawable(R.drawable.galim_logo));
                     break;
             }
-
+            mGearCategories.setSelection(mGearCategories.getSelectedItemPosition());
+            mAdapter.filter(mCurrentStore);
+            fabVisibilityLogic();
 
         }
 
@@ -637,6 +639,68 @@ public class GearFragment extends Fragment implements View.OnClickListener, Adap
     @Override
     public void onTabReselected(TabLayout.Tab tab) {
 
+        switch (tab.getPosition()) {
+            case 0:
+                mAdapter.filter(INTERSURF_POSTS);
+                mStoreThumb.setImageDrawable(Objects.requireNonNull(getActivity()).getDrawable(R.drawable.intersurf_logo));
+                break;
+            case 1:
+                mAdapter.filter(FCS_POSTS);
+                mStoreThumb.setImageDrawable(Objects.requireNonNull(getActivity()).getDrawable(R.drawable.fcs_logo));
+
+                break;
+
+            case 2:
+                mAdapter.filter(FREEGULL_POSTS);
+                mStoreThumb.setImageDrawable(Objects.requireNonNull(getActivity()).getDrawable(R.drawable.freegull_logo));
+
+                break;
+
+            case 3:
+                mAdapter.filter(GALIM_POSTS);
+                mStoreThumb.setImageDrawable(Objects.requireNonNull(getActivity()).getDrawable(R.drawable.galim_logo));
+
+                break;
+        }
+
+    }
+
+    private void fabVisibilityLogic() {
+        if (mCurrentGear.equals(NEW_GEAR_POSTS)) {
+
+            switch (mCurrentStore) {
+                case INTERSURF_POSTS:
+                    if (mUser != null && mUser.getRole().equals(ROLE_STORE_INTERSURF)) {
+                        mFab.setVisibility(View.VISIBLE);
+                    } else
+                        mFab.setVisibility(View.GONE);
+                    break;
+
+                case FCS_POSTS:
+                    if (mUser != null && mUser.getRole().equals(ROLE_STORE_FCS)) {
+                        mFab.setVisibility(View.VISIBLE);
+                    } else
+                        mFab.setVisibility(View.GONE);
+                    break;
+
+                case FREEGULL_POSTS:
+                    if (mUser != null && mUser.getRole().equals(ROLE_STORE_FREEGULL)) {
+                        mFab.setVisibility(View.VISIBLE);
+                    } else
+                        mFab.setVisibility(View.GONE);
+                    break;
+
+                case GALIM_POSTS:
+                    if (mUser != null && mUser.getRole().equals(ROLE_STORE_GALIM)) {
+                        mFab.setVisibility(View.VISIBLE);
+                    } else
+                        mFab.setVisibility(View.GONE);
+                    break;
+
+            }
+
+        } else
+            mFab.setVisibility(View.VISIBLE);
     }
 }
 

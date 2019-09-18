@@ -6,7 +6,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -28,7 +27,6 @@ import com.shaym.leash.logic.gear.GearPost;
 import com.shaym.leash.logic.user.Profile;
 import com.shaym.leash.logic.user.UsersViewModel;
 import com.shaym.leash.logic.utils.FireBaseUsersHelper;
-import com.shaym.leash.logic.utils.UsersHelperListener;
 import com.shaym.leash.ui.utils.UIHelper;
 
 import java.util.ArrayList;
@@ -38,12 +36,9 @@ import java.util.Objects;
 import static com.shaym.leash.logic.utils.CONSTANT.CHAT_CONVERSATIONS;
 import static com.shaym.leash.logic.utils.CONSTANT.FORUM_POSTS;
 import static com.shaym.leash.logic.utils.CONSTANT.GEAR_POSTS;
-import static com.shaym.leash.logic.utils.CONSTANT.GENERAL_POSTS;
 import static com.shaym.leash.logic.utils.CONSTANT.PROFILE_CONVERSATIONS;
 import static com.shaym.leash.logic.utils.CONSTANT.PROFILE_FORUM_POSTS;
 import static com.shaym.leash.logic.utils.CONSTANT.PROFILE_GEAR_POSTS;
-import static com.shaym.leash.logic.utils.CONSTANT.SPOTS_POSTS;
-import static com.shaym.leash.logic.utils.CONSTANT.TRIPS_POSTS;
 import static com.shaym.leash.logic.utils.CONSTANT.USED_GEAR_POSTS;
 import static com.shaym.leash.logic.utils.CONSTANT.USER_CONVERSATIONS;
 import static com.shaym.leash.logic.utils.CONSTANT.USER_POSTS;
@@ -56,7 +51,6 @@ import static com.shaym.leash.logic.utils.CONSTANT.USER_POSTS;
 public class ProfileFragment extends Fragment implements  TabLayout.OnTabSelectedListener {
 
     private static final String TAG = "ProfileFragment";
-    private TabLayout mProfileMenu;
     private RecyclerView mRecyclerView;
     private ProfileAdapter mAdapter;
     private DatabaseReference mDatabase;
@@ -67,8 +61,7 @@ public class ProfileFragment extends Fragment implements  TabLayout.OnTabSelecte
     private List<Conversation> mAllConversations = new ArrayList<>();
     private ProfileViewModel mProfileViewModel;
 
-    public ProfileFragment(){
-    }
+    public ProfileFragment(){ }
 
     @Nullable
     @Override
@@ -170,7 +163,7 @@ public class ProfileFragment extends Fragment implements  TabLayout.OnTabSelecte
 
 
     private void initUI() {
-        mProfileMenu = Objects.requireNonNull(getView()).findViewById(R.id.profile_menu);
+        TabLayout mProfileMenu = Objects.requireNonNull(getView()).findViewById(R.id.profile_menu);
         UIHelper.getInstance().addTab(mProfileMenu, getString(R.string.forum_activity), true);
         UIHelper.getInstance().addTab(mProfileMenu, getString(R.string.shop_activity), false);
         UIHelper.getInstance().addTab(mProfileMenu, getString(R.string.inbox_menu_item), false);

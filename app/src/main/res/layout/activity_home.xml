@@ -19,15 +19,6 @@
 
         android:layout_height="match_parent" />
 
-
-    <ProgressBar style="?android:attr/progressBarStyleSmall"
-        android:layout_height="150dp"
-        android:layout_width="150dp"
-        android:layout_gravity="center_horizontal|center_vertical"
-        android:id="@+id/leash_progressbar"
-
-        />
-
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
 

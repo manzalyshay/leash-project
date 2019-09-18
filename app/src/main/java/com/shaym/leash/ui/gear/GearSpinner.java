@@ -5,6 +5,8 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.Spinner;
 
+import java.util.Objects;
+
 @SuppressLint("AppCompatCustomView")
 public class GearSpinner extends Spinner {
 
@@ -24,7 +26,7 @@ public class GearSpinner extends Spinner {
         super.setSelection(position, animate);
         if (sameSelected) {
             // Spinner does not call the OnItemSelectedListener if the same item is selected, so do it manually now
-            getOnItemSelectedListener().onItemSelected(this, getSelectedView(), position, getSelectedItemId());
+            Objects.requireNonNull(getOnItemSelectedListener()).onItemSelected(this, getSelectedView(), position, getSelectedItemId());
         }
     }
 
@@ -35,7 +37,7 @@ public class GearSpinner extends Spinner {
         super.setSelection(position);
         if (sameSelected) {
             // Spinner does not call the OnItemSelectedListener if the same item is selected, so do it manually now
-            getOnItemSelectedListener().onItemSelected(this, getSelectedView(), position, getSelectedItemId());
+            Objects.requireNonNull(getOnItemSelectedListener()).onItemSelected(this, getSelectedView(), position, getSelectedItemId());
         }
     }
 }

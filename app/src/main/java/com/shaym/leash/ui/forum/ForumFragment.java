@@ -1,5 +1,6 @@
 package com.shaym.leash.ui.forum;
 
+import android.animation.Animator;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -55,12 +56,14 @@ public class ForumFragment extends Fragment implements  View.OnClickListener, Ta
     private FloatingActionButton mFab;
     private int lastPos = -1;
     private Profile mUser;
+
+    public ForumFragment (){}
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         Log.d(TAG, "onCreateView: ");
-        View v = inflater.inflate(R.layout.fragment_forum, container, false);
-        return v;
+        return inflater.inflate(R.layout.fragment_forum, container, false);
     }
 
     @Override
@@ -221,7 +224,7 @@ public class ForumFragment extends Fragment implements  View.OnClickListener, Ta
     }
 
     private void swapAdapter() {
-        mAdapter = new ForumAdapter(this);
+        mAdapter = new ForumAdapter(this, Objects.requireNonNull(getView()).findViewById(R.id.forum_container));
         mAdapter.mPostType = mCurrentForum;
         mAdapter.updateUsers(mAllUsers, mUser);
         mRecyclerView.setAdapter(mAdapter);
@@ -230,7 +233,7 @@ public class ForumFragment extends Fragment implements  View.OnClickListener, Ta
     private void initAdapter() {
         Log.d(TAG, "initAdapter: ");
         // Set up Layout Manager, reverse layout
-        mAdapter = new ForumAdapter(this);
+        mAdapter = new ForumAdapter(this, Objects.requireNonNull(getView()).findViewById(R.id.forum_container));
         mRecyclerView.setAdapter(mAdapter);
 
         LinearLayoutManager mManager = new LinearLayoutManager(getActivity());

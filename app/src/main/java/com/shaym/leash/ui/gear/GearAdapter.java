@@ -1,40 +1,31 @@
 package com.shaym.leash.ui.gear;
 
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.ViewGroup;
+import android.widget.RelativeLayout;
+
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.ViewGroup;
-
-import com.firebase.ui.database.FirebaseRecyclerAdapter;
-import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.shaym.leash.R;
-import com.shaym.leash.logic.forum.Post;
 import com.shaym.leash.logic.gear.GearPost;
 import com.shaym.leash.logic.user.Profile;
 import com.shaym.leash.logic.utils.FireBaseUsersHelper;
 import com.shaym.leash.logic.utils.GearPostDiffCallback;
-import com.shaym.leash.logic.utils.PostDiffCallback;
 import com.shaym.leash.logic.utils.UserDiffCallback;
-import com.shaym.leash.ui.forum.ForumAdapter;
-import com.shaym.leash.ui.forum.PostViewHolder;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static com.shaym.leash.logic.utils.CONSTANT.BOARDS_POSTS;
-import static com.shaym.leash.logic.utils.CONSTANT.CLOTHING_POSTS;
-import static com.shaym.leash.logic.utils.CONSTANT.FINS_POSTS;
-import static com.shaym.leash.logic.utils.CONSTANT.GEAR_POSTS;
-import static com.shaym.leash.logic.utils.CONSTANT.GENERAL_POSTS;
-import static com.shaym.leash.logic.utils.CONSTANT.LEASHES_POSTS;
-import static com.shaym.leash.logic.utils.CONSTANT.OTHER_POSTS;
-import static com.shaym.leash.logic.utils.CONSTANT.SPOTS_POSTS;
-import static com.shaym.leash.logic.utils.CONSTANT.TRIPS_POSTS;
-import static com.shaym.leash.logic.utils.CONSTANT.USED_GEAR_POSTS;
+import static com.shaym.leash.logic.utils.CONSTANT.FCS_POSTS;
+import static com.shaym.leash.logic.utils.CONSTANT.INTERSURF_POSTS;
+import static com.shaym.leash.logic.utils.CONSTANT.ROLE_STORE_FCS;
+import static com.shaym.leash.logic.utils.CONSTANT.ROLE_STORE_INTERSURF;
 
 public class GearAdapter extends RecyclerView.Adapter<GearPostViewHolder> {
 
@@ -42,13 +33,14 @@ public class GearAdapter extends RecyclerView.Adapter<GearPostViewHolder> {
     private Fragment mFragment;
     private List<GearPost> mCurrentData = new ArrayList<>();
     private List<Profile> mAllUsers = new ArrayList<>();
-    public String mCurrentCategory = BOARDS_POSTS;
+    String mCurrentCategory = BOARDS_POSTS;
     private Profile mUser;
+    private RelativeLayout mContainer;
 
-    GearAdapter(Fragment fragment) {
+    GearAdapter(Fragment fragment, RelativeLayout container) {
         Log.d(TAG, "GearAdapter: ");
         mFragment = fragment;
-
+        mContainer = container;
         setHasStableIds(true);
 
     }
@@ -78,7 +70,7 @@ public class GearAdapter extends RecyclerView.Adapter<GearPostViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull GearPostViewHolder holder, int position) {
-        holder.bindToPost(mCurrentData.get(position), mFragment , FireBaseUsersHelper.getInstance().findProfile(mCurrentData.get(position).uid, mAllUsers),mUser,  mAllUsers);
+        holder.bindToPost(mCurrentData.get(position), mFragment , FireBaseUsersHelper.getInstance().findProfile(mCurrentData.get(position).uid, mAllUsers),mUser,  mAllUsers, mContainer);
 
     }
 
@@ -87,7 +79,7 @@ public class GearAdapter extends RecyclerView.Adapter<GearPostViewHolder> {
         return mCurrentData.size();
     }
 
-    public void updateCurrentData(List<GearPost> currentData){
+    void updateCurrentData(List<GearPost> currentData){
         if (!mCurrentData.isEmpty()) {
             GearPostDiffCallback gearPostDiffCallback = new GearPostDiffCallback(mCurrentData, currentData);
             DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(gearPostDiffCallback);
@@ -104,7 +96,7 @@ public class GearAdapter extends RecyclerView.Adapter<GearPostViewHolder> {
     }
 
 
-    public void updateUsers(List<Profile> AllUsers, Profile user) {
+    void updateUsers(List<Profile> AllUsers, Profile user) {
         if (!mAllUsers.isEmpty()) {
             UserDiffCallback userDiffCallback = new UserDiffCallback(mAllUsers, AllUsers);
             DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(userDiffCallback);
@@ -134,7 +126,43 @@ public class GearAdapter extends RecyclerView.Adapter<GearPostViewHolder> {
     }
 
 
-    public void filter(String filter) {
+    void filter(String filter) {
+        String role;
+        List<GearPost> filteredposts = new ArrayList<>();
+
+        if (filter.equals(INTERSURF_POSTS)){
+            role = ROLE_STORE_INTERSURF;
+        }
+        else if (filter.equals(FCS_POSTS)) {
+            role = ROLE_STORE_FCS;
+        }
+        else {
+            role ="";
+        }
+
+        for (int i=0; i<mAllUsers.size(); i++){
+            if (mAllUsers.get(i).getRole().equals(role)){
+                filteredposts = getPostsBy(mAllUsers.get(i));
+            }
+        }
+
+        mCurrentData.clear();
+        mCurrentData.addAll(filteredposts);
+    }
+
+
+
+    private List<GearPost> getPostsBy(Profile profile) {
+
+        List<GearPost> list = new ArrayList<>();
+
+        for (int i=0; i<mCurrentData.size(); i++){
+            if (mCurrentData.get(i).uid.equals(profile.getUid())){
+                list.add(mCurrentData.get(i));
+            }
+        }
+
+        return list;
     }
 }
 

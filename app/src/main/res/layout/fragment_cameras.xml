@@ -29,4 +29,10 @@
 
     </FrameLayout>
 
+    <ProgressBar
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:layout_centerInParent="true"
+        android:id="@+id/cameras_progressbar"/>
+
 </RelativeLayout>

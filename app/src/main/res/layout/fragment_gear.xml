@@ -1,6 +1,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/container_gear"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <com.google.android.material.tabs.TabLayout
@@ -18,13 +19,19 @@
         app:tabGravity="fill"
         android:id="@+id/stores_menu"/>
 
+
     <ImageView
-        android:layout_width="250"
-        android:layout_centerHorizontal="true"
+        android:layout_width="match_parent"
+        android:layout_margin="10dp"
+        android:scaleType="fitCenter"
         android:id="@+id/store_thumb"
+        android:layout_height="80dp"
         android:layout_below="@id/stores_menu"
-        android:layout_height="100"
-        android:visibility="gone"/>
+        android:visibility="gone"
+        android:layout_centerHorizontal="true"
+                />
+
+
     <com.shaym.leash.ui.gear.GearSpinner
 
         android:id="@+id/gear_categories"
@@ -54,5 +61,21 @@
         android:layout_alignParentBottom="true"
         app:srcCompat="@drawable/ic_edit_white" />
 
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <ImageView
+            android:id="@+id/expanded_image"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone"
+            />
 
+        <ProgressBar
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/image_enlarge_progressbar"
+            android:visibility="gone"/>
+
+    </RelativeLayout>
 </RelativeLayout>

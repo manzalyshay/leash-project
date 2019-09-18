@@ -2,7 +2,6 @@ package com.shaym.leash.logic.utils;
 
 import androidx.recyclerview.widget.DiffUtil;
 
-import com.shaym.leash.logic.forum.Post;
 import com.shaym.leash.logic.user.Profile;
 
 import java.util.List;

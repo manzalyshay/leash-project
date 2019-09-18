@@ -32,6 +32,7 @@ import com.shaym.leash.logic.user.Profile;
 import com.shaym.leash.logic.user.UsersViewModel;
 import com.shaym.leash.logic.utils.FireBasePostsHelper;
 import com.shaym.leash.ui.home.HomeActivity;
+import com.shaym.leash.ui.utils.UIHelper;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -167,7 +168,7 @@ ChatDialog extends DialogFragment implements View.OnClickListener, TextWatcher {
 
     private void setConvPartnerUI() {
         mDispalyname.setText(mConvPartner.getDisplayname());
-        FireBasePostsHelper.getInstance().attachRoundPic(mConvPartner.getAvatarurl(), mProfilePic, mProfilePicProgressBar, 100, 100);
+        UIHelper.getInstance().attachRoundPic(mConvPartner.getAvatarurl(), mProfilePic, mProfilePicProgressBar, 100, 100);
     }
 
     private void initChatViewModel() {

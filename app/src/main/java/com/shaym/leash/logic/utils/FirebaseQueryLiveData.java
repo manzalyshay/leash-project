@@ -2,7 +2,7 @@ package com.shaym.leash.logic.utils;
 
 import android.util.Log;
 
-import androidx.lifecycle.LiveData;
+import androidx.annotation.NonNull;
 import androidx.lifecycle.MutableLiveData;
 
 import com.google.firebase.database.DataSnapshot;
@@ -36,12 +36,12 @@ public class FirebaseQueryLiveData extends MutableLiveData<DataSnapshot> {
 
     private class MyValueEventListener implements ValueEventListener {
         @Override
-        public void onDataChange(DataSnapshot dataSnapshot) {
+        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
             setValue(dataSnapshot);
         }
 
         @Override
-        public void onCancelled(DatabaseError databaseError) {
+        public void onCancelled(@NonNull DatabaseError databaseError) {
             Log.e(LOG_TAG, "Can't listen to query " + query, databaseError.toException());
         }
     }

@@ -10,6 +10,7 @@
     import com.shaym.leash.R;
     import com.shaym.leash.logic.cameras.CameraObject;
     import com.shaym.leash.logic.utils.FireBasePostsHelper;
+    import com.shaym.leash.ui.utils.UIHelper;
     import com.squareup.picasso.Picasso;
 
     import java.util.ArrayList;
@@ -20,15 +21,13 @@
         private onCameraSelectedListener mListener;
         private List<CameraObject> camerasList = new ArrayList<>();
 
-        public void setCamerasList(List<CameraObject> camerasList) {
-            this.camerasList = camerasList;
-            notifyDataSetChanged();
-        }
-
-
         private static final String TAG = "CamerasAdapter";
         int selected_position = 0; // You have to set this globally in the Adapter class
-
+        void setCamerasList(List<CameraObject> camerasList) {
+            this.camerasList = camerasList;
+            selected_position = 0;
+            notifyDataSetChanged();
+        }
 
         CamerasAdapter(onCameraSelectedListener listener) {
             Log.d(TAG, "CamerasAdapter: ");
@@ -43,14 +42,12 @@
             View CameraItemView = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.cameras_grid_item, parent, false);
             return new CameraItemViewHolder(CameraItemView, this);
-
         }
-
 
         @Override
         public void onBindViewHolder(@NonNull final CameraItemViewHolder holder, final int position) {
             final CameraObject cam = camerasList.get(position);
-            FireBasePostsHelper.getInstance().attachPic(cam.mPicRef, holder.getCover(), holder.getProgressbar(), 150, 150);
+            UIHelper.getInstance().attachPic(cam.mPicRef, holder.getCover(), holder.getProgressbar(), 150, 150);
             holder.getTitle().setText(cam.getLocation());
 
 
@@ -62,22 +59,12 @@
             else {
                 holder.itemView.setBackgroundResource(0);
                 holder.getPlayCover().setVisibility(View.VISIBLE);
-
             }
-
         }
-
-
-
 
         @Override
         public int getItemCount() {
             return camerasList.size();
         }
-
-
-
-
-
 
     }

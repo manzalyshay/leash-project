@@ -24,7 +24,9 @@ import com.shaym.leash.logic.chat.ChatMessage;
 import com.shaym.leash.logic.chat.Conversation;
 import com.shaym.leash.logic.user.Profile;
 import com.shaym.leash.logic.utils.FireBasePostsHelper;
+import com.shaym.leash.logic.utils.FireBaseUsersHelper;
 import com.shaym.leash.ui.home.chat.ChatDialog;
+import com.shaym.leash.ui.utils.UIHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,7 +66,7 @@ public class ProfileConversationViewHolder extends RecyclerView.ViewHolder imple
         mConversationPartner = conversationPartner;
         convPartnerName.setText(mConversationPartner.getDisplayname());
 
-        FireBasePostsHelper.getInstance().attachRoundPic(mConversationPartner.getAvatarurl(), convPartnerPic, convPartnerProgressBar, 100, 100);
+        UIHelper.getInstance().attachRoundPic(mConversationPartner.getAvatarurl(), convPartnerPic, convPartnerProgressBar, 100, 100);
 
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
         DatabaseReference lastQuery = databaseReference.child(CHAT_CONVERSATIONS).child(CONVERSATIONS).child(conversation.conversationID);
@@ -104,7 +106,7 @@ public class ProfileConversationViewHolder extends RecyclerView.ViewHolder imple
     @Override
     public void onClick(View v) {
 
-        FireBasePostsHelper.getInstance().openChatWindow(mFragment, mConversationPartner.getUid());
+        FireBaseUsersHelper.getInstance().openChatWindow(mFragment, mConversationPartner.getUid());
 
     }
 }

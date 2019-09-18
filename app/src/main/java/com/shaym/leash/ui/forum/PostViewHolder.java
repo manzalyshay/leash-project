@@ -18,6 +18,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -34,9 +35,13 @@ import com.shaym.leash.logic.user.Profile;
 import com.shaym.leash.logic.utils.CONSTANT;
 import com.shaym.leash.logic.utils.FireBasePostsHelper;
 import com.shaym.leash.logic.utils.FireBaseUsersHelper;
+import com.shaym.leash.ui.home.chat.ChatDialog;
+import com.shaym.leash.ui.utils.EnlargeImageDialog;
+import com.shaym.leash.ui.utils.UIHelper;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class PostViewHolder extends RecyclerView.ViewHolder implements PopupMenu.OnMenuItemClickListener, View.OnClickListener, TextWatcher {
 
@@ -45,7 +50,7 @@ public class PostViewHolder extends RecyclerView.ViewHolder implements PopupMenu
     private TextView publishdate;
     private ImageView authorPic;
     private ProgressBar authorPicProgressBar;
-    public ImageView starView;
+    private ImageView starView;
     private ImageView settingsView;
     private RelativeLayout attachLayout;
     private ImageView postImage;
@@ -56,7 +61,6 @@ public class PostViewHolder extends RecyclerView.ViewHolder implements PopupMenu
     private Post currentPost;
     private Fragment mFragment;
     private boolean isExpanded;
-    private ForumViewModel mForumViewModel;
     private CommentsAdapter mAdapter;
     private EditText mCommentField;
     private TextView mCommentButton;
@@ -65,7 +69,6 @@ public class PostViewHolder extends RecyclerView.ViewHolder implements PopupMenu
     private RecyclerView mCommentsRecycler;
     private ImageView postCommentImage;
     private ProgressBar postCommentImageProgressBar;
-    private DatabaseReference mCommentsReference;
     private List<Profile> mAllUsers;
     private RelativeLayout mCommentForm;
     private List<Comment> mCommentList = new ArrayList<>();
@@ -75,7 +78,7 @@ public class PostViewHolder extends RecyclerView.ViewHolder implements PopupMenu
     private Profile mUser;
     private Button mSaveEditBtn;
 
-    public PostViewHolder(View itemView) {
+    PostViewHolder(View itemView) {
         super(itemView);
         authorPicProgressBar = itemView.findViewById(R.id.post_author_photo_progressbar);
         authorPic = itemView.findViewById(R.id.post_author_photo);
@@ -135,7 +138,7 @@ public class PostViewHolder extends RecyclerView.ViewHolder implements PopupMenu
         layoutManager.setStackFromEnd(true);
         mCommentsRecycler.setLayoutManager(layoutManager);
         // Listen for comments
-        mAdapter = new CommentsAdapter(currentPost);
+        mAdapter = new CommentsAdapter(currentPost, mFragment);
         mAdapter.setAllUsers(mAllUsers);
         mCommentsRecycler.setAdapter(mAdapter);
 
@@ -143,7 +146,7 @@ public class PostViewHolder extends RecyclerView.ViewHolder implements PopupMenu
     }
 
 
-    public void bindToPost(Post post, Fragment fragment,Profile user, List<Profile> allUsers) {
+    void bindToPost(Post post, Fragment fragment, Profile user, List<Profile> allUsers, RelativeLayout container) {
         mAllUsers = allUsers;
         mPostProfile = FireBaseUsersHelper.getInstance().findProfile(post.uid, allUsers);
         mFragment = fragment;
@@ -169,19 +172,23 @@ public class PostViewHolder extends RecyclerView.ViewHolder implements PopupMenu
 
         if (post.images != null){
             attachLayout.setVisibility(View.VISIBLE);
-            FireBasePostsHelper.getInstance().attachPic(post.images.get(0), postImage, postImageProgressBar, 200, 200);
+            UIHelper.getInstance().attachPic(post.images.get(0), postImage, postImageProgressBar, 200, 200);
+
+            postImage.setOnClickListener(v -> {
+                UIHelper.getInstance().zoomImageFromThumb(container, container.findViewById(R.id.expanded_image), postImage, currentPost.images.get(0));
+            });
         }
 
         if (mPostProfile != null && mUser != null) {
-            FireBasePostsHelper.getInstance().attachRoundPic(mPostProfile.getAvatarurl(), authorPic, authorPicProgressBar, 100, 100);
-            FireBasePostsHelper.getInstance().attachRoundPic(mUser.getAvatarurl(), postCommentImage, postCommentImageProgressBar, 100, 100);
+            UIHelper.getInstance().attachRoundPic(mPostProfile.getAvatarurl(), authorPic, authorPicProgressBar, 100, 100);
+            UIHelper.getInstance().attachRoundPic(mUser.getAvatarurl(), postCommentImage, postCommentImageProgressBar, 100, 100);
 
-            authorPic.setOnClickListener(v -> FireBasePostsHelper.getInstance().showProfilePopup(mUser, mPostProfile, mFragment));
+            authorPic.setOnClickListener(v -> FireBaseUsersHelper.getInstance().showProfilePopup(mPostProfile, mFragment));
             authorView.setText(mPostProfile.getDisplayname());
         }
 
-        mForumViewModel = ViewModelProviders.of(fragment).get(ForumViewModel.class);
-        mCommentsReference = FirebaseDatabase.getInstance().getReference().child(CONSTANT.POST_COMMENTS).child(post.category).child(post.key);
+        ForumViewModel mForumViewModel = ViewModelProviders.of(fragment).get(ForumViewModel.class);
+        DatabaseReference mCommentsReference = FirebaseDatabase.getInstance().getReference().child(CONSTANT.POST_COMMENTS).child(post.category).child(post.key);
         mForumViewModel.setCOMMENTS_LIVE_DATA(mCommentsReference);
         LiveData<DataSnapshot> currentCommentPostLiveData = mForumViewModel.getCommentsLiveData();
 
@@ -206,7 +213,7 @@ public class PostViewHolder extends RecyclerView.ViewHolder implements PopupMenu
     }
 
 
-    public void showCommentForm(boolean state){
+    void showCommentForm(boolean state){
         if (state){
             if ((mCommentList.size() == 0 || isExpanded) && !isCommentExpanded) {
                 mCommentForm.setVisibility(View.VISIBLE);
@@ -225,7 +232,7 @@ public class PostViewHolder extends RecyclerView.ViewHolder implements PopupMenu
 
 
 
-    public void showPopup(View v) {
+    private void showPopup(View v) {
         PopupMenu popup = new PopupMenu(v.getContext(), v);
         popup.setOnMenuItemClickListener(this);
         MenuInflater inflater = popup.getMenuInflater();

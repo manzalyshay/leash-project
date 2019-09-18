@@ -104,7 +104,9 @@ dependencies {
 
     //Livedata
     implementation "androidx.lifecycle:lifecycle-extensions:$lifecycle_version"
-    annotationProcessor "androidx.lifecycle:lifecycle-compiler:$lifecycle_version" // For Kotlin use kapt instead of annotationProcessor
+    annotationProcessor "androidx.lifecycle:lifecycle-compiler:$lifecycle_version"
+    implementation 'org.jetbrains:annotations:15.0'
+// For Kotlin use kapt instead of annotationProcessor
 
 }
 

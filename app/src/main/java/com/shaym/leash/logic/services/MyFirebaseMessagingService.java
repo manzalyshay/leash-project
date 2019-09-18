@@ -4,16 +4,15 @@ package com.shaym.leash.logic.services;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.Context;
 import android.content.Intent;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
+import android.util.Log;
+
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-
-import android.util.Log;
 
 import com.firebase.jobdispatcher.FirebaseJobDispatcher;
 import com.firebase.jobdispatcher.GooglePlayDriver;
@@ -21,14 +20,13 @@ import com.firebase.jobdispatcher.Job;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import com.shaym.leash.R;
-import com.shaym.leash.logic.user.Profile;
 import com.shaym.leash.logic.utils.FireBaseUsersHelper;
-import com.shaym.leash.logic.utils.UsersHelperListener;
 import com.shaym.leash.ui.home.HomeActivity;
 
 import java.util.Map;
 import java.util.Objects;
 
+import static com.shaym.leash.ui.home.HomeActivity.FROM_UID_KEY;
 import static com.shaym.leash.ui.home.HomeActivity.PUSH_RECEIVED;
 
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
@@ -78,7 +76,9 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         // Also if you intend on generating your own notifications as a result of a received FCM
         // message, here is where that should be initiated. See sendPushNotification method below.
-        sendNotification(Objects.requireNonNull(remoteMessage.getData()));
+
+        if (!Objects.equals(remoteMessage.getData().get(FROM_UID_KEY), FireBaseUsersHelper.getInstance().getUid()))
+            sendNotification(Objects.requireNonNull(remoteMessage.getData()));
 
     }
     // [END receive_message]
@@ -162,11 +162,9 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             NotificationChannel channel = new NotificationChannel(channelId,
                     "Channel human readable title",
                     NotificationManager.IMPORTANCE_DEFAULT);
-            assert manager != null;
             manager.createNotificationChannel(channel);
         }
 
-        assert manager != null;
         manager.notify(0 /* ID of notification */, notificationBuilder.build());
 
         sendBroadcast(data);

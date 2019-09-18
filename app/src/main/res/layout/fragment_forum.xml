@@ -1,5 +1,6 @@
 <RelativeLayout android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/forum_container"
     xmlns:app="http://schemas.android.com/apk/res-auto"
 
     xmlns:android="http://schemas.android.com/apk/res/android">
@@ -30,4 +31,21 @@
         android:layout_alignParentBottom="true"
         app:srcCompat="@drawable/ic_edit_white" />
 
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+    <ImageView
+        android:id="@+id/expanded_image"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+ />
+
+        <ProgressBar
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/image_enlarge_progressbar"
+            android:visibility="gone"/>
+
+    </RelativeLayout>
     </RelativeLayout>

@@ -66,6 +66,8 @@ public class ForecastFragment extends Fragment implements  ForecastListener, Tab
     private static ArrayList<String> Xval = new ArrayList<>();
     private ForecastViewModel mForecastViewModel;
 
+    public ForecastFragment (){}
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
