@@ -2,8 +2,8 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_marginBottom="80dp"
-    >
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_marginBottom="80dp">
     <tcking.github.com.giraffeplayer2.VideoView
         android:id="@+id/player_video_view"
         android:layout_width="match_parent"
@@ -26,7 +26,17 @@
             android:layout_height="match_parent"
             />
 
+
+
     </RelativeLayout>
+    <ImageView
+        android:id="@+id/enlarge_control"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_margin="10dp"
+        android:src="@drawable/ic_enlarge"/>
 
     </RelativeLayout>
 

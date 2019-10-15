@@ -128,5 +128,7 @@
     <string name="full_name">full name</string>
     <string name="post_published">Post Published.</string>
     <string name="uploading">Uploading...</string>
+    <string name="closing_app">Closing App</string>
+    <string name="areyousure_closing">Are you sure you want to leave this app?</string>
 
 </resources>

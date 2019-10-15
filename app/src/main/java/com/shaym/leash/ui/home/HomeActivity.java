@@ -305,10 +305,10 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
     public void onBackPressed() {
         new AlertDialog.Builder(this)
                 .setIcon(android.R.drawable.ic_dialog_alert)
-                .setTitle("Closing Activity")
-                .setMessage("Are you sure you want to leave this app?")
-                .setPositiveButton("Yes", (dialog, which) -> HomeActivity.super.onBackPressed())
-                .setNegativeButton("No", null)
+                .setTitle(getString(R.string.closing_app))
+                .setMessage(getString(R.string.areyousure_closing))
+                .setPositiveButton(getString(R.string.ok), (dialog, which) -> HomeActivity.super.onBackPressed())
+                .setNegativeButton(getString(R.string.cancel), null)
                 .show();
     }
 

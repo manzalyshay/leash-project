@@ -17,6 +17,7 @@ import com.shaym.leash.models.CameraObject;
 import com.shaym.leash.ui.utils.UIHelper;
 
 import tcking.github.com.giraffeplayer2.GiraffePlayer;
+import tcking.github.com.giraffeplayer2.MediaController;
 import tcking.github.com.giraffeplayer2.PlayerListener;
 import tcking.github.com.giraffeplayer2.VideoView;
 import tv.danmaku.ijk.media.player.IjkTimedText;
@@ -29,6 +30,8 @@ public class VideoViewPlayerFragment extends Fragment implements PlayerListener,
     private VideoView mVideoView;
     private CameraObject mCurrentCameraObject;
     private ImageView mSponserLogo;
+    private ImageView mEnlargeIcon;
+
     private ProgressBar mSponserLogoPbar;
     private onStreamLoadedListener mStreamListener;
 
@@ -44,10 +47,11 @@ public class VideoViewPlayerFragment extends Fragment implements PlayerListener,
 
         mVideoView = v.findViewById(R.id.player_video_view);
         mVideoView.setPlayerListener(this);
+        mEnlargeIcon = v.findViewById(R.id.enlarge_control);
+        mEnlargeIcon.setOnClickListener(this);
         mSponserLogo = v.findViewById(R.id.sponsor_logo);
         mSponserLogo.setOnClickListener(this);
         mSponserLogoPbar = v.findViewById(R.id.sponsor_logo_pbar);
-        mVideoView.getVideoInfo().setPortraitWhenFullScreen(true);
 
         // 1. Get the object in onCreate();
         if (getArguments() != null) {
@@ -159,7 +163,15 @@ public class VideoViewPlayerFragment extends Fragment implements PlayerListener,
 
     @Override
     public void onClick(View v) {
-        if (v.getId() == R.id.sponsor_logo){
+        switch (v.getId()){
+
+            case R.id.sponsor_logo:
+                Log.d(TAG, "onClick: LOGO");
+                break;
+
+            case R.id.enlarge_control:
+                mVideoView.getPlayer().toggleFullScreen();
+                break;
 
 
 

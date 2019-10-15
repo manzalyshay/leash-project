@@ -1,20 +1,28 @@
 package com.shaym.leash.ui.home.cameras;
 
 import android.annotation.SuppressLint;
+import android.app.Dialog;
+import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import com.shaym.leash.R;
 
-public class FullScreenWebViewFragment extends Fragment {
+import java.util.Objects;
+
+public class FullScreenWebViewFragment extends DialogFragment {
     final static String URL_KEY = "URL_KEY";
     private WebView mWebview;
 
@@ -41,8 +49,36 @@ public class FullScreenWebViewFragment extends Fragment {
         mWebview.setInitialScale(1);
         mWebview.getSettings().setLoadWithOverviewMode(true);
         mWebview.getSettings().setUseWideViewPort(true);
+
+        Objects.requireNonNull(getActivity()).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        v.findViewById(R.id.enlarge_control).setOnClickListener(v1 -> {
+            Objects.requireNonNull(getActivity()).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+            dismiss();
+
+        });
         return v;
     }
+
+    @NonNull
+    @Override
+    public Dialog onCreateDialog(Bundle savedInstanceState) {
+        Dialog dialog = super.onCreateDialog(savedInstanceState);
+        Objects.requireNonNull(dialog.getWindow()).requestFeature(Window.FEATURE_NO_TITLE);
+        return dialog;
+    }
+
+
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        Dialog dialog = getDialog();
+        if (dialog != null) {
+            dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        }
+    }
+
 
     public WebView getWebview() {
         return mWebview;
@@ -69,4 +105,5 @@ public class myWebClient extends WebViewClient {
 
     }
 }
+
 }

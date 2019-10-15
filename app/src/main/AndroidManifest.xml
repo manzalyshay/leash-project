@@ -68,6 +68,7 @@
 
         </activity>
         <activity android:name="com.shaym.leash.ui.home.HomeActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
             android:windowSoftInputMode="adjustPan"
             >
 
