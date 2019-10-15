@@ -1,9 +1,7 @@
 package com.shaym.leash.ui.home.profile;
 
 import android.annotation.SuppressLint;
-import android.content.Intent;
 import android.graphics.Typeface;
-import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -17,23 +15,19 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
 import com.shaym.leash.R;
-import com.shaym.leash.logic.chat.ChatMessage;
-import com.shaym.leash.logic.chat.Conversation;
-import com.shaym.leash.logic.user.Profile;
-import com.shaym.leash.logic.utils.FireBasePostsHelper;
-import com.shaym.leash.logic.utils.FireBaseUsersHelper;
-import com.shaym.leash.ui.home.chat.ChatDialog;
+import com.shaym.leash.models.ChatMessage;
+import com.shaym.leash.models.Conversation;
+import com.shaym.leash.models.Profile;
+import com.shaym.leash.data.utils.FireBaseUsersHelper;
 import com.shaym.leash.ui.utils.UIHelper;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import static com.shaym.leash.logic.utils.CONSTANT.CHAT_CONVERSATIONS;
-import static com.shaym.leash.logic.utils.CONSTANT.CONVERSATIONS;
+import static com.shaym.leash.data.utils.CONSTANT.CHAT_CONVERSATIONS;
+import static com.shaym.leash.data.utils.CONSTANT.CONVERSATIONS;
 
 public class ProfileConversationViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
     private static final String TAG = "ProfileConversationView";

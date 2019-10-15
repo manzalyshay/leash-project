@@ -1,6 +1,5 @@
 package com.shaym.leash.ui.home.cameras;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -14,8 +13,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.shaym.leash.R;
-import com.shaym.leash.logic.cameras.CameraObject;
-import com.shaym.leash.logic.utils.FireBasePostsHelper;
+import com.shaym.leash.models.CameraObject;
 import com.shaym.leash.ui.utils.UIHelper;
 
 import tcking.github.com.giraffeplayer2.GiraffePlayer;
@@ -49,7 +47,7 @@ public class VideoViewPlayerFragment extends Fragment implements PlayerListener,
         mSponserLogo = v.findViewById(R.id.sponsor_logo);
         mSponserLogo.setOnClickListener(this);
         mSponserLogoPbar = v.findViewById(R.id.sponsor_logo_pbar);
-        mVideoView.getVideoInfo().setPortraitWhenFullScreen(false);
+        mVideoView.getVideoInfo().setPortraitWhenFullScreen(true);
 
         // 1. Get the object in onCreate();
         if (getArguments() != null) {

@@ -3,15 +3,12 @@ package com.shaym.leash.ui.forum;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,37 +23,31 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.widget.ThemedSpinnerAdapter;
 import androidx.fragment.app.DialogFragment;
 
+import com.cloudinary.android.MediaManager;
 import com.github.dhaval2404.imagepicker.ImagePicker;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
 import com.shaym.leash.R;
-import com.shaym.leash.logic.utils.FireBasePostsHelper;
-import com.shaym.leash.logic.utils.FireBaseUsersHelper;
-import com.shaym.leash.logic.utils.onPictureUploadedListener;
+import com.shaym.leash.data.utils.FireBasePostsHelper;
+import com.shaym.leash.data.utils.onPictureUploadedListener;
+import com.shaym.leash.models.Profile;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 
 import permissions.dispatcher.NeedsPermission;
 import permissions.dispatcher.OnShowRationale;
 import permissions.dispatcher.PermissionRequest;
 import permissions.dispatcher.RuntimePermissions;
 
-import static com.shaym.leash.logic.utils.CONSTANT.FORUM_POSTS_PICS;
-import static com.shaym.leash.logic.utils.CONSTANT.GENERAL_POSTS;
-import static com.shaym.leash.logic.utils.CONSTANT.SPOTS_POSTS;
-import static com.shaym.leash.logic.utils.CONSTANT.TRIPS_POSTS;
+import static com.shaym.leash.data.utils.CONSTANT.FORUM_IMAGES;
+import static com.shaym.leash.data.utils.CONSTANT.GENERAL_POSTS;
+import static com.shaym.leash.data.utils.CONSTANT.SPOTS_POSTS;
+import static com.shaym.leash.data.utils.CONSTANT.TRIPS_POSTS;
 
 @RuntimePermissions
 public class NewForumPostDialog extends DialogFragment implements onPictureUploadedListener {
@@ -67,14 +58,8 @@ public class NewForumPostDialog extends DialogFragment implements onPictureUploa
     private Spinner mCategorySpinner;
     private List<String> mPostImagepaths;
     private Bitmap selectedBitmap;
-    //Firebase
-    FirebaseStorage storage;
-    StorageReference storageReference;
     private EditText mBodyInput;
-    private LinearLayout mUploadLayout;
-    private LinearLayout mSubmitLayout;
-
-    private StorageReference mStorage;
+    private Profile mUser;
     private String mNewPostCategory;
     private TextView mUploadLabel;
     private boolean mImagePicked;
@@ -99,8 +84,7 @@ public class NewForumPostDialog extends DialogFragment implements onPictureUploa
         Bundle args = getArguments();
         assert args != null;
         mNewPostCategory = args.getString(CATEGORY_KEY);
-        storage = FirebaseStorage.getInstance();
-        storageReference = storage.getReference();
+        //Firebase
         return inflater.inflate(R.layout.dialog_newforumpost, container);
     }
 
@@ -108,9 +92,6 @@ public class NewForumPostDialog extends DialogFragment implements onPictureUploa
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         //findviews
-
-        mStorage = FirebaseStorage.getInstance().getReference();
-
         initViews();
     }
 
@@ -179,7 +160,7 @@ public class NewForumPostDialog extends DialogFragment implements onPictureUploa
     }
 
     private void initUploadLayout() {
-        mUploadLayout = Objects.requireNonNull(getView()).findViewById(R.id.upload_layout);
+        LinearLayout mUploadLayout = Objects.requireNonNull(getView()).findViewById(R.id.upload_layout);
         mPostImagepaths = new ArrayList<>();
         mUploadLayout.setOnClickListener(view -> {
             NewForumPostDialogPermissionsDispatcher.pickImageWithPermissionCheck(NewForumPostDialog.this);
@@ -217,6 +198,9 @@ public class NewForumPostDialog extends DialogFragment implements onPictureUploa
     }
 
 
+    public void setUser(Profile user){
+        mUser = user;
+    }
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -248,7 +232,7 @@ public class NewForumPostDialog extends DialogFragment implements onPictureUploa
     }
 
     private void initSubmitLayout() {
-        mSubmitLayout = Objects.requireNonNull(getView()).findViewById(R.id.postdialog_submit);
+        LinearLayout mSubmitLayout = Objects.requireNonNull(getView()).findViewById(R.id.postdialog_submit);
 
         mSubmitLayout.setOnClickListener(view -> {
 
@@ -268,7 +252,7 @@ public class NewForumPostDialog extends DialogFragment implements onPictureUploa
 
         }
         else{
-            FireBasePostsHelper.getInstance().uploadImage(getContext(), FORUM_POSTS_PICS, selectedBitmap, this);
+            FireBasePostsHelper.getInstance().uploadImage(getContext(),    mUser.getUid() + "/"+ FORUM_IMAGES , selectedBitmap, this);
 
         }
     }
@@ -287,8 +271,8 @@ public class NewForumPostDialog extends DialogFragment implements onPictureUploa
 
 
     private void publishPost() {
-        FireBasePostsHelper.getInstance().writeNewForumPost(FireBaseUsersHelper.getInstance().getUid(), mBodyInput.getText().toString().trim(), mNewPostCategory, mPostImagepaths);
-        Toast.makeText(getContext(), "Post Published.", Toast.LENGTH_SHORT).show();
+        FireBasePostsHelper.getInstance().writeNewForumPost(mUser, mBodyInput.getText().toString().trim(), mNewPostCategory, mPostImagepaths);
+        Toast.makeText(getContext(), getString(R.string.post_published), Toast.LENGTH_SHORT).show();
         this.dismiss();
     }
 

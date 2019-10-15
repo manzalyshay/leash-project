@@ -8,10 +8,8 @@
     import android.view.ViewGroup;
 
     import com.shaym.leash.R;
-    import com.shaym.leash.logic.cameras.CameraObject;
-    import com.shaym.leash.logic.utils.FireBasePostsHelper;
+    import com.shaym.leash.models.CameraObject;
     import com.shaym.leash.ui.utils.UIHelper;
-    import com.squareup.picasso.Picasso;
 
     import java.util.ArrayList;
     import java.util.List;

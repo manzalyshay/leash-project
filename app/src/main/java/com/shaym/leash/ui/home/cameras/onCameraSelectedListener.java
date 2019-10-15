@@ -1,6 +1,6 @@
 package com.shaym.leash.ui.home.cameras;
 
-import com.shaym.leash.logic.cameras.CameraObject;
+import com.shaym.leash.models.CameraObject;
 
 public interface onCameraSelectedListener {
 

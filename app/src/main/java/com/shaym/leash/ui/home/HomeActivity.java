@@ -38,11 +38,11 @@ import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.shaym.leash.R;
-import com.shaym.leash.logic.user.Profile;
-import com.shaym.leash.logic.user.UsersViewModel;
-import com.shaym.leash.logic.utils.FireBasePostsHelper;
-import com.shaym.leash.logic.utils.FireBaseUsersHelper;
-import com.shaym.leash.logic.utils.onPictureUploadedListener;
+import com.shaym.leash.models.Profile;
+import com.shaym.leash.viewmodels.UsersViewModel;
+import com.shaym.leash.data.utils.FireBasePostsHelper;
+import com.shaym.leash.data.utils.FireBaseUsersHelper;
+import com.shaym.leash.data.utils.onPictureUploadedListener;
 import com.shaym.leash.ui.authentication.LoginActivity;
 import com.shaym.leash.ui.forecast.ForecastFragment;
 import com.shaym.leash.ui.forum.ForumFragment;
@@ -63,7 +63,7 @@ import permissions.dispatcher.OnShowRationale;
 import permissions.dispatcher.PermissionRequest;
 import permissions.dispatcher.RuntimePermissions;
 
-import static com.shaym.leash.logic.utils.CONSTANT.PROFILE_PICS;
+import static com.shaym.leash.data.utils.CONSTANT.PROFILE_PICS;
 
 @RuntimePermissions
 public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageChangeListener, View.OnClickListener, TabLayout.OnTabSelectedListener, PopupMenu.OnMenuItemClickListener, onPictureUploadedListener {
@@ -210,10 +210,11 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
                     updateUI();
                     FireBaseUsersHelper.getInstance().updateUserpushToken();
                     FireBaseUsersHelper.getInstance().updateUserStatus(true);
-
                 }
             }
         });
+
+
     }
 
 
@@ -514,10 +515,14 @@ public class HomeActivity extends AppCompatActivity implements ViewPager.OnPageC
     public void onPictureUploaded(String uploadPath) {
         Log.d(TAG, "onPictureUploaded: ");
 
-        if (mUser.getAvatarurl().charAt(0) != 'h') {
+        if (!mUser.getAvatarurl().isEmpty()) {
             ArrayList<String> pics = new ArrayList<>();
             pics.add(mUser.getAvatarurl());
-            FireBasePostsHelper.getInstance().deleteImagesFromStorage(pics);
+            try {
+                FireBasePostsHelper.getInstance().deleteImagesFromStorage(pics);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
         mUser.setAvatarurl(uploadPath);
         FireBaseUsersHelper.getInstance().saveUserByID(mUser.getUid(), mUser);

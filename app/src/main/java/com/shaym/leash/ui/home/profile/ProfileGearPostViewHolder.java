@@ -10,8 +10,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.shaym.leash.R;
-import com.shaym.leash.logic.gear.GearPost;
-import com.shaym.leash.logic.utils.FireBasePostsHelper;
+import com.shaym.leash.models.GearPost;
+import com.shaym.leash.data.utils.FireBasePostsHelper;
 import com.shaym.leash.ui.home.HomeActivity;
 import com.shaym.leash.ui.utils.UIHelper;
 
@@ -56,7 +56,7 @@ public class ProfileGearPostViewHolder extends RecyclerView.ViewHolder implement
 
         }
 
-        locationView.setText(mCurrentPost.location);
+        locationView.setText(mCurrentPost.salelocation);
         priceView.setText(Integer.toString(mCurrentPost.price));
 
         bodyView.setText(mCurrentPost.body);

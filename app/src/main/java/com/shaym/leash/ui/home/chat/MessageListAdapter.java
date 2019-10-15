@@ -13,10 +13,10 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.shaym.leash.R;
-import com.shaym.leash.logic.chat.ChatMessage;
-import com.shaym.leash.logic.user.Profile;
-import com.shaym.leash.logic.utils.FireBasePostsHelper;
-import com.shaym.leash.logic.utils.FireBaseUsersHelper;
+import com.shaym.leash.models.ChatMessage;
+import com.shaym.leash.models.Profile;
+import com.shaym.leash.data.utils.FireBasePostsHelper;
+import com.shaym.leash.data.utils.FireBaseUsersHelper;
 import com.shaym.leash.ui.utils.UIHelper;
 
 import java.text.SimpleDateFormat;

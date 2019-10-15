@@ -13,11 +13,9 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 
 import com.shaym.leash.R;
-import com.shaym.leash.logic.cameras.CameraObject;
-import com.shaym.leash.logic.utils.FireBasePostsHelper;
+import com.shaym.leash.models.CameraObject;
 import com.shaym.leash.ui.utils.UIHelper;
 
 import static com.shaym.leash.ui.home.cameras.CamerasFragment.CAMERA_PARCE;

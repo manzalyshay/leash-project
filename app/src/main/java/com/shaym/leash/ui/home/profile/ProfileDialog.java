@@ -27,10 +27,10 @@ import androidx.lifecycle.ViewModelProviders;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.FirebaseDatabase;
 import com.shaym.leash.R;
-import com.shaym.leash.logic.user.Profile;
-import com.shaym.leash.logic.user.UsersViewModel;
-import com.shaym.leash.logic.utils.FireBasePostsHelper;
-import com.shaym.leash.logic.utils.FireBaseUsersHelper;
+import com.shaym.leash.models.Profile;
+import com.shaym.leash.viewmodels.UsersViewModel;
+import com.shaym.leash.data.utils.FireBasePostsHelper;
+import com.shaym.leash.data.utils.FireBaseUsersHelper;
 import com.shaym.leash.ui.home.HomeActivity;
 import com.shaym.leash.ui.utils.UIHelper;
 
@@ -44,13 +44,13 @@ import permissions.dispatcher.PermissionRequest;
 import permissions.dispatcher.RuntimePermissions;
 
 import static android.Manifest.permission.CALL_PHONE;
-import static com.shaym.leash.logic.user.UsersViewModel.getUid;
-import static com.shaym.leash.logic.utils.CONSTANT.CHAT_CONVERSATIONS;
-import static com.shaym.leash.logic.utils.CONSTANT.CONVERSATIONS;
-import static com.shaym.leash.logic.utils.CONSTANT.ROLE_STORE_FCS;
-import static com.shaym.leash.logic.utils.CONSTANT.ROLE_STORE_INTERSURF;
-import static com.shaym.leash.logic.utils.CONSTANT.ROLE_USER;
-import static com.shaym.leash.logic.utils.CONSTANT.USERS_TABLE;
+import static com.shaym.leash.viewmodels.UsersViewModel.getUid;
+import static com.shaym.leash.data.utils.CONSTANT.CHAT_CONVERSATIONS;
+import static com.shaym.leash.data.utils.CONSTANT.CONVERSATIONS;
+import static com.shaym.leash.data.utils.CONSTANT.ROLE_STORE_FCS;
+import static com.shaym.leash.data.utils.CONSTANT.ROLE_STORE_INTERSURF;
+import static com.shaym.leash.data.utils.CONSTANT.ROLE_USER;
+import static com.shaym.leash.data.utils.CONSTANT.USERS_TABLE;
 
 @RuntimePermissions
 public class ProfileDialog extends DialogFragment implements View.OnClickListener {

@@ -16,12 +16,12 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.shaym.leash.R;
-import com.shaym.leash.logic.forum.Comment;
-import com.shaym.leash.logic.forum.Post;
-import com.shaym.leash.logic.gear.GearPost;
-import com.shaym.leash.logic.user.Profile;
-import com.shaym.leash.logic.utils.FireBasePostsHelper;
-import com.shaym.leash.logic.utils.FireBaseUsersHelper;
+import com.shaym.leash.models.Comment;
+import com.shaym.leash.models.Post;
+import com.shaym.leash.models.GearPost;
+import com.shaym.leash.models.Profile;
+import com.shaym.leash.data.utils.FireBasePostsHelper;
+import com.shaym.leash.data.utils.FireBaseUsersHelper;
 import com.shaym.leash.ui.utils.UIHelper;
 
 import java.util.ArrayList;

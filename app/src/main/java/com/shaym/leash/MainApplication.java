@@ -4,9 +4,11 @@ import android.app.Application;
 import android.content.Context;
 import android.util.Log;
 
+import com.cloudinary.android.MediaManager;
 import com.facebook.FacebookSdk;
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.firebase.database.FirebaseDatabase;
-import com.shaym.leash.logic.user.Profile;
 import com.squareup.picasso.OkHttp3Downloader;
 import com.squareup.picasso.Picasso;
 
@@ -30,7 +32,6 @@ public class MainApplication extends Application {
         super.onCreate();
 
         mInstance = this;
-        FacebookSdk.sdkInitialize(getApplicationContext());
         FirebaseDatabase.getInstance().setPersistenceEnabled(true);
         Picasso.Builder builder = new Picasso.Builder(this);
         builder.downloader(new OkHttp3Downloader(this,Integer.MAX_VALUE));
@@ -39,9 +40,13 @@ public class MainApplication extends Application {
         built.setLoggingEnabled(true);
         Picasso.setSingletonInstance(built);
 
+        // Initialize the SDK
+        Places.initialize(getApplicationContext(), getString(R.string.google_api_key));
+        MediaManager.init(this);
+
     }
 
-    public static MainApplication getInstace(){
+    public static MainApplication getInstance(){
         return mInstance;
     }
 

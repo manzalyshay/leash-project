@@ -9,8 +9,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.shaym.leash.R;
-import com.shaym.leash.logic.forum.Post;
-import com.shaym.leash.logic.utils.FireBasePostsHelper;
+import com.shaym.leash.models.Post;
+import com.shaym.leash.data.utils.FireBasePostsHelper;
 import com.shaym.leash.ui.home.HomeActivity;
 import com.shaym.leash.ui.utils.UIHelper;
 
@@ -22,14 +22,12 @@ public class ProfileForumPostViewHolder extends RecyclerView.ViewHolder implemen
     private TextView dateView;
     private ImageView postImage;
     private ProgressBar progressBar;
-    private TextView numStarsView;
     private TextView bodyView;
     private Post mCurrentPost;
 
     ProfileForumPostViewHolder(View itemView) {
         super(itemView);
         dateView = itemView.findViewById(R.id.publish_date);
-        numStarsView = itemView.findViewById(R.id.post_num_stars);
         bodyView = itemView.findViewById(R.id.post_body);
         postImage = itemView.findViewById(R.id.post_attached_image);
         progressBar = itemView.findViewById(R.id.post_attached_progressbar);
@@ -39,7 +37,6 @@ public class ProfileForumPostViewHolder extends RecyclerView.ViewHolder implemen
 
     void bindToPost(Post post) {
         mCurrentPost = post;
-        numStarsView.setText(String.valueOf(post.starCount));
         bodyView.setText(post.body);
 
         int dayspast = FireBasePostsHelper.getInstance().getDaysDifference(post.date);

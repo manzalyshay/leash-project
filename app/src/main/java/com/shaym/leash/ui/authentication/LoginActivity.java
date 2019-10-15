@@ -6,10 +6,13 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.LinearInterpolator;
+import android.view.animation.RotateAnimation;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
@@ -29,8 +32,9 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
 import com.shaym.leash.R;
-import com.shaym.leash.logic.utils.FireBaseUsersHelper;
+import com.shaym.leash.data.utils.FireBaseUsersHelper;
 import com.shaym.leash.ui.home.HomeActivity;
+import com.shaym.leash.ui.utils.UIHelper;
 
 import org.json.JSONException;
 
@@ -43,8 +47,6 @@ import static com.shaym.leash.ui.home.HomeActivity.FROM_UID_KEY;
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener, FacebookCallback<LoginResult> {
 
     private static final String TAG = "LoginActivity";
-    public static final String GENDER_KEY = "GENDER_KEY";
-
     RelativeLayout rellay1, rellay2;
     private FirebaseAuth mAuth;
     private EditText mLoginEmailField;
@@ -53,10 +55,11 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private Handler mSplasHandler = new Handler();
     private AlertDialog mForgotPassDialog;
     private EditText mResetPassEmailInput;
-    private ProgressBar mLoginProgressBar;
     private String mDisplayName;
-
-    private String mFBProfilePic = "";
+    private ImageView mLogo;
+    private boolean mFBLogin;
+    private String mFBPicUrl = "";
+    private String mFBGender = "male";
     private String mFromUID= "";
 
     @Override
@@ -77,11 +80,10 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         rellay2 = findViewById(R.id.rellay2);
         Button mLoginButton = findViewById(R.id.loginbtn);
         Button mSingUpButton = findViewById(R.id.signupb);
-        mLoginProgressBar = findViewById(R.id.loginprogressbar);
         Button mResetPassButton = findViewById(R.id.forgotpass_btn);
         mLoginEmailField = findViewById(R.id.loginemailfield);
         mLoginPassField = findViewById(R.id.loginpassfield);
-
+        mLogo = findViewById(R.id.imgView_logo);
 
         mSingUpButton.setOnClickListener(this);
         mLoginButton.setOnClickListener(this);
@@ -161,15 +163,23 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                         // Sign in success, update UI with the signed-in user's information
                         Log.d(TAG, "signInWithCredential:success");
                         FirebaseUser user = mAuth.getCurrentUser();
-                        UserProfileChangeRequest profileUpdate = new UserProfileChangeRequest.Builder()
-                                .setDisplayName(mDisplayName).build();
+                        UserProfileChangeRequest profileUpdate;
+                        if (!mDisplayName.isEmpty()) {
+                            profileUpdate = new UserProfileChangeRequest.Builder()
+                                    .setDisplayName(mDisplayName).build();
+                        }
+                        else {
+                            assert user != null;
+                            profileUpdate = new UserProfileChangeRequest.Builder()
+                                    .setDisplayName(user.getEmail()).build();
+                        }
+
 
                         assert user != null;
-
                         user.updateProfile(profileUpdate);
                         updateUI(user );
                     } else {
-                        mLoginProgressBar.setVisibility(View.GONE);
+                        stopLoginAnimation();
 
                         // If sign in fails, display a message to the user.
                         Log.w(TAG, "signInWithCredential:failure", task.getException());
@@ -179,6 +189,10 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
                     // ...
                 });
+    }
+
+    private void stopLoginAnimation() {
+        mLogo.clearAnimation();
     }
 
 
@@ -197,9 +211,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         if (currentUser != null) {
             Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
             Bundle b = new Bundle();
-            if (!mFBProfilePic.isEmpty()) {
-                FireBaseUsersHelper.getInstance().createUserInDB(mFBProfilePic, "Male", currentUser);
-
+            if (mFBLogin) {
+                FireBaseUsersHelper.getInstance().createUserInDB(mFBPicUrl, mFBGender, currentUser);
             }
 
             if (mFromUID != null && !mFromUID.isEmpty()) {
@@ -217,7 +230,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.loginbtn:
-                mLoginProgressBar.setVisibility(View.VISIBLE);
 
                 Log.d(TAG, "onClick: LoginBtn");
                 String pass = mLoginPassField.getText().toString();
@@ -227,6 +239,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                     Toast.makeText(LoginActivity.this, "Email/Password is missing.",
                             Toast.LENGTH_SHORT).show();
                 } else {
+                    startLoginAnimation();
                     mAuth.signInWithEmailAndPassword(email.trim(), pass)
                             .addOnCompleteListener(this, task -> {
                                 if (task.isSuccessful()) {
@@ -235,7 +248,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                                     FirebaseUser user = mAuth.getCurrentUser();
                                     updateUI(user);
                                 } else {
-                                    mLoginProgressBar.setVisibility(View.GONE);
+                                    stopLoginAnimation();
 
                                     // If sign in fails, display a message to the user.
                                     Log.w(TAG, "signInWithEmail:failure", task.getException());
@@ -283,6 +296,11 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         }
     }
 
+    private void startLoginAnimation() {
+
+        UIHelper.getInstance().startSpinAnimation(mLogo);
+    }
+
     private void setFacebookData(final LoginResult loginResult)
     {
         GraphRequest request = GraphRequest.newMeRequest(
@@ -294,11 +312,23 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
                         String firstName = response.getJSONObject().getString("first_name");
                         String lastName = response.getJSONObject().getString("last_name");
+                        String gender = response.getJSONObject().getString("gender");
+
+                        if (gender != null){
+                            mFBGender = gender;
+                        }
 
                         String userId = loginResult.getAccessToken().getUserId();
 
-                        mFBProfilePic = "https://graph.facebook.com/" + userId+ "/picture?type=large";
-                        mDisplayName = firstName + " " + lastName;
+                        mFBPicUrl = "https://graph.facebook.com/" + userId+ "/picture?type=large";
+
+                        if (firstName != null && lastName != null) {
+                            mDisplayName = firstName + " " + lastName;
+                        }
+                        else {
+                            mDisplayName = "";
+                        }
+                        mFBLogin = true;
 
 
                         handleFacebookAccessToken(loginResult.getAccessToken());
@@ -317,7 +347,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     @Override
     public void onSuccess(LoginResult loginResult) {
         Log.d(TAG, "facebook:onSuccess:" + loginResult);
-        mLoginProgressBar.setVisibility(View.VISIBLE);
+        startLoginAnimation();
         setFacebookData(loginResult);
     }
 

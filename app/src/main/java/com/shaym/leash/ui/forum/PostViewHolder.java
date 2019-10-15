@@ -18,7 +18,6 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -28,20 +27,17 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.shaym.leash.R;
-import com.shaym.leash.logic.forum.Comment;
-import com.shaym.leash.logic.forum.ForumViewModel;
-import com.shaym.leash.logic.forum.Post;
-import com.shaym.leash.logic.user.Profile;
-import com.shaym.leash.logic.utils.CONSTANT;
-import com.shaym.leash.logic.utils.FireBasePostsHelper;
-import com.shaym.leash.logic.utils.FireBaseUsersHelper;
-import com.shaym.leash.ui.home.chat.ChatDialog;
-import com.shaym.leash.ui.utils.EnlargeImageDialog;
+import com.shaym.leash.models.Comment;
+import com.shaym.leash.viewmodels.ForumViewModel;
+import com.shaym.leash.models.Post;
+import com.shaym.leash.models.Profile;
+import com.shaym.leash.data.utils.CONSTANT;
+import com.shaym.leash.data.utils.FireBasePostsHelper;
+import com.shaym.leash.data.utils.FireBaseUsersHelper;
 import com.shaym.leash.ui.utils.UIHelper;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class PostViewHolder extends RecyclerView.ViewHolder implements PopupMenu.OnMenuItemClickListener, View.OnClickListener, TextWatcher {
 
@@ -50,12 +46,10 @@ public class PostViewHolder extends RecyclerView.ViewHolder implements PopupMenu
     private TextView publishdate;
     private ImageView authorPic;
     private ProgressBar authorPicProgressBar;
-    private ImageView starView;
     private ImageView settingsView;
     private RelativeLayout attachLayout;
     private ImageView postImage;
     private ProgressBar postImageProgressBar;
-    private TextView numStarsView;
     private EditText bodyView;
     private Profile mPostProfile;
     private Post currentPost;
@@ -87,9 +81,7 @@ public class PostViewHolder extends RecyclerView.ViewHolder implements PopupMenu
         postImageProgressBar = itemView.findViewById(R.id.post_attached_progressbar);
         publishdate = itemView.findViewById(R.id.publish_date);
         authorView = itemView.findViewById(R.id.post_author);
-        starView = itemView.findViewById(R.id.star);
         settingsView = itemView.findViewById(R.id.settings);
-        numStarsView = itemView.findViewById(R.id.post_num_stars);
         bodyView = itemView.findViewById(R.id.post_body);
         bodyView.addTextChangedListener(new TextWatcher() {
             @Override
@@ -167,7 +159,6 @@ public class PostViewHolder extends RecyclerView.ViewHolder implements PopupMenu
 
         }
 
-        numStarsView.setText(String.valueOf(post.starCount));
         bodyView.setText(post.body);
 
         if (post.images != null){
@@ -249,7 +240,11 @@ public class PostViewHolder extends RecyclerView.ViewHolder implements PopupMenu
     public boolean onMenuItemClick(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.delete:
-                FireBasePostsHelper.getInstance().deleteForumPost(currentPost);
+                try {
+                    FireBasePostsHelper.getInstance().deleteForumPost(currentPost);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 return true;
             case R.id.edit:
                 itemView.setOnClickListener(null);

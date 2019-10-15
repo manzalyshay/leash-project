@@ -1,6 +1,5 @@
 package com.shaym.leash.ui.forum;
 
-import android.animation.Animator;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -21,11 +20,11 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.database.DataSnapshot;
 import com.shaym.leash.R;
-import com.shaym.leash.logic.forum.ForumViewModel;
-import com.shaym.leash.logic.forum.Post;
-import com.shaym.leash.logic.user.Profile;
-import com.shaym.leash.logic.user.UsersViewModel;
-import com.shaym.leash.logic.utils.FireBaseUsersHelper;
+import com.shaym.leash.viewmodels.ForumViewModel;
+import com.shaym.leash.models.Post;
+import com.shaym.leash.models.Profile;
+import com.shaym.leash.viewmodels.UsersViewModel;
+import com.shaym.leash.data.utils.FireBaseUsersHelper;
 import com.shaym.leash.ui.utils.UIHelper;
 
 import java.util.ArrayList;
@@ -35,9 +34,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import static com.shaym.leash.logic.utils.CONSTANT.GENERAL_POSTS;
-import static com.shaym.leash.logic.utils.CONSTANT.SPOTS_POSTS;
-import static com.shaym.leash.logic.utils.CONSTANT.TRIPS_POSTS;
+import static com.shaym.leash.data.utils.CONSTANT.GENERAL_POSTS;
+import static com.shaym.leash.data.utils.CONSTANT.SPOTS_POSTS;
+import static com.shaym.leash.data.utils.CONSTANT.TRIPS_POSTS;
 
 /**
  * Created by shaym on 2/14/18.
@@ -53,7 +52,6 @@ public class ForumFragment extends Fragment implements  View.OnClickListener, Ta
     private List<Post> mGeneralPosts = new ArrayList<>();
     private List<Post> mTripsPosts = new ArrayList<>();
     private List<Post> mSpotsPosts = new ArrayList<>();
-    private FloatingActionButton mFab;
     private int lastPos = -1;
     private Profile mUser;
 
@@ -163,7 +161,7 @@ public class ForumFragment extends Fragment implements  View.OnClickListener, Ta
     }
 
     private void initUi(View v) {
-        mFab = v.findViewById(R.id.fab_new_post);
+        FloatingActionButton mFab = v.findViewById(R.id.fab_new_post);
         mFab.setOnClickListener(this);
         mForumButtons = v.findViewById(R.id.forum_buttons);
         UIHelper.getInstance().addTab(mForumButtons,getString(R.string.general_menu_title), true);
@@ -215,6 +213,7 @@ public class ForumFragment extends Fragment implements  View.OnClickListener, Ta
                     FragmentManager fm = Objects.requireNonNull(getActivity()).getSupportFragmentManager();
                     NewForumPostDialog newForumPostDialog= NewForumPostDialog.newInstance(mCurrentForum);
                     newForumPostDialog.show(fm, newForumPostDialog.getTag());
+                    newForumPostDialog.setUser(mUser);
                 }
                 catch (Exception e){
                     e.printStackTrace();
@@ -360,6 +359,8 @@ public class ForumFragment extends Fragment implements  View.OnClickListener, Ta
     public void onTabReselected(TabLayout.Tab tab) {
 
     }
+
+
 }
 
 

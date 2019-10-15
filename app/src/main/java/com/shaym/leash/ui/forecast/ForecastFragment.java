@@ -1,6 +1,5 @@
 package com.shaym.leash.ui.forecast;
 
-import android.content.Context;
 import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.graphics.Typeface;
@@ -16,11 +15,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
-import androidx.core.view.ViewCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.Legend;
@@ -33,13 +29,13 @@ import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.google.android.material.tabs.TabLayout;
 import com.shaym.leash.R;
-import com.shaym.leash.logic.forecast.DownloadForecast;
-import com.shaym.leash.logic.forecast.ForecastAVGObject;
-import com.shaym.leash.logic.forecast.ForecastHelper;
-import com.shaym.leash.logic.forecast.ForecastListener;
-import com.shaym.leash.logic.forecast.localdb.dbutils.ForecastObject;
-import com.shaym.leash.logic.forecast.localdb.dbutils.ForecastViewModel;
-import com.shaym.leash.logic.forecast.localdb.dbutils.GetForecastsByDays;
+import com.shaym.leash.data.forecast.DownloadForecast;
+import com.shaym.leash.models.ForecastAVGObject;
+import com.shaym.leash.data.forecast.ForecastHelper;
+import com.shaym.leash.data.forecast.ForecastListener;
+import com.shaym.leash.data.forecast.localdb.dbutils.ForecastObject;
+import com.shaym.leash.data.forecast.localdb.dbutils.ForecastViewModel;
+import com.shaym.leash.data.forecast.localdb.dbutils.GetForecastsByDays;
 import com.shaym.leash.ui.utils.UIHelper;
 
 import java.util.ArrayList;

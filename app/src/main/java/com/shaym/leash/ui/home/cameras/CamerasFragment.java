@@ -17,18 +17,18 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.tabs.TabLayout;
 import com.shaym.leash.R;
-import com.shaym.leash.logic.cameras.CameraObject;
-import com.shaym.leash.logic.cameras.CamerasListener;
-import com.shaym.leash.logic.cameras.CamerasViewModel;
-import com.shaym.leash.logic.cameras.DownloadCameras;
-import com.shaym.leash.logic.cameras.GetCamerasByCity;
+import com.shaym.leash.models.CameraObject;
+import com.shaym.leash.data.cameras.CamerasListener;
+import com.shaym.leash.viewmodels.CamerasViewModel;
+import com.shaym.leash.data.cameras.DownloadCameras;
+import com.shaym.leash.data.cameras.GetCamerasByCity;
 import com.shaym.leash.ui.utils.UIHelper;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import static com.shaym.leash.logic.utils.CONSTANT.PLAYER_STREAM;
+import static com.shaym.leash.data.utils.CONSTANT.PLAYER_STREAM;
 
 /**
  * Created by shaym on 2/17/18.

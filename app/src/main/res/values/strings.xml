@@ -97,10 +97,13 @@
 
 
     <string-array name="gender_array">
-        <item>Male</item>
-        <item>Female</item>
+        <item>@string/male</item>
+        <item>@string/female</item>
 
     </string-array>
+    <string name="male">Male</string>
+    <string name="female">Female</string>
+
     <string name="shop_activity">Store Activity</string>
     <string name="shake">!!RING!!</string>
     <string name="rate">Rate</string>
@@ -121,7 +124,9 @@
     <string name="days_ego_he" translatable="false">ימים %1$d לפני</string>
     <string name="today">Today</string>
     <string name="phone_permissions">Please Allow Phone Permissions</string>
-    <string name="notes">הערות</string>
-    <string name="full_name">שם מלא</string>
+    <string name="notes">notes</string>
+    <string name="full_name">full name</string>
+    <string name="post_published">Post Published.</string>
+    <string name="uploading">Uploading...</string>
 
 </resources>

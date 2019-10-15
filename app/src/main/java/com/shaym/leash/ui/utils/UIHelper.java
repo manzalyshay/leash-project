@@ -5,39 +5,29 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.app.Activity;
-import android.content.Context;
-import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.Rect;
-import android.media.Image;
 import android.net.Uri;
-import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
+import android.view.animation.Animation;
 import android.view.animation.DecelerateInterpolator;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.FrameLayout;
+import android.view.animation.LinearInterpolator;
+import android.view.animation.RotateAnimation;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
-import androidx.fragment.app.FragmentActivity;
-
+import com.cloudinary.android.MediaManager;
 import com.google.android.material.appbar.AppBarLayout;
-import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
 import com.shaym.leash.MainApplication;
 import com.shaym.leash.R;
-import com.shaym.leash.logic.aroundme.CircleTransform;
-import com.shaym.leash.logic.aroundme.RoundedCornersTransform;
+import com.shaym.leash.ui.aroundme.CircleTransform;
+import com.shaym.leash.ui.aroundme.RoundedCornersTransform;
 import com.shaym.leash.ui.home.aroundme.AroundMeFragment;
 import com.squareup.picasso.Callback;
-import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
@@ -47,8 +37,7 @@ public class UIHelper {
     public final static String PROFILE_SELECTED = "PROFILE_SELECTED";
     public final static String AROUNDME_SELECTED = "AROUNDME_SELECTED";
     public final static String CHAT_SELECTED = "CHAT_SELECTED";
-    private FirebaseStorage storage = FirebaseStorage.getInstance();
-    private StorageReference storageReference = storage.getReference();
+
     private DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference();
     public final static String FORECAST_SELECTED = "FORECAST_SELECTED";
     public final static String FORUM_SELECTED = "FORUM_SELECTED";
@@ -60,7 +49,7 @@ public class UIHelper {
 
     private UIHelper() {
         // Retrieve and cache the system's default "short" animation time.
-        shortAnimationDuration = MainApplication.getInstace().getApplicationContext().getResources().getInteger(
+        shortAnimationDuration = MainApplication.getInstance().getApplicationContext().getResources().getInteger(
                 android.R.integer.config_shortAnimTime);
     }
 
@@ -142,8 +131,15 @@ public class UIHelper {
 
     public void attachRoundPic(String url, ImageView imageView, ProgressBar progressBar, int height, int width) {
         if (!url.isEmpty()) {
-            if (url.charAt(0) == 'h') {
-                Picasso.get().load(Uri.parse(url)).resize(width, height).networkPolicy(NetworkPolicy.OFFLINE).centerCrop().transform(new CircleTransform()).into(imageView, new Callback() {
+            String theurl;
+            if (url.charAt(0) == 'h'){
+                theurl = url;
+            }
+            else {
+                theurl = MediaManager.get().url().generate(url);
+            }
+
+                Picasso.get().load(Uri.parse(theurl)).resize(width, height).networkPolicy(NetworkPolicy.OFFLINE).centerCrop().transform(new CircleTransform()).into(imageView, new Callback() {
                     @Override
                     public void onSuccess() {
                         progressBar.setVisibility(View.GONE);
@@ -151,7 +147,7 @@ public class UIHelper {
 
                     @Override
                     public void onError(Exception e) {
-                        Picasso.get().load(Uri.parse(url)).resize(width, height).centerCrop().transform(new CircleTransform()).into(imageView, new Callback() {
+                        Picasso.get().load(Uri.parse(theurl)).resize(width, height).centerCrop().transform(new CircleTransform()).into(imageView, new Callback() {
                             @Override
                             public void onSuccess() {
                                 progressBar.setVisibility(View.GONE);
@@ -170,34 +166,7 @@ public class UIHelper {
 
                 });
 
-            } else {
-                storageReference.child(url).getDownloadUrl().addOnSuccessListener(uri -> Picasso.get().load(uri).resize(width, height).networkPolicy(NetworkPolicy.OFFLINE).centerCrop().transform(new CircleTransform()).into(imageView, new Callback() {
-                    @Override
-                    public void onSuccess() {
-                        progressBar.setVisibility(View.GONE);
-                    }
 
-                    @Override
-                    public void onError(Exception e) {
-                        Picasso.get().load(uri).resize(width, height).centerCrop().transform(new CircleTransform()).into(imageView, new Callback() {
-                            @Override
-                            public void onSuccess() {
-                                progressBar.setVisibility(View.GONE);
-                            }
-
-                            @Override
-                            public void onError(Exception e) {
-                                //Try again online if cache failed
-
-                                progressBar.setVisibility(View.GONE);
-
-                            }
-                        });
-
-                    }
-
-                }));
-            }
         } else {
             progressBar.setVisibility(View.GONE);
             Picasso.get().load(R.drawable.launcher_leash).resize(width,height).centerCrop().transform(new CircleTransform()).into(imageView);
@@ -207,16 +176,15 @@ public class UIHelper {
 
     public void attachRoundPicToPoiTarget(String url, final AroundMeFragment.PoiTarget imageView, int height, int width) {
         if (!url.isEmpty()) {
-            if (url.charAt(0) == 'h') {
-                Picasso.get().load(Uri.parse(url)).resize(width, height).centerCrop().transform(new CircleTransform()).into(imageView);
 
-
-            } else {
-                storageReference.child(url).getDownloadUrl().addOnSuccessListener(uri -> Picasso.get().load(uri).resize(width, height).networkPolicy(NetworkPolicy.OFFLINE).centerCrop().transform(new CircleTransform()).into(imageView));
-
-
+            String theurl;
+            if (url.charAt(0) == 'h'){
+                theurl = url;
             }
-
+            else {
+                theurl = MediaManager.get().url().generate(url);
+            }
+                Picasso.get().load(Uri.parse(theurl)).resize(width, height).centerCrop().transform(new CircleTransform()).into(imageView);
         }
         else {
             Picasso.get().load(R.drawable.launcher_leash).resize(width, height).centerCrop().transform(new CircleTransform()).into(imageView);
@@ -226,15 +194,18 @@ public class UIHelper {
 
     public void attachPicToPoiTarget(String url, final AroundMeFragment.PoiTarget imageView, int height, int width) {
         if (!url.isEmpty()) {
-            if (url.charAt(0) == 'h') {
-                Picasso.get().load(Uri.parse(url)).resize(width, height).transform(new RoundedCornersTransform()).into(imageView);
 
-
-            } else {
-                storageReference.child(url).getDownloadUrl().addOnSuccessListener(uri -> Picasso.get().load(uri).resize(width, height).networkPolicy(NetworkPolicy.OFFLINE).transform(new RoundedCornersTransform()).into(imageView));
-
-
+            String theurl;
+            if (url.charAt(0) == 'h'){
+                theurl = url;
             }
+            else {
+                theurl = MediaManager.get().url().generate(url);
+            }
+                Picasso.get().load(Uri.parse(theurl)).resize(width, height).transform(new RoundedCornersTransform()).into(imageView);
+
+
+
 
         }
         else {
@@ -246,8 +217,14 @@ public class UIHelper {
     public void attachPic(String url, ImageView imageView, ProgressBar progressBar, int width, int height) {
         if (!url.isEmpty()) {
             progressBar.setVisibility(View.VISIBLE);
-            if (url.charAt(0) == 'h') {
-                Picasso.get().load(Uri.parse(url)).resize(width, height).networkPolicy(NetworkPolicy.OFFLINE).transform(new RoundedCornersTransform()).into(imageView, new Callback() {
+            String theurl;
+            if (url.charAt(0) == 'h'){
+                theurl = url;
+            }
+            else {
+                theurl = MediaManager.get().url().generate(url);
+            }
+                Picasso.get().load(Uri.parse(theurl)).resize(width, height).networkPolicy(NetworkPolicy.OFFLINE).transform(new RoundedCornersTransform()).into(imageView, new Callback() {
                     @Override
                     public void onSuccess() {
                         progressBar.setVisibility(View.GONE);
@@ -257,7 +234,7 @@ public class UIHelper {
                     public void onError(Exception e) {
                         e.printStackTrace();
 
-                        Picasso.get().load(Uri.parse(url)).resize(width, height).transform(new RoundedCornersTransform()).into(imageView, new Callback() {
+                        Picasso.get().load(Uri.parse(theurl)).resize(width, height).transform(new RoundedCornersTransform()).into(imageView, new Callback() {
                             @Override
                             public void onSuccess() {
                                 progressBar.setVisibility(View.GONE);
@@ -275,38 +252,7 @@ public class UIHelper {
                     }
 
                 });
-            } else {
-                storageReference.child(url).getDownloadUrl().addOnSuccessListener(uri -> Picasso.get().load(uri).resize(width, height).networkPolicy(NetworkPolicy.OFFLINE).transform(new RoundedCornersTransform()).into(imageView, new Callback() {
-                    @Override
-                    public void onSuccess() {
-                        progressBar.setVisibility(View.GONE);
-                    }
 
-                    @Override
-                    public void onError(Exception e) {
-                        e.printStackTrace();
-                        Picasso.get().load(uri).resize(width, height).transform(new RoundedCornersTransform()).into(imageView, new Callback() {
-                            @Override
-                            public void onSuccess() {
-                                progressBar.setVisibility(View.GONE);
-                            }
-
-                            @Override
-                            public void onError(Exception e) {
-                                //Try again online if cache failed
-                                e.printStackTrace();
-
-                                progressBar.setVisibility(View.GONE);
-
-                            }
-                        });
-
-                    }
-
-                }));
-
-
-            }
         } else {
             progressBar.setVisibility(View.GONE);
 
@@ -322,8 +268,14 @@ public class UIHelper {
         }
 
         if (!url.isEmpty()) {
-            if (url.charAt(0) == 'h') {
-                Picasso.get().load(Uri.parse(url))
+            String theurl;
+            if (url.charAt(0) == 'h'){
+                theurl = url;
+            }
+            else {
+                theurl = MediaManager.get().url().generate(url);
+            }
+                Picasso.get().load(Uri.parse(theurl))
                         .into(expandedImageView, new Callback() {
                             @Override
                             public void onSuccess() {
@@ -335,23 +287,10 @@ public class UIHelper {
 
                             }
                         });
-            } else {
-                storageReference.child(url).getDownloadUrl().addOnSuccessListener(uri -> Picasso.get().load(uri)
-                        .into(expandedImageView, new Callback() {
-                            @Override
-                            public void onSuccess() {
-                                continueZoomAnimation(expandedImageView, thumbView, container);
-
-                            }
-
-                            @Override
-                            public void onError(Exception e) {
-
-                            }
-                        }));
 
 
-            }
+
+
         }
 
     }
@@ -483,4 +422,12 @@ public class UIHelper {
         });
     }
 
+    public void startSpinAnimation(ImageView mLogo) {
+        RotateAnimation rotate = new RotateAnimation(0, 360, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+        rotate.setDuration(2000);
+        rotate.setRepeatCount(Animation.INFINITE);
+        rotate.setInterpolator(new LinearInterpolator());
+
+        mLogo.startAnimation(rotate);
+    }
 }

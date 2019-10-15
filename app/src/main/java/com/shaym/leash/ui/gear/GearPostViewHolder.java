@@ -1,17 +1,12 @@
 package com.shaym.leash.ui.gear;
 
 import android.annotation.SuppressLint;
-import android.app.Dialog;
-import android.content.DialogInterface;
-import android.graphics.drawable.ColorDrawable;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.Window;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.RotateAnimation;
@@ -34,23 +29,21 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.shaym.leash.R;
-import com.shaym.leash.logic.forum.Comment;
-import com.shaym.leash.logic.forum.ForumViewModel;
-import com.shaym.leash.logic.gear.GearPost;
-import com.shaym.leash.logic.user.Profile;
-import com.shaym.leash.logic.utils.CONSTANT;
-import com.shaym.leash.logic.utils.FireBasePostsHelper;
-import com.shaym.leash.logic.utils.FireBaseUsersHelper;
+import com.shaym.leash.models.Comment;
+import com.shaym.leash.viewmodels.ForumViewModel;
+import com.shaym.leash.models.GearPost;
+import com.shaym.leash.models.Profile;
+import com.shaym.leash.data.utils.CONSTANT;
+import com.shaym.leash.data.utils.FireBasePostsHelper;
+import com.shaym.leash.data.utils.FireBaseUsersHelper;
 import com.shaym.leash.ui.forum.CommentsAdapter;
-import com.shaym.leash.ui.utils.EnlargeImageDialog;
 import com.shaym.leash.ui.utils.UIHelper;
-import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import static com.shaym.leash.logic.utils.CONSTANT.ROLE_USER;
+import static com.shaym.leash.data.utils.CONSTANT.ROLE_USER;
 import static com.shaym.leash.ui.home.chat.ChatDialog.getUid;
 
 class GearPostViewHolder extends RecyclerView.ViewHolder implements PopupMenu.OnMenuItemClickListener, View.OnClickListener, TextWatcher {
@@ -226,9 +219,9 @@ class GearPostViewHolder extends RecyclerView.ViewHolder implements PopupMenu.On
         priceView.setText(Integer.toString(post.price));
         desciption.setText(post.body);
 
-        gearpostlocation.setText(post.location);
+        gearpostlocation.setText(post.salelocation);
 
-        int dayspast = FireBasePostsHelper.getInstance().getDaysDifference(post.publishdate);
+        int dayspast = FireBasePostsHelper.getInstance().getDaysDifference(post.date);
         if (dayspast != 0) {
             gearpostdate.setText("לפני " + dayspast + " ימים");
         }
@@ -338,7 +331,21 @@ class GearPostViewHolder extends RecyclerView.ViewHolder implements PopupMenu.On
     public boolean onMenuItemClick(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.delete:
-                FireBasePostsHelper.getInstance().deleteGearPost(currentPost);
+                if(!postProfile.getRole().equals(ROLE_USER)){
+                    try {
+                        FireBasePostsHelper.getInstance().deleteNewGearPost(currentPost);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                }
+                else {
+                    try {
+                        FireBasePostsHelper.getInstance().deleteUsedGearPost(currentPost);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
                 return true;
             case R.id.edit:
                 itemView.setOnClickListener(null);

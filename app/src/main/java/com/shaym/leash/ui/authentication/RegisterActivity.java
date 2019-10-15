@@ -2,12 +2,14 @@ package com.shaym.leash.ui.authentication;
 
 
 import android.content.Intent;
+import android.media.Image;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
@@ -17,8 +19,9 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
 import com.shaym.leash.R;
-import com.shaym.leash.logic.utils.FireBaseUsersHelper;
+import com.shaym.leash.data.utils.FireBaseUsersHelper;
 import com.shaym.leash.ui.home.HomeActivity;
+import com.shaym.leash.ui.utils.UIHelper;
 
 import static com.shaym.leash.ui.authentication.LoginActivity.isEmailValid;
 
@@ -28,6 +31,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
     private EditText mSignUpEmailField;
     private EditText mSignUpPassField;
     private EditText mSignUpNameField;
+    private ImageView mLogo;
     private Spinner mGenderSpinner;
     private String mGender;
 
@@ -44,7 +48,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
         mSignUpPassField = findViewById(R.id.signuppass);
         mSignUpNameField = findViewById(R.id.signupname);
         mGenderSpinner = findViewById(R.id.genderSpinner);
-
+        mLogo = findViewById(R.id.imgView_logo);
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
                 R.array.gender_array, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -78,6 +82,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
                     Toast.makeText(RegisterActivity.this, R.string.enter_valid_email_message,
                             Toast.LENGTH_SHORT).show();
                 } else {
+                    UIHelper.getInstance().startSpinAnimation(mLogo);
                     mAuth.createUserWithEmailAndPassword(email, pass)
                             .addOnCompleteListener(this, task -> {
                                 if (task.isSuccessful()) {
@@ -91,6 +96,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
 
 
                                 } else {
+                                    mLogo.clearAnimation();
                                     // If sign in fails, display a message to the user.
                                     Log.w(TAG, "createUserWithEmail:failure", task.getException());
                                     Toast.makeText(RegisterActivity.this, "Authentication failed.",

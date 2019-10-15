@@ -64,6 +64,12 @@
     <string name="new_gear">חדש</string>
     <string name="second_hand">יד-שניה</string>
     <string name="today">היום</string>
+    <string name="post_published">ההודעה פורסמה.</string>
+    <string name="phone_permissions">אנא אשר שימוש בטלפון.</string>
+    <string name="notes">הערות</string>
+    <string name="full_name">שם מלא</string>
+    <string name="female">נקבה</string>
+    <string name="male">זכר</string>
 
 
 </resources>

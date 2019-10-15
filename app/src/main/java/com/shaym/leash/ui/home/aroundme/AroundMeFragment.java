@@ -17,7 +17,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.StringRes;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProviders;
@@ -33,10 +32,9 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.database.DataSnapshot;
 import com.shaym.leash.R;
-import com.shaym.leash.logic.user.Profile;
-import com.shaym.leash.logic.user.UsersViewModel;
-import com.shaym.leash.logic.utils.FireBasePostsHelper;
-import com.shaym.leash.logic.utils.FireBaseUsersHelper;
+import com.shaym.leash.models.Profile;
+import com.shaym.leash.viewmodels.UsersViewModel;
+import com.shaym.leash.data.utils.FireBaseUsersHelper;
 import com.shaym.leash.ui.utils.UIHelper;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
@@ -58,7 +56,9 @@ import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 import static com.google.android.gms.maps.GoogleMap.OnMarkerClickListener;
 import static com.google.android.gms.maps.GoogleMap.OnMyLocationButtonClickListener;
-import static com.shaym.leash.logic.utils.CONSTANT.ROLE_USER;
+import static com.shaym.leash.data.utils.CONSTANT.ROLE_USER;
+import static com.shaym.leash.data.utils.CONSTANT.USER_LAT;
+import static com.shaym.leash.data.utils.CONSTANT.USER_LNG;
 
 
 /**
@@ -102,7 +102,7 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
 
     @SuppressLint("MissingPermission")
     @NeedsPermission({ACCESS_COARSE_LOCATION, ACCESS_FINE_LOCATION})
-    public void initLocationProviders() {
+    void initLocationProviders() {
         locationManager = (LocationManager) Objects.requireNonNull(getActivity()).getSystemService(Context.LOCATION_SERVICE);
 
 // Define a listener that responds to location updates
@@ -146,19 +146,15 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
 
     @OnShowRationale({ACCESS_COARSE_LOCATION, ACCESS_FINE_LOCATION})
     void showRationaleForFineLocation(PermissionRequest request) {
-        showRationaleDialog(R.string.text_location_permission, request);
+        showRationaleDialog(request);
     }
 
-    private void showRationaleDialog(@StringRes int messageResId, final PermissionRequest request) {
+    private void showRationaleDialog(final PermissionRequest request) {
         new AlertDialog.Builder(getContext())
-                .setPositiveButton(R.string.ok, (dialog, which) -> {
-                    request.proceed();
-                })
-                .setNegativeButton(R.string.cancel, (dialog, which) -> {
-                    request.cancel();
-                })
+                .setPositiveButton(R.string.ok, (dialog, which) -> request.proceed())
+                .setNegativeButton(R.string.cancel, (dialog, which) -> request.cancel())
                 .setCancelable(false)
-                .setMessage(messageResId)
+                .setMessage(R.string.text_location_permission)
                 .show();
     }
 
@@ -175,7 +171,7 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
     }
 
 
-    public static int safeLongToInt(long l) {
+    private static int safeLongToInt(long l) {
         if (l < Integer.MIN_VALUE || l > Integer.MAX_VALUE) {
             throw new IllegalArgumentException
                     (l + " cannot be cast to int without changing its value.");
@@ -236,7 +232,7 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
 
                 for (int i = 0; i < mAllUsers.size(); i++) {
                     Profile user = mAllUsers.get(i);
-                    LatLng latLng = coordinateForMarker(new LatLng(user.getCurrentlatitude(), user.getCurrentlongitude()), user);
+                    LatLng latLng = coordinateForMarker(new LatLng(user.getCurrentlocation().get(USER_LAT), user.getCurrentlocation().get(USER_LNG)), user);
                     markerlocation.put(user, latLng);
 
                 }
@@ -270,7 +266,7 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
 
                 }
 
-                moveCameraToCurrentLocation(new LatLng(mUser.getCurrentlatitude(), mUser.getCurrentlongitude()));
+                moveCameraToCurrentLocation(new LatLng(mUser.getCurrentlocation().get(USER_LAT), mUser.getCurrentlocation().get(USER_LNG)));
 
             }
             catch (Exception e){
@@ -355,7 +351,7 @@ public class AroundMeFragment extends Fragment implements OnMapReadyCallback, On
     public boolean onMyLocationButtonClick() {
         // Return false so that we don't consume the event and the default behavior still occurs
         // (the camera animates to the user's current position).
-        moveCameraToCurrentLocation(new LatLng(mUser.getCurrentlatitude(), mUser.getCurrentlongitude()));
+        moveCameraToCurrentLocation(new LatLng(mUser.getCurrentlocation().get(USER_LAT), mUser.getCurrentlocation().get(USER_LNG)));
         return true;
     }
 

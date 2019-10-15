@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModel;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
-import com.shaym.leash.logic.utils.FirebaseQueryLiveData;
+import com.shaym.leash.data.utils.FirebaseQueryLiveData;
 
 import java.util.Objects;
 

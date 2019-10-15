@@ -11,21 +11,20 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.shaym.leash.R;
-import com.shaym.leash.logic.gear.GearPost;
-import com.shaym.leash.logic.user.Profile;
-import com.shaym.leash.logic.utils.FireBaseUsersHelper;
-import com.shaym.leash.logic.utils.GearPostDiffCallback;
-import com.shaym.leash.logic.utils.UserDiffCallback;
-import com.squareup.picasso.Picasso;
+import com.shaym.leash.models.GearPost;
+import com.shaym.leash.models.Profile;
+import com.shaym.leash.data.utils.FireBaseUsersHelper;
+import com.shaym.leash.data.utils.GearPostDiffCallback;
+import com.shaym.leash.data.utils.UserDiffCallback;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.shaym.leash.logic.utils.CONSTANT.BOARDS_POSTS;
-import static com.shaym.leash.logic.utils.CONSTANT.FCS_POSTS;
-import static com.shaym.leash.logic.utils.CONSTANT.INTERSURF_POSTS;
-import static com.shaym.leash.logic.utils.CONSTANT.ROLE_STORE_FCS;
-import static com.shaym.leash.logic.utils.CONSTANT.ROLE_STORE_INTERSURF;
+import static com.shaym.leash.data.utils.CONSTANT.BOARDS_POSTS;
+import static com.shaym.leash.data.utils.CONSTANT.FCS_POSTS;
+import static com.shaym.leash.data.utils.CONSTANT.INTERSURF_POSTS;
+import static com.shaym.leash.data.utils.CONSTANT.ROLE_STORE_FCS;
+import static com.shaym.leash.data.utils.CONSTANT.ROLE_STORE_INTERSURF;
 
 public class GearAdapter extends RecyclerView.Adapter<GearPostViewHolder> {
 

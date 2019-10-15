@@ -5,10 +5,10 @@ import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
 import com.shaym.leash.R;
-import com.shaym.leash.logic.chat.Conversation;
-import com.shaym.leash.logic.forum.Post;
-import com.shaym.leash.logic.gear.GearPost;
-import com.shaym.leash.logic.user.Profile;
+import com.shaym.leash.models.Conversation;
+import com.shaym.leash.models.Post;
+import com.shaym.leash.models.GearPost;
+import com.shaym.leash.models.Profile;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -18,9 +18,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.shaym.leash.logic.utils.CONSTANT.PROFILE_CONVERSATIONS;
-import static com.shaym.leash.logic.utils.CONSTANT.PROFILE_FORUM_POSTS;
-import static com.shaym.leash.logic.utils.CONSTANT.PROFILE_GEAR_POSTS;
+import static com.shaym.leash.data.utils.CONSTANT.PROFILE_CONVERSATIONS;
+import static com.shaym.leash.data.utils.CONSTANT.PROFILE_FORUM_POSTS;
+import static com.shaym.leash.data.utils.CONSTANT.PROFILE_GEAR_POSTS;
 
 public class ProfileAdapter extends RecyclerView.Adapter {
     private static final String TAG = "ProfileAdapter";

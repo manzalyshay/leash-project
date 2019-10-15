@@ -26,11 +26,11 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.shaym.leash.R;
-import com.shaym.leash.logic.chat.ChatMessage;
-import com.shaym.leash.logic.chat.ChatViewModel;
-import com.shaym.leash.logic.user.Profile;
-import com.shaym.leash.logic.user.UsersViewModel;
-import com.shaym.leash.logic.utils.FireBasePostsHelper;
+import com.shaym.leash.models.ChatMessage;
+import com.shaym.leash.viewmodels.ChatViewModel;
+import com.shaym.leash.models.Profile;
+import com.shaym.leash.viewmodels.UsersViewModel;
+import com.shaym.leash.data.utils.FireBasePostsHelper;
 import com.shaym.leash.ui.home.HomeActivity;
 import com.shaym.leash.ui.utils.UIHelper;
 
@@ -39,9 +39,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
-import static com.shaym.leash.logic.utils.CONSTANT.CHAT_CONVERSATIONS;
-import static com.shaym.leash.logic.utils.CONSTANT.CONVERSATIONS;
-import static com.shaym.leash.logic.utils.CONSTANT.USERS_TABLE;
+import static com.shaym.leash.data.utils.CONSTANT.CHAT_CONVERSATIONS;
+import static com.shaym.leash.data.utils.CONSTANT.CONVERSATIONS;
+import static com.shaym.leash.data.utils.CONSTANT.USERS_TABLE;
 
 public class
 ChatDialog extends DialogFragment implements View.OnClickListener, TextWatcher {

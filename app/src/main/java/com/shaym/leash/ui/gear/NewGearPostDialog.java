@@ -26,11 +26,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
+import com.cloudinary.android.MediaManager;
 import com.github.dhaval2404.imagepicker.ImagePicker;
 import com.shaym.leash.R;
-import com.shaym.leash.logic.utils.FireBasePostsHelper;
-import com.shaym.leash.logic.utils.FireBaseUsersHelper;
-import com.shaym.leash.logic.utils.onPictureUploadedListener;
+import com.shaym.leash.data.utils.FireBasePostsHelper;
+import com.shaym.leash.data.utils.FireBaseUsersHelper;
+import com.shaym.leash.data.utils.onPictureUploadedListener;
+import com.shaym.leash.models.Profile;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -48,13 +50,14 @@ import permissions.dispatcher.OnShowRationale;
 import permissions.dispatcher.PermissionRequest;
 import permissions.dispatcher.RuntimePermissions;
 
-import static com.shaym.leash.logic.utils.CONSTANT.BOARDS_POSTS;
-import static com.shaym.leash.logic.utils.CONSTANT.CLOTHING_POSTS;
-import static com.shaym.leash.logic.utils.CONSTANT.FINS_POSTS;
-import static com.shaym.leash.logic.utils.CONSTANT.GEAR_POSTS_PICS;
-import static com.shaym.leash.logic.utils.CONSTANT.LEASHES_POSTS;
-import static com.shaym.leash.logic.utils.CONSTANT.NEW_GEAR_POSTS;
-import static com.shaym.leash.logic.utils.CONSTANT.OTHER_POSTS;
+import static com.shaym.leash.data.utils.CONSTANT.BOARDS_POSTS;
+import static com.shaym.leash.data.utils.CONSTANT.CLOTHING_POSTS;
+import static com.shaym.leash.data.utils.CONSTANT.FINS_POSTS;
+import static com.shaym.leash.data.utils.CONSTANT.GEAR_IMAGES;
+import static com.shaym.leash.data.utils.CONSTANT.GEAR_POSTS_PICS;
+import static com.shaym.leash.data.utils.CONSTANT.LEASHES_POSTS;
+import static com.shaym.leash.data.utils.CONSTANT.NEW_GEAR_POSTS;
+import static com.shaym.leash.data.utils.CONSTANT.OTHER_POSTS;
 
 @RuntimePermissions
 public class NewGearPostDialog extends DialogFragment implements onPictureUploadedListener {
@@ -76,7 +79,7 @@ public class NewGearPostDialog extends DialogFragment implements onPictureUpload
     private boolean mImagePicked;
     private String mNewPostCategory;
     private String mNewPostStore;
-
+    private Profile mUser;
 
     public NewGearPostDialog() {
         // Empty constructor is required for DialogFragment
@@ -136,38 +139,38 @@ public class NewGearPostDialog extends DialogFragment implements onPictureUpload
                 R.array.gear_categories_array, R.layout.spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mCategorySpinner.setAdapter(adapter);
-            setCurrentCategory();
+        setCurrentCategory();
 
         mCategorySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                                                      @Override
-                                                      public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                                                          Log.d(TAG, "onItemSelected: " + id);
-                                                          switch ((int) id) {
-                                                              case 0:
-                                                                  mNewPostCategory = BOARDS_POSTS;
-                                                                  break;
-                                                              case 1:
-                                                                  mNewPostCategory = LEASHES_POSTS;
-                                                                  break;
-                                                              case 2:
-                                                                  mNewPostCategory = FINS_POSTS;
-                                                                  break;
-                                                              case 3:
-                                                                  mNewPostCategory = CLOTHING_POSTS;
-                                                                  break;
-                                                              case 4:
-                                                                  mNewPostCategory = OTHER_POSTS;
-                                                                  break;
+                                                       @Override
+                                                       public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                                                           Log.d(TAG, "onItemSelected: " + id);
+                                                           switch ((int) id) {
+                                                               case 0:
+                                                                   mNewPostCategory = BOARDS_POSTS;
+                                                                   break;
+                                                               case 1:
+                                                                   mNewPostCategory = LEASHES_POSTS;
+                                                                   break;
+                                                               case 2:
+                                                                   mNewPostCategory = FINS_POSTS;
+                                                                   break;
+                                                               case 3:
+                                                                   mNewPostCategory = CLOTHING_POSTS;
+                                                                   break;
+                                                               case 4:
+                                                                   mNewPostCategory = OTHER_POSTS;
+                                                                   break;
 
-                                                          }
-                                                      }
+                                                           }
+                                                       }
 
-                                                      @Override
-                                                      public void onNothingSelected(AdapterView<?> parent) {
-                                                          mNewPostCategory = BOARDS_POSTS;
+                                                       @Override
+                                                       public void onNothingSelected(AdapterView<?> parent) {
+                                                           mNewPostCategory = BOARDS_POSTS;
 
-                                                      }
-                                                  }
+                                                       }
+                                                   }
         );
 
         mBodyInput = getView().findViewById(R.id.gearpost_body);
@@ -248,7 +251,9 @@ public class NewGearPostDialog extends DialogFragment implements onPictureUpload
         NewGearPostDialogPermissionsDispatcher.onRequestPermissionsResult(this, requestCode, grantResults);
     }
 
-
+    public void setUser (Profile user){
+        mUser = user;
+    }
 
 
     @Override
@@ -317,14 +322,14 @@ public class NewGearPostDialog extends DialogFragment implements onPictureUpload
 
 
     private void submitPost() {
-            //get the two inputs
-            if (!mImagePicked) {
-                publishPost();
+        //get the two inputs
+        if (!mImagePicked) {
+            publishPost();
 
-            }
-            else{
-                FireBasePostsHelper.getInstance().uploadImage(getContext(), GEAR_POSTS_PICS, selectedBitmap, this);
-            }
+        }
+        else{
+            FireBasePostsHelper.getInstance().uploadImage(getContext(),    mUser.getUid() + "/"+ GEAR_IMAGES , selectedBitmap, this);
+        }
     }
 
 
@@ -342,13 +347,13 @@ public class NewGearPostDialog extends DialogFragment implements onPictureUpload
 
     private void publishPost() {
         if (mNewPostStore.isEmpty()) {
-            FireBasePostsHelper.getInstance().writeNewUsedGearPost(FireBaseUsersHelper.getInstance().getUid(), mNewPostCategory, citieslist.get(mCitySpinner.getSelectedItemPosition()), parseValue(mPriceInput.getText().toString().trim()), mPhoneInput.getText().toString().trim(), mBodyInput.getText().toString().trim(), mPostImagepaths);
+            FireBasePostsHelper.getInstance().writeNewUsedGearPost(mUser, mNewPostCategory, citieslist.get(mCitySpinner.getSelectedItemPosition()), parseValue(mPriceInput.getText().toString().trim()), mPhoneInput.getText().toString().trim(), mBodyInput.getText().toString().trim(), mPostImagepaths);
         }
         else {
-            FireBasePostsHelper.getInstance().writeNewGearPost(FireBaseUsersHelper.getInstance().getUid(), mNewPostCategory, citieslist.get(mCitySpinner.getSelectedItemPosition()), parseValue(mPriceInput.getText().toString().trim()), mPhoneInput.getText().toString().trim(), mBodyInput.getText().toString().trim(), mPostImagepaths);
+            FireBasePostsHelper.getInstance().writeNewGearPost(mUser, mNewPostCategory, citieslist.get(mCitySpinner.getSelectedItemPosition()), parseValue(mPriceInput.getText().toString().trim()), mPhoneInput.getText().toString().trim(), mBodyInput.getText().toString().trim(), mPostImagepaths);
 
         }
-        Toast.makeText(getContext(), "Post Published.", Toast.LENGTH_SHORT).show();
+        Toast.makeText(getContext(), getString(R.string.post_published), Toast.LENGTH_SHORT).show();
         dismiss();
     }
 

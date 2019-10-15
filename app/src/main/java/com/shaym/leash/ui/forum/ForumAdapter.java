@@ -11,16 +11,15 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.shaym.leash.R;
-import com.shaym.leash.logic.forum.Post;
-import com.shaym.leash.logic.user.Profile;
-import com.shaym.leash.logic.utils.FireBaseUsersHelper;
-import com.shaym.leash.logic.utils.PostDiffCallback;
-import com.shaym.leash.logic.utils.UserDiffCallback;
+import com.shaym.leash.models.Post;
+import com.shaym.leash.models.Profile;
+import com.shaym.leash.data.utils.PostDiffCallback;
+import com.shaym.leash.data.utils.UserDiffCallback;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.shaym.leash.logic.utils.CONSTANT.GENERAL_POSTS;
+import static com.shaym.leash.data.utils.CONSTANT.GENERAL_POSTS;
 
 public class ForumAdapter extends RecyclerView.Adapter<PostViewHolder>{
 

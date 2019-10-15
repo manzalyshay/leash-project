@@ -2,7 +2,6 @@ package com.shaym.leash.ui.home.profile;
 
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,27 +20,27 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.shaym.leash.R;
-import com.shaym.leash.logic.chat.Conversation;
-import com.shaym.leash.logic.forum.Post;
-import com.shaym.leash.logic.gear.GearPost;
-import com.shaym.leash.logic.user.Profile;
-import com.shaym.leash.logic.user.UsersViewModel;
-import com.shaym.leash.logic.utils.FireBaseUsersHelper;
+import com.shaym.leash.models.Conversation;
+import com.shaym.leash.models.Post;
+import com.shaym.leash.models.GearPost;
+import com.shaym.leash.models.Profile;
+import com.shaym.leash.viewmodels.UsersViewModel;
+import com.shaym.leash.data.utils.FireBaseUsersHelper;
 import com.shaym.leash.ui.utils.UIHelper;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import static com.shaym.leash.logic.utils.CONSTANT.CHAT_CONVERSATIONS;
-import static com.shaym.leash.logic.utils.CONSTANT.FORUM_POSTS;
-import static com.shaym.leash.logic.utils.CONSTANT.GEAR_POSTS;
-import static com.shaym.leash.logic.utils.CONSTANT.PROFILE_CONVERSATIONS;
-import static com.shaym.leash.logic.utils.CONSTANT.PROFILE_FORUM_POSTS;
-import static com.shaym.leash.logic.utils.CONSTANT.PROFILE_GEAR_POSTS;
-import static com.shaym.leash.logic.utils.CONSTANT.USED_GEAR_POSTS;
-import static com.shaym.leash.logic.utils.CONSTANT.USER_CONVERSATIONS;
-import static com.shaym.leash.logic.utils.CONSTANT.USER_POSTS;
+import static com.shaym.leash.data.utils.CONSTANT.CHAT_CONVERSATIONS;
+import static com.shaym.leash.data.utils.CONSTANT.FORUM_POSTS;
+import static com.shaym.leash.data.utils.CONSTANT.GEAR_POSTS;
+import static com.shaym.leash.data.utils.CONSTANT.PROFILE_CONVERSATIONS;
+import static com.shaym.leash.data.utils.CONSTANT.PROFILE_FORUM_POSTS;
+import static com.shaym.leash.data.utils.CONSTANT.PROFILE_GEAR_POSTS;
+import static com.shaym.leash.data.utils.CONSTANT.USED_GEAR_POSTS;
+import static com.shaym.leash.data.utils.CONSTANT.USER_CONVERSATIONS;
+import static com.shaym.leash.data.utils.CONSTANT.USER_POSTS;
 
 /**
  * Created by shaym on 2/17/18.
@@ -75,7 +74,6 @@ public class ProfileFragment extends Fragment implements  TabLayout.OnTabSelecte
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         initUI();
-
         initUsersViewModel();
         initProfileViewModel();
         setAdapter();
@@ -133,16 +131,7 @@ public class ProfileFragment extends Fragment implements  TabLayout.OnTabSelecte
     private void initUsersViewModel() {
         UsersViewModel mUsersViewModel = ViewModelProviders.of(this).get(UsersViewModel.class);
 
-        LiveData<DataSnapshot> currentUserLiveData = mUsersViewModel.getCurrentUserDataSnapshotLiveData();
         LiveData<DataSnapshot> allUserLiveData = mUsersViewModel.getAllUsersDataSnapshotLiveData();
-
-        currentUserLiveData.observe(this, dataSnapshot -> {
-            if (dataSnapshot != null) {
-                Log.d(TAG, "initUsersViewModel: ");
-                mUser = dataSnapshot.getValue(Profile.class);
-                mAdapter.setUser(mUser);
-            }
-        });
 
         allUserLiveData.observe(this, dataSnapshot -> {
             if (dataSnapshot != null) {
@@ -152,6 +141,8 @@ public class ProfileFragment extends Fragment implements  TabLayout.OnTabSelecte
                     Profile user = ds.getValue(Profile.class);
                     mAllUsers.add(user);
                 }
+                mUser = FireBaseUsersHelper.getInstance().findProfile(FireBaseUsersHelper.getInstance().getUid(), mAllUsers);
+                mAdapter.setUser(mUser);
                 mAdapter.setAllUsers(mAllUsers);
 
 
